@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.byodsystem.byod.controller.DeviceController">
+
+    <top>
+        <Label text="DEVICE REGISTRATION"
+               style="-fx-font-size: 18px; -fx-padding: 15;"/>
+    </top>
+
+    <center>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <TextField fx:id="studentIdField" promptText="Student ID"/>
+            <TextField fx:id="serialField" promptText="Serial Number"/>
+            <TextField fx:id="brandField" promptText="Brand"/>
+            <TextField fx:id="modelField" promptText="Model"/>
+
+            <ComboBox fx:id="deviceTypeCombo" promptText="Device Type"/>
+
+            <TextField fx:id="searchField" promptText="Search Device"/>
+
+            <HBox spacing="10">
+                <Button text="Register Device" onAction="#registerDevice"/>
+                <Button text="Update" onAction="#updateDevice"/>
+                <Button text="Delete" onAction="#deleteDevice"/>
+                <Button text="Search" onAction="#searchDevice"/>
+                <Button text="Clear" onAction="#clearFields"/>
+            </HBox>
+
+            <TableView fx:id="deviceTable">
+
+                <columns>
+                    <TableColumn fx:id="colDeviceId" text="Device ID"/>
+                    <TableColumn fx:id="colStudentId" text="Student ID"/>
+                    <TableColumn fx:id="colSerial" text="Serial"/>
+                    <TableColumn fx:id="colType" text="Type"/>
+                    <TableColumn fx:id="colBrand" text="Brand"/>
+                    <TableColumn fx:id="colModel" text="Model"/>
+                </columns>
+
+            </TableView>
+
+        </VBox>
+    </center>
+
+</BorderPane>

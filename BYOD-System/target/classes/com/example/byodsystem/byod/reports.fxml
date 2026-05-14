@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.byodsystem.byod.controller.ReportController">
+
+    <top>
+        <Label text="DEVICE MONITORING REPORTS"
+               style="-fx-font-size: 18px; -fx-padding: 15;"/>
+    </top>
+
+    <center>
+        <VBox spacing="10">
+
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <HBox spacing="10">
+                <DatePicker fx:id="startDatePicker" promptText="Start Date"/>
+                <DatePicker fx:id="endDatePicker" promptText="End Date"/>
+
+                <Button text="Generate Report" onAction="#generateReport"/>
+                <Button text="Export CSV" onAction="#exportCSV"/>
+            </HBox>
+
+            <TableView fx:id="reportTable">
+
+                <columns>
+                    <TableColumn fx:id="colLogId" text="Log ID"/>
+                    <TableColumn fx:id="colDeviceId" text="Device ID"/>
+                    <TableColumn fx:id="colStudentId" text="Student ID"/>
+                    <TableColumn fx:id="colTimeIn" text="Time In"/>
+                    <TableColumn fx:id="colTimeOut" text="Time Out"/>
+                </columns>
+
+            </TableView>
+
+        </VBox>
+    </center>
+
+</BorderPane>
