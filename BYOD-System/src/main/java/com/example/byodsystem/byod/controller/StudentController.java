@@ -1,168 +1,131 @@
 package com.example.byodsystem.byod.controller;
 
+import com.example.byodsystem.byod.database.DBConnection;
 import com.example.byodsystem.byod.model.Student;
+import com.example.byodsystem.byod.utils.SessionManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class StudentController {
+    @FXML private Button btnDashboard, btnStudents, btnDevices, btnLogs, btnActivity, btnReports, btnSettings, btnLogout;
+    @FXML private Label lblDate, lblAdminName, lblAdminRole;
+    @FXML private TextField txtStudentID, txtFullName, txtCourse, txtYearLevel, txtContact, txtSearch;
+    @FXML private Button btnSave, btnClear;
 
-    @FXML
-    private TextField studentIdField;
+    @FXML private TableView<Student> tblStudents;
+    @FXML private TableColumn<Student, String> colID, colName, colCourse, colYear, colContact;
+    @FXML private TableColumn<Student, Integer> colDevices;
 
-    @FXML
-    private TextField nameField;
-
-    @FXML
-    private TextField courseField;
-
-    @FXML
-    private ComboBox<String> yearComboBox;
-
-    @FXML
-    private TextField searchField;
-
-    @FXML
-    private TableView<Student> studentTable;
-
-    @FXML
-    private TableColumn<Student, String> colStudentId;
-
-    @FXML
-    private TableColumn<Student, String> colName;
-
-    @FXML
-    private TableColumn<Student, String> colCourse;
-
-    @FXML
-    private TableColumn<Student, String> colYear;
-
-    private final ObservableList<Student> students = FXCollections.observableArrayList();
+    private ObservableList<Student> studentList = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
+        lblAdminName.setText(SessionManager.currentOperatorName);
+        lblAdminRole.setText(SessionManager.currentOperatorRole);
+        lblDate.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("EEE, MMM dd, yyyy")));
+        setupSidebarActions();
+        configureTableColumns();
+        loadStudents("");
 
-        yearComboBox.getItems().addAll(
-                "1st Year",
-                "2nd Year",
-                "3rd Year",
-                "4th Year"
-        );
-
-        colStudentId.setCellValueFactory(data -> data.getValue().studentIdProperty());
-        colName.setCellValueFactory(data -> data.getValue().nameProperty());
-        colCourse.setCellValueFactory(data -> data.getValue().courseProperty());
-        colYear.setCellValueFactory(data -> data.getValue().yearProperty());
-
-        studentTable.setItems(students);
+        txtSearch.textProperty().addListener((obs, oldVal, newVal) -> loadStudents(newVal.trim()));
+        btnSave.setOnAction(e -> saveStudent());
+        btnClear.setOnAction(e -> clearForm());
     }
 
-    @FXML
-    private void addStudent() {
-
-        if (!validateInputs()) return;
-
-        Student student = new Student(
-                studentIdField.getText(),
-                nameField.getText(),
-                courseField.getText(),
-                yearComboBox.getValue()
-        );
-
-        students.add(student);
-        studentTable.setItems(students);
-
-        showAlert("Success", "Student Added Successfully.");
-        clearFields();
+    private void configureTableColumns() {
+        colID.setCellValueFactory(new PropertyValueFactory<>("studentId"));
+        colName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
+        colCourse.setCellValueFactory(new PropertyValueFactory<>("course"));
+        colYear.setCellValueFactory(new PropertyValueFactory<>("yearLevel"));
+        colContact.setCellValueFactory(new PropertyValueFactory<>("contactNumber"));
+        colDevices.setCellValueFactory(new PropertyValueFactory<>("deviceCount"));
     }
 
-    @FXML
-    private void updateStudent() {
+    private void loadStudents(String searchKeyword) {
+        studentList.clear();
+        String query = "SELECT s.*, (SELECT COUNT(*) FROM devices d WHERE d.owner_id = s.student_record_id) AS dev_count " +
+                "FROM students s WHERE s.role = 'STUDENT' AND (s.student_id ILIKE ? OR s.full_name ILIKE ? OR s.course ILIKE ?)";
 
-        Student selected = studentTable.getSelectionModel().getSelectedItem();
+        try (Connection conn = DBConnection.connect(); PreparedStatement ps = conn.prepareStatement(query)) {
+            String wildcard = "%" + searchKeyword + "%";
+            ps.setString(1, wildcard);
+            ps.setString(2, wildcard);
+            ps.setString(3, wildcard);
 
-        if (selected == null) {
-            showAlert("Error", "Select a student first.");
-            return;
-        }
-
-        int index = studentTable.getSelectionModel().getSelectedIndex();
-
-        Student updated = new Student(
-                studentIdField.getText(),
-                nameField.getText(),
-                courseField.getText(),
-                yearComboBox.getValue()
-        );
-
-        students.set(index, updated);
-        studentTable.refresh();
-
-        showAlert("Success", "Student Updated.");
-    }
-
-    @FXML
-    private void deleteStudent() {
-
-        Student selected = studentTable.getSelectionModel().getSelectedItem();
-
-        if (selected == null) {
-            showAlert("Error", "Select a student first.");
-            return;
-        }
-
-        students.remove(selected);
-
-        showAlert("Success", "Student Deleted.");
-    }
-
-    @FXML
-    private void searchStudent() {
-
-        String keyword = searchField.getText().toLowerCase();
-
-        ObservableList<Student> filtered = FXCollections.observableArrayList();
-
-        for (Student s : students) {
-            if (s.getStudentId().toLowerCase().contains(keyword) ||
-                    s.getName().toLowerCase().contains(keyword) ||
-                    s.getCourse().toLowerCase().contains(keyword)) {
-                filtered.add(s);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    studentList.add(new Student(
+                            rs.getInt("student_record_id"),
+                            rs.getString("student_id"),
+                            rs.getString("full_name"),
+                            rs.getString("course"),
+                            rs.getString("year_level"),
+                            rs.getString("contact_number"),
+                            rs.getInt("dev_count")
+                    ));
+                }
             }
+            tblStudents.setItems(studentList);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        studentTable.setItems(filtered);
     }
 
-    @FXML
-    private void clearFields() {
+    private void saveStudent() {
+        String query = "INSERT INTO students (student_id, full_name, course, year_level, contact_number, email, password_hash, role) " +
+                "VALUES (?, ?, ?, ?, ?, ?, 'student123', 'STUDENT') " +
+                "ON CONFLICT (student_id) DO UPDATE SET full_name=?, course=?, year_level=?, contact_number=?";
 
-        studentIdField.clear();
-        nameField.clear();
-        courseField.clear();
-        yearComboBox.setValue(null);
-    }
+        try (Connection conn = DBConnection.connect(); PreparedStatement ps = conn.prepareStatement(query)) {
+            String id = txtStudentID.getText().trim();
+            String name = txtFullName.getText().trim();
+            String crs = txtCourse.getText().trim();
+            String yr = txtYearLevel.getText().trim();
+            String cont = txtContact.getText().trim();
+            String mockEmail = name.toLowerCase().replace(" ", "") + "@univ.edu.ph";
 
-    private boolean validateInputs() {
+            ps.setString(1, id);
+            ps.setString(2, name);
+            ps.setString(3, crs);
+            ps.setString(4, yr);
+            ps.setString(5, cont);
+            ps.setString(6, mockEmail);
+            ps.setString(7, name);
+            ps.setString(8, crs);
+            ps.setString(9, yr);
+            ps.setString(10, cont);
 
-        if (studentIdField.getText().isEmpty()
-                || nameField.getText().isEmpty()
-                || courseField.getText().isEmpty()
-                || yearComboBox.getValue() == null) {
-
-            showAlert("Error", "Please complete all fields.");
-            return false;
+            ps.executeUpdate();
+            clearForm();
+            loadStudents("");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return true;
     }
 
-    private void showAlert(String title, String message) {
+    private void clearForm() {
+        txtStudentID.clear();
+        txtFullName.clear();
+        txtCourse.clear();
+        txtYearLevel.clear();
+        txtContact.clear();
+    }
 
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    private void setupSidebarActions() {
+        btnDashboard.setOnAction(e -> SessionManager.navigate(btnDashboard, "dashboard.fxml"));
+        btnStudents.setOnAction(e -> SessionManager.navigate(btnStudents, "students.fxml"));
+        btnDevices.setOnAction(e -> SessionManager.navigate(btnDevices, "devices.fxml"));
+        btnLogs.setOnAction(e -> SessionManager.navigate(btnLogs, "monitoring.fxml"));
+        btnActivity.setOnAction(e -> SessionManager.navigate(btnActivity, "reports.fxml"));
+        btnReports.setOnAction(e -> SessionManager.navigate(btnReports, "reports.fxml"));
+        btnLogout.setOnAction(e -> SessionManager.navigate(btnLogout, "login.fxml"));
     }
 }

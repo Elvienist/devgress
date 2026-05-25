@@ -1,39 +1,34 @@
 package com.example.byodsystem.byod.model;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-
 public class Device {
+    private int deviceId;
+    private String serialNumber;
+    private String brand;
+    private String model;
+    private String deviceType;
+    private String ownerName;
+    private String ownerStudentId;
+    private String status;
 
-    private final StringProperty deviceId;
-    private final StringProperty studentId;
-    private final StringProperty serial;
-    private final StringProperty type;
-    private final StringProperty brand;
-    private final StringProperty model;
-
-    public Device(String deviceId, String studentId, String serial,
-                  String type, String brand, String model) {
-
-        this.deviceId = new SimpleStringProperty(deviceId);
-        this.studentId = new SimpleStringProperty(studentId);
-        this.serial = new SimpleStringProperty(serial);
-        this.type = new SimpleStringProperty(type);
-        this.brand = new SimpleStringProperty(brand);
-        this.model = new SimpleStringProperty(model);
+    public Device(int deviceId, String serialNumber, String brand, String model, String deviceType, String ownerName, String ownerStudentId, String status) {
+        this.deviceId = deviceId;
+        this.serialNumber = serialNumber;
+        this.brand = brand;
+        this.model = model;
+        this.deviceType = deviceType;
+        this.ownerName = ownerName;
+        this.ownerStudentId = ownerStudentId;
+        this.status = status;
     }
 
-    public String getDeviceId() { return deviceId.get(); }
-    public String getStudentId() { return studentId.get(); }
-    public String getSerial() { return serial.get(); }
-    public String getType() { return type.get(); }
-    public String getBrand() { return brand.get(); }
-    public String getModel() { return model.get(); }
-
-    public StringProperty deviceIdProperty() { return deviceId; }
-    public StringProperty studentIdProperty() { return studentId; }
-    public StringProperty serialProperty() { return serial; }
-    public StringProperty typeProperty() { return type; }
-    public StringProperty brandProperty() { return brand; }
-    public StringProperty modelProperty() { return model; }
+    public int getDeviceId() { return deviceId; }
+    public String getSerialNumber() { return serialNumber; }
+    public String getBrand() { return brand; }
+    public String getModel() { return model; }
+    public String getDeviceType() { return deviceType; }
+    public String getOwnerName() { return ownerName; }
+    public String getOwnerStudentId() { return ownerStudentId; }
+    public String getStatus() { return status; }
+    public String getDeviceInfo() { return brand + " " + model + "\n" + deviceType; }
+    public String getOwnerDetails() { return ownerName + "\n" + ownerStudentId; }
 }
