@@ -16,4 +16,4 @@ device ingress and egress on campus.
 4. Run the project in IntelliJ
 
 ## Figma
-Link to be added by UI/UX team
+Link to be added by UI/UX team. beep
