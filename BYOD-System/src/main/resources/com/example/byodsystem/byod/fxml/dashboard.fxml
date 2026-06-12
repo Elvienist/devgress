@@ -1,82 +1,459 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.chart.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 
-<BorderPane minHeight="650.0" minWidth="1150.0" style="-fx-background-color: #F4F7F6;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.DashboardController">
-    <left>
-        <VBox prefWidth="220.0" spacing="10.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #E2E8F0; -fx-border-width: 0 1 0 0;">
-            <padding><Insets bottom="20" left="15" right="15" top="20"/></padding>
-            <Label text="BYOD System" style="-fx-font-weight: bold; -fx-font-size: 16;"/>
-            <Region prefHeight="20.0" />
-            <Button fx:id="btnDashboard" text="📊  Dashboard" maxWidth="1.1797693134862315E308" alignment="BASELINE_LEFT" style="-fx-background-color: #89B893; -fx-text-fill: white;"/>
-            <Button fx:id="btnStudents" text="👥  Students" maxWidth="1.1797693134862315E308" alignment="BASELINE_LEFT" style="-fx-background-color: transparent; -fx-text-fill: #64748B;"/>
-            <Button fx:id="btnDevices" text="💻  Devices" maxWidth="1.1797693134862315E308" alignment="BASELINE_LEFT" style="-fx-background-color: transparent; -fx-text-fill: #64748B;"/>
-            <Button fx:id="btnLogs" text="🔄  Ingress-Egress Logs" maxWidth="1.1797693134862315E308" alignment="BASELINE_LEFT" style="-fx-background-color: transparent; -fx-text-fill: #64748B;"/>
-            <Button fx:id="btnActivity" text="📑  Recent Activity" maxWidth="1.1797693134862315E308" alignment="BASELINE_LEFT" style="-fx-background-color: transparent; -fx-text-fill: #64748B;"/>
-            <Button fx:id="btnReports" text="📄  Reports" maxWidth="1.1797693134862315E308" alignment="BASELINE_LEFT" style="-fx-background-color: transparent; -fx-text-fill: #64748B;"/>
-            <Button fx:id="btnSettings" text="⚙️  Settings" maxWidth="1.1797693134862315E308" alignment="BASELINE_LEFT" style="-fx-background-color: transparent; -fx-text-fill: #64748B;"/>
-            <Region VBox.vgrow="ALWAYS"/>
-            <Button fx:id="btnLogout" text="🚪  Logout" maxWidth="1.1797693134862315E308" alignment="BASELINE_LEFT" style="-fx-background-color: transparent; -fx-text-fill: #EF4444;"/>
-        </VBox>
-    </left>
-    <top>
-        <HBox alignment="CENTER_RIGHT" prefHeight="60.0" spacing="15.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #E2E8F0; -fx-border-width: 0 0 1 0;">
-            <padding><Insets left="20" right="20"/></padding>
-            <Label fx:id="lblDate" text="Date Placeholder" style="-fx-text-fill: #64748B;"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <VBox alignment="CENTER_RIGHT">
-                <Label fx:id="lblAdminName" text="Operator" style="-fx-font-weight: bold;"/>
-                <Label fx:id="lblAdminRole" text="Role" style="-fx-font-size: 10; -fx-text-fill: #94A3B8;"/>
-            </VBox>
-        </HBox>
-    </top>
-    <center>
-        <HBox spacing="20.0">
-            <padding><Insets bottom="20" left="20" right="20" top="20"/></padding>
-            <VBox HBox.hgrow="ALWAYS" spacing="20.0">
-                <HBox spacing="15.0">
-                    <VBox prefWidth="200" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 15;">
-                        <Label text="Registered Devices" style="-fx-text-fill: #64748B;"/>
-                        <Label fx:id="lblRegisteredDevices" text="0" style="-fx-font-size: 24; -fx-font-weight: bold;"/>
-                    </VBox>
-                    <VBox prefWidth="200" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 15;">
-                        <Label text="Currently Inside" style="-fx-text-fill: #64748B;"/>
-                        <Label fx:id="lblCurrentlyInside" text="0" style="-fx-font-size: 24; -fx-font-weight: bold;"/>
-                    </VBox>
-                    <VBox prefWidth="200" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 15;">
-                        <Label text="Today's Entries" style="-fx-text-fill: #64748B;"/>
-                        <Label fx:id="lblTodayEntries" text="0" style="-fx-font-size: 24; -fx-font-weight: bold;"/>
-                    </VBox>
-                    <VBox prefWidth="200" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 15;">
-                        <Label text="Today's Exits" style="-fx-text-fill: #64748B;"/>
-                        <Label fx:id="lblTodayExits" text="0" style="-fx-font-size: 24; -fx-font-weight: bold;"/>
-                    </VBox>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.DashboardController">
+    <children>
+        <HBox alignment="CENTER_LEFT" prefHeight="70.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #E9ECEF; -fx-border-width: 0 0 1 0;">
+            <padding>
+                <Insets left="30.0" right="30.0" />
+            </padding>
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <children>
+                        <Label text="📅" textFill="#6C757D">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                        </Label>
+                        <Label text="Thursday, June 11, 2026" textFill="#495057">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                    </children>
                 </HBox>
-                <VBox VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 15;">
-                    <Label text="Today's Entry Pattern" style="-fx-font-weight: bold;"/>
-                    <LineChart fx:id="entryPatternChart" createSymbols="false" legendVisible="false">
-                        <xAxis><CategoryAxis side="BOTTOM" /></xAxis>
-                        <yAxis><NumberAxis side="LEFT" /></yAxis>
-                    </LineChart>
-                </VBox>
-            </VBox>
-            <VBox prefWidth="300.0" spacing="20.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 15;">
-                <Label text="Device Summary" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
-                <VBox spacing="5.0">
-                    <HBox><Label text="Laptops Inside"/><Region HBox.hgrow="ALWAYS"/><Label fx:id="lblLaptopsCount" text="0"/></HBox>
-                    <ProgressBar fx:id="progressLaptops" progress="0.0" maxWidth="1.1797693134862315E308"/>
-                </VBox>
-                <VBox spacing="5.0">
-                    <HBox><Label text="Tablets Inside"/><Region HBox.hgrow="ALWAYS"/><Label fx:id="lblTabletsCount" text="0"/></HBox>
-                    <ProgressBar fx:id="progressTablets" progress="0.0" maxWidth="1.1797693134862315E308"/>
-                </VBox>
-                <VBox spacing="5.0">
-                    <HBox><Label text="Others Inside"/><Region HBox.hgrow="ALWAYS"/><Label fx:id="lblOthersCount" text="0"/></HBox>
-                    <ProgressBar fx:id="progressOthers" progress="0.0" maxWidth="1.1797693134862315E308"/>
-                </VBox>
-            </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <HBox alignment="CENTER" spacing="20.0">
+                    <children>
+                        <Button mnemonicParsing="false" style="-fx-background-color: transparent; -fx-cursor: hand;" text="🔔" textFill="#6C757D">
+                            <font>
+                                <Font size="16.0" />
+                            </font>
+                        </Button>
+                        <HBox alignment="CENTER" spacing="10.0">
+                            <children>
+                                <VBox alignment="CENTER_RIGHT">
+                                    <children>
+                                        <Label text="Administrator" textFill="#212529">
+                                            <font>
+                                                <Font name="System Bold" size="13.0" />
+                                            </font>
+                                        </Label>
+                                        <StackPane style="-fx-background-color: #7A0000; -fx-background-radius: 4;">
+                                            <padding>
+                                                <Insets bottom="1.0" left="6.0" right="6.0" top="1.0" />
+                                            </padding>
+                                            <children>
+                                                <Label style="-fx-text-fill: #FFFFFF;" text="Admin">
+                                                    <font>
+                                                        <Font name="System Bold" size="10.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </StackPane>
+                                    </children>
+                                </VBox>
+                                <StackPane maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" style="-fx-background-color: #7A0000; -fx-background-radius: 20;">
+                                    <children>
+                                        <Label style="-fx-text-fill: #FFFFFF;" text="A">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </StackPane>
+                            </children>
+                        </HBox>
+                    </children>
+                </HBox>
+            </children>
         </HBox>
-    </center>
-</BorderPane>
+
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #F8F9FA;" VBox.vgrow="ALWAYS">
+            <content>
+                <VBox spacing="25.0">
+                    <padding>
+                        <Insets bottom="40.0" left="40.0" right="40.0" top="30.0" />
+                    </padding>
+                    <children>
+                        <VBox spacing="4.0">
+                            <children>
+                                <Label text="Dashboard" textFill="#111111">
+                                    <font>
+                                        <Font name="System Bold" size="24.0" />
+                                    </font>
+                                </Label>
+                                <Label text="Welcome back, Administrator" textFill="#6C757D">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </VBox>
+
+                        <HBox alignment="CENTER_LEFT" prefHeight="65.0" style="-fx-background-color: #FFF9E6; -fx-background-radius: 12; -fx-border-color: #FFEBAA; -fx-border-radius: 12;">
+                            <padding>
+                                <Insets left="20.0" right="20.0" />
+                            </padding>
+                            <children>
+                                <StackPane maxHeight="36.0" maxWidth="36.0" minHeight="36.0" minWidth="36.0" style="-fx-background-color: #F59E0B; -fx-background-radius: 18;">
+                                    <children>
+                                        <Label style="-fx-text-fill: #FFFFFF;" text="🔔">
+                                            <font>
+                                                <Font size="14.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </StackPane>
+                                <VBox alignment="CENTER_LEFT" spacing="2.0">
+                                    <HBox.margin>
+                                        <Insets left="15.0" />
+                                    </HBox.margin>
+                                    <children>
+                                        <Label text="Pending Profile Update Requests" textFill="#1F2937">
+                                            <font>
+                                                <Font name="System Bold" size="14.0" />
+                                            </font>
+                                        </Label>
+                                        <Label text="You have 3 pending student profile update requests" textFill="#4B5563">
+                                            <font>
+                                                <Font size="13.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Button mnemonicParsing="false" onAction="#handleReviewRequests" prefHeight="34.0" prefWidth="105.0" style="-fx-background-color: #F59E0B; -fx-background-radius: 8; -fx-cursor: hand;" text="Review Now" textFill="#1F2937">
+                                    <font>
+                                        <Font name="System Bold" size="13.0" />
+                                    </font>
+                                </Button>
+                                <Button mnemonicParsing="false" style="-fx-background-color: transparent; -fx-cursor: hand;" text="✕" textFill="#9CA3AF">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                    <HBox.margin>
+                                        <Insets left="15.0" />
+                                    </HBox.margin>
+                                </Button>
+                            </children>
+                        </HBox>
+
+                        <TextField fx:id="searchField" onAction="#handleSearch" prefHeight="48.0" promptText="Search students, devices, or logs..." style="-fx-background-color: #FFFFFF; -fx-border-color: #E5E7EB; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 16 0 16; -fx-text-fill: #1F2937;">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                        </TextField>
+
+                        <HBox spacing="16.0">
+                            <children>
+                                <VBox prefHeight="120.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-radius: 12;" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="16.0" left="20.0" right="20.0" top="16.0" />
+                                    </padding>
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT">
+                                            <children>
+                                                <StackPane maxHeight="36.0" maxWidth="36.0" minHeight="36.0" minWidth="36.0" style="-fx-background-color: #7A0000; -fx-background-radius: 8;">
+                                                    <children>
+                                                        <Label style="-fx-text-fill: #FFFFFF;" text="👥" />
+                                                    </children>
+                                                </StackPane>
+                                                <Region HBox.hgrow="ALWAYS" />
+                                                <Label text="+12%" textFill="#10B981">
+                                                    <font>
+                                                        <Font name="System Bold" size="12.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+                                        <Region VBox.vgrow="ALWAYS" />
+                                        <Label text="1,247" textFill="#111111">
+                                            <font>
+                                                <Font name="System Bold" size="24.0" />
+                                            </font>
+                                        </Label>
+                                        <Label text="Total Students" textFill="#6C757D">
+                                            <font>
+                                                <Font size="13.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox prefHeight="120.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-radius: 12;" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="16.0" left="20.0" right="20.0" top="16.0" />
+                                    </padding>
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT">
+                                            <children>
+                                                <StackPane maxHeight="36.0" maxWidth="36.0" minHeight="36.0" minWidth="36.0" style="-fx-background-color: #D97706; -fx-background-radius: 8;">
+                                                    <children>
+                                                        <Label style="-fx-text-fill: #FFFFFF;" text="💻" />
+                                                    </children>
+                                                </StackPane>
+                                                <Region HBox.hgrow="ALWAYS" />
+                                                <Label text="+8%" textFill="#10B981">
+                                                    <font>
+                                                        <Font name="System Bold" size="12.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+                                        <Region VBox.vgrow="ALWAYS" />
+                                        <Label text="2,156" textFill="#111111">
+                                            <font>
+                                                <Font name="System Bold" size="24.0" />
+                                            </font>
+                                        </Label>
+                                        <Label text="Total Devices" textFill="#6C757D">
+                                            <font>
+                                                <Font size="13.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox prefHeight="120.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-radius: 12;" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="16.0" left="20.0" right="20.0" top="16.0" />
+                                    </padding>
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT">
+                                            <children>
+                                                <StackPane maxHeight="36.0" maxWidth="36.0" minHeight="36.0" minWidth="36.0" style="-fx-background-color: #059669; -fx-background-radius: 8;">
+                                                    <children>
+                                                        <Label style="-fx-text-fill: #FFFFFF;" text="➔" />
+                                                    </children>
+                                                </StackPane>
+                                                <Region HBox.hgrow="ALWAYS" />
+                                                <Label text="0%" textFill="#6C757D">
+                                                    <font>
+                                                        <Font name="System Bold" size="12.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+                                        <Region VBox.vgrow="ALWAYS" />
+                                        <Label text="892" textFill="#111111">
+                                            <font>
+                                                <Font name="System Bold" size="24.0" />
+                                            </font>
+                                        </Label>
+                                        <Label text="Devices Inside" textFill="#6C757D">
+                                            <font>
+                                                <Font size="13.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox prefHeight="120.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-radius: 12;" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="16.0" left="20.0" right="20.0" top="16.0" />
+                                    </padding>
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT">
+                                            <children>
+                                                <StackPane maxHeight="36.0" maxWidth="36.0" minHeight="36.0" minWidth="36.0" style="-fx-background-color: #2563EB; -fx-background-radius: 8;">
+                                                    <children>
+                                                        <Label style="-fx-text-fill: #FFFFFF;" text="📈" />
+                                                    </children>
+                                                </StackPane>
+                                                <Region HBox.hgrow="ALWAYS" />
+                                                <Label text="+15%" textFill="#10B981">
+                                                    <font>
+                                                        <Font name="System Bold" size="12.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+                                        <Region VBox.vgrow="ALWAYS" />
+                                        <Label text="324" textFill="#111111">
+                                            <font>
+                                                <Font name="System Bold" size="24.0" />
+                                            </font>
+                                        </Label>
+                                        <Label text="Today's Entries" textFill="#6C757D">
+                                            <font>
+                                                <Font size="13.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox prefHeight="120.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-radius: 12;" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="16.0" left="20.0" right="20.0" top="16.0" />
+                                    </padding>
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT">
+                                            <children>
+                                                <StackPane maxHeight="36.0" maxWidth="36.0" minHeight="36.0" minWidth="36.0" style="-fx-background-color: #EA580C; -fx-background-radius: 8;">
+                                                    <children>
+                                                        <Label style="-fx-text-fill: #FFFFFF;" text="⬅" />
+                                                    </children>
+                                                </StackPane>
+                                                <Region HBox.hgrow="ALWAYS" />
+                                                <Label text="+10%" textFill="#10B981">
+                                                    <font>
+                                                        <Font name="System Bold" size="12.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </HBox>
+                                        <Region VBox.vgrow="ALWAYS" />
+                                        <Label text="289" textFill="#111111">
+                                            <font>
+                                                <Font name="System Bold" size="24.0" />
+                                            </font>
+                                        </Label>
+                                        <Label text="Today's Exits" textFill="#6C757D">
+                                            <font>
+                                                <Font size="13.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="20.0">
+                            <children>
+                                <VBox style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-radius: 12;" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
+                                    </padding>
+                                    <children>
+                                        <Label text="Today's Entry Pattern" textFill="#111111">
+                                            <font>
+                                                <Font name="System Bold" size="16.0" />
+                                            </font>
+                                        </Label>
+                                        <BarChart fx:id="entryPatternChart" horizontalGridLinesVisible="false" legendVisible="false" prefHeight="320.0" style="-fx-bar-fill: #7A0000;" verticalGridLinesVisible="false">
+                                            <xAxis>
+                                                <CategoryAxis side="BOTTOM" />
+                                            </xAxis>
+                                            <yAxis>
+                                                <NumberAxis side="LEFT" />
+                                            </yAxis>
+                                            <VBox.margin>
+                                                <Insets top="15.0" />
+                                            </VBox.margin>
+                                        </BarChart>
+                                    </children>
+                                </VBox>
+
+                                <VBox prefWidth="360.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-radius: 12;">
+                                    <padding>
+                                        <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
+                                    </padding>
+                                    <children>
+                                        <Label text="Device Breakdown" textFill="#111111">
+                                            <font>
+                                                <Font name="System Bold" size="16.0" />
+                                            </font>
+                                        </Label>
+                                        <VBox spacing="16.0">
+                                            <VBox.margin>
+                                                <Insets top="25.0" />
+                                            </VBox.margin>
+                                            <children>
+                                                <VBox spacing="6.0">
+                                                    <children>
+                                                        <HBox alignment="CENTER_LEFT">
+                                                            <children>
+                                                                <Label text="Laptops" textFill="#495057">
+                                                                    <font>
+                                                                        <Font size="13.0" />
+                                                                    </font>
+                                                                </Label>
+                                                                <Region HBox.hgrow="ALWAYS" />
+                                                                <Label text="1245" textFill="#212529">
+                                                                    <font>
+                                                                        <Font name="System Bold" size="13.0" />
+                                                                    </font>
+                                                                </Label>
+                                                            </children>
+                                                        </HBox>
+                                                        <ProgressBar maxWidth="1.7976931348623157E308" prefHeight="8.0" progress="0.58" style="-fx-accent: #7A0000; -fx-control-inner-background: #F1F3F5;" />
+                                                        <Label text="58% of total" textFill="#868E96">
+                                                            <font>
+                                                                <Font size="11.0" />
+                                                            </font>
+                                                        </Label>
+                                                    </children>
+                                                </VBox>
+                                                <VBox spacing="6.0">
+                                                    <children>
+                                                        <HBox alignment="CENTER_LEFT">
+                                                            <children>
+                                                                <Label text="Tablets" textFill="#495057">
+                                                                    <font>
+                                                                        <Font size="13.0" />
+                                                                    </font>
+                                                                </Label>
+                                                                <Region HBox.hgrow="ALWAYS" />
+                                                                <Label text="687" textFill="#212529">
+                                                                    <font>
+                                                                        <Font name="System Bold" size="13.0" />
+                                                                    </font>
+                                                                </Label>
+                                                            </children>
+                                                        </HBox>
+                                                        <ProgressBar maxWidth="1.7976931348623157E308" prefHeight="8.0" progress="0.32" style="-fx-accent: #D97706; -fx-control-inner-background: #F1F3F5;" />
+                                                        <Label text="32% of total" textFill="#868E96">
+                                                            <font>
+                                                                <Font size="11.0" />
+                                                            </font>
+                                                        </Label>
+                                                    </children>
+                                                </VBox>
+                                                <VBox spacing="6.0">
+                                                    <children>
+                                                        <HBox alignment="CENTER_LEFT">
+                                                            <children>
+                                                                <Label text="Others" textFill="#495057">
+                                                                    <font>
+                                                                        <Font size="13.0" />
+                                                                    </font>
+                                                                </Label>
+                                                                <Region HBox.hgrow="ALWAYS" />
+                                                                <Label text="224" textFill="#212529">
+                                                                    <font>
+                                                                        <Font name="System Bold" size="13.0" />
+                                                                    </font>
+                                                                </Label>
+                                                            </children>
+                                                        </HBox>
+                                                        <ProgressBar maxWidth="1.7976931348623157E308" prefHeight="8.0" progress="0.10" style="-fx-accent: #CED4DA; -fx-control-inner-background: #F1F3F5;" />
+                                                        <Label text="10% of total" textFill="#868E96">
+                                                            <font>
+                                                                <Font size="11.0" />
+                                                            </font>
+                                                        </Label>
+                                                    </children>
+                                                </VBox>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </children>
+</VBox>
