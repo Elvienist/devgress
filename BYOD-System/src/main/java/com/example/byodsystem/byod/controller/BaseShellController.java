@@ -1,0 +1,68 @@
+package com.example.byodsystem.byod.controller;
+
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+import java.io.IOException;
+
+public class BaseShellController {
+
+    @FXML
+    private BorderPane mainContainer;
+
+    @FXML
+    private StackPane contentArea;
+
+    @FXML
+    public void initialize() {
+        handleNavigateToDashboardContent();
+    }
+
+    private void changeSubView(String fxmlPath) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent view = loader.load();
+
+            if (contentArea != null) {
+                contentArea.getChildren().clear();
+                contentArea.getChildren().add(view);
+            } else {
+                System.err.println("Error: contentArea StackPane is null. Check fx:id in BaseShell.fxml");
+            }
+        } catch (IOException e) {
+            System.err.println("Fatal: Could not transition sub-view panel: " + fxmlPath);
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void handleNavigateToDashboardContent() {
+        changeSubView("/com/example/byodsystem/byod/fxml/dashboard.fxml");
+    }
+
+    @FXML
+    public void handleNavigateToChangePassword() {
+        changeSubView("/com/example/byodsystem/byod/fxml/changepassword.fxml");
+    }
+
+    @FXML
+    public void handleNavigateToProfileRequests() {
+        changeSubView("/com/example/byodsystem/byod/fxml/profilerequests.fxml");
+    }
+
+    @FXML
+    public void handleLogout() {
+        try {
+            Parent loginRoot = FXMLLoader.load(getClass().getResource("/com/example/byodsystem/byod/fxml/login.fxml"));
+            Stage stage = (Stage) mainContainer.getScene().getWindow();
+            stage.setScene(new Scene(loginRoot));
+        } catch (IOException e) {
+            System.err.println("Fatal: Could not drop navigation context shell wrapper.");
+            e.printStackTrace();
+        }
+    }
+}
