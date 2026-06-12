@@ -132,7 +132,7 @@ public class LoginController {
 
     private void navigateToDashboard() {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/com/example/byodsystem/byod/fxml/dashboard.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("/com/example/byodsystem/byod/fxml/base.fxml"));
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(new Scene(root));
         } catch (Exception e) {
