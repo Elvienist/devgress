@@ -1,84 +1,212 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.devgress.controllers.LoginController" styleClass="login-container">
-    <center>
-        <VBox alignment="CENTER" spacing="20" fx:id="rootPane">
-
-            <!-- Logo + Brand -->
-            <VBox alignment="CENTER" spacing="12">
-                <StackPane styleClass="login-logo">
-                    <Label text="&#128737;" style="-fx-font-size: 32px;" />
-                </StackPane>
-                <Label styleClass="login-title" text="Devgress" />
-                <Label styleClass="login-subtitle" text="Campus Device Monitoring System" />
+<BorderPane style="-fx-background-color: #F8F9FA;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.LoginController">
+   <center>
+      <VBox alignment="CENTER" spacing="24.0" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+         </padding>
+         <children>
+            <VBox alignment="CENTER" spacing="12.0">
+               <children>
+                  <StackPane maxHeight="64.0" maxWidth="64.0" minHeight="64.0" minWidth="64.0" style="-fx-background-color: #7A0000; -fx-background-radius: 16;">
+                     <children>
+                        <Label text="🛡" textFill="WHITE">
+                           <font>
+                              <Font size="28.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </StackPane>
+                  <Label text="Devgress" textFill="#111111">
+                     <font>
+                        <Font name="System Bold" size="26.0" />
+                     </font>
+                  </Label>
+                  <Label text="Campus Device Monitoring System" textFill="#6C757D">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </Label>
+               </children>
             </VBox>
 
-            <!-- Login Card -->
-            <VBox styleClass="login-card" spacing="20" alignment="CENTER">
+            <VBox maxWidth="440.0" prefWidth="440.0" spacing="20.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5E7EB; -fx-border-radius: 16;">
+               <padding>
+                  <Insets bottom="32.0" left="32.0" right="32.0" top="32.0" />
+               </padding>
+               <effect>
+                  <DropShadow blurType="GAUSSIAN" height="30.0" radius="14.5" width="30.0">
+                     <color>
+                        <Color red="0.0" green="0.0" blue="0.0" opacity="0.03" />
+                     </color>
+                  </DropShadow>
+               </effect>
+               <children>
+                  <HBox fx:id="dbStatusBanner" alignment="CENTER_LEFT" prefHeight="40.0" spacing="10.0" style="-fx-background-color: #EBF7EE; -fx-background-radius: 8; -fx-border-color: #D3ECD9; -fx-border-radius: 8;">
+                     <padding>
+                        <Insets left="14.0" right="14.0" />
+                     </padding>
+                     <children>
+                        <Label text="✓" textFill="#10B981">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="dbStatusLabel" text="Database Connected" textFill="#059669">
+                           <font>
+                              <Font name="System Bold" size="12.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </HBox>
 
-                <!-- Database Connected Banner -->
-                <HBox styleClass="db-status-bar" alignment="CENTER_LEFT" spacing="8" maxWidth="Infinity">
-                    <Label text="&#9989;" />
-                    <Label styleClass="db-status-text" text="Database Connected" />
-                </HBox>
+                  <VBox spacing="16.0">
+                     <children>
+                        <VBox spacing="6.0">
+                           <children>
+                              <Label text="Username" textFill="#495057">
+                                 <font>
+                                    <Font size="13.0" />
+                                 </font>
+                              </Label>
+                              <TextField fx:id="usernameField" prefHeight="46.0" promptText="Enter your username" style="-fx-background-color: #FFFFFF; -fx-border-color: #E5E7EB; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 14 0 14; -fx-text-fill: #1F2937;">
+                                 <font>
+                                    <Font size="13.0" />
+                                 </font>
+                              </TextField>
+                           </children>
+                        </VBox>
 
-                <!-- Username -->
-                <VBox spacing="6" maxWidth="Infinity">
-                    <Label text="Username" style="-fx-font-weight: bold; -fx-font-size: 13px;" />
-                    <TextField fx:id="usernameField" promptText="Enter your username" maxWidth="Infinity" />
-                </VBox>
+                        <VBox spacing="6.0">
+                           <children>
+                              <Label text="Password" textFill="#495057">
+                                 <font>
+                                    <Font size="13.0" />
+                                 </font>
+                              </Label>
+                              <StackPane alignment="CENTER_RIGHT">
+                                 <children>
+                                    <TextField fx:id="passwordTextField" prefHeight="46.0" promptText="Enter your password" style="-fx-background-color: #FFFFFF; -fx-border-color: #E5E7EB; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 45 0 14; -fx-text-fill: #1F2937;" visible="false">
+                                       <font>
+                                          <Font size="13.0" />
+                                       </font>
+                                    </TextField>
+                                    <PasswordField fx:id="passwordField" prefHeight="46.0" promptText="Enter your password" style="-fx-background-color: #FFFFFF; -fx-border-color: #E5E7EB; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 45 0 14; -fx-text-fill: #1F2937;">
+                                       <font>
+                                          <Font size="13.0" />
+                                        </font>
+                                    </PasswordField>
+                                    <Button fx:id="togglePasswordBtn" mnemonicParsing="false" onAction="#togglePasswordVisibility" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 0 16 0 0;" text="🙈" textFill="#9CA3AF">
+                                       <font>
+                                          <Font size="16.0" />
+                                       </font>
+                                    </Button>
+                                 </children>
+                              </StackPane>
+                           </children>
+                        </VBox>
+                     </children>
+                  </VBox>
 
-                <!-- Password -->
-                <VBox spacing="6" maxWidth="Infinity">
-                    <Label text="Password" style="-fx-font-weight: bold; -fx-font-size: 13px;" />
-                    <PasswordField fx:id="passwordField" promptText="Enter your password" maxWidth="Infinity" />
-                </VBox>
+                  <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleLogin" prefHeight="46.0" style="-fx-background-color: #7A0000; -fx-background-radius: 10; -fx-cursor: hand;" text="Login" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="8.0" />
+                     </VBox.margin>
+                  </Button>
 
-                <!-- Login Button -->
-                <Button text="Login" styleClass="button-primary" onAction="#handleLogin" maxWidth="Infinity" />
-
-                <Label fx:id="statusLabel" style="-fx-text-fill: #e74c3c;" />
-
-                <Separator />
-
-                <!-- Demo Credentials -->
-                <VBox spacing="8" maxWidth="Infinity">
-                    <Label text="Demo Credentials" styleClass="text-muted" style="-fx-font-size: 12px;" alignment="CENTER" maxWidth="Infinity" />
-
-                    <HBox styleClass="demo-creds-row" alignment="CENTER_LEFT" maxWidth="Infinity">
-                        <Label styleClass="demo-creds-label" text="Admin:" />
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Label styleClass="demo-creds-value" text="admin / admin" />
-                    </HBox>
-                    <HBox styleClass="demo-creds-row" alignment="CENTER_LEFT" maxWidth="Infinity">
-                        <Label styleClass="demo-creds-label" text="Officer:" />
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Label styleClass="demo-creds-value" text="officer / officer" />
-                    </HBox>
-                    <HBox styleClass="demo-creds-row" alignment="CENTER_LEFT" maxWidth="Infinity">
-                        <Label styleClass="demo-creds-label" text="Student:" />
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Label styleClass="demo-creds-value" text="student / student" />
-                    </HBox>
-                </VBox>
-
-                <!-- Hidden quick-fill buttons (kept for demo functionality) -->
-                <HBox spacing="10" alignment="CENTER">
-                    <Button text="Fill Admin" onAction="#fillAdmin" styleClass="button-outline" />
-                    <Button text="Fill Officer" onAction="#fillOfficer" styleClass="button-outline" />
-                    <Button text="Fill Student" onAction="#fillStudent" styleClass="button-outline" />
-                </HBox>
+                  <VBox alignment="CENTER" spacing="10.0" style="-fx-border-color: #F3F4F6; -fx-border-width: 1 0 0 0;">
+                     <padding>
+                        <Insets top="16.0" />
+                     </padding>
+                     <children>
+                        <Label text="Demo Credentials" textFill="#9CA3AF">
+                           <font>
+                              <Font size="12.0" />
+                           </font>
+                        </Label>
+                        <VBox spacing="8.0">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" onMouseClicked="#fillAdmin" prefHeight="36.0" style="-fx-background-color: #F8F9FA; -fx-background-radius: 8; -fx-padding: 0 12 0 12; -fx-cursor: hand;">
+                                 <children>
+                                    <Label text="Admin:" textFill="#6C757D">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Label>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label text="admin / admin" textFill="#212529">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" onMouseClicked="#fillOfficer" prefHeight="36.0" style="-fx-background-color: #F8F9FA; -fx-background-radius: 8; -fx-padding: 0 12 0 12; -fx-cursor: hand;">
+                                 <children>
+                                    <Label text="Officer:" textFill="#6C757D">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Label>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label text="officer / officer" textFill="#212529">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER_LEFT" onMouseClicked="#fillStudent" prefHeight="36.0" style="-fx-background-color: #F8F9FA; -fx-background-radius: 8; -fx-padding: 0 12 0 12; -fx-cursor: hand;">
+                                 <children>
+                                    <Label text="Student:" textFill="#6C757D">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Label>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label text="student / student" textFill="#212529">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </VBox>
+               </children>
             </VBox>
-
-            <Label text="© 2026 Campus Device Monitoring System" styleClass="text-muted" style="-fx-font-size: 11px;" />
-
-            <VBox.margin>
-                <Insets top="60" bottom="40" />
-            </VBox.margin>
-        </VBox>
-    </center>
+         </children>
+      </VBox>
+   </center>
+   <bottom>
+      <HBox alignment="CENTER" prefHeight="60.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label text="© 2026 Campus Device Monitoring System" textFill="#9CA3AF">
+               <font>
+                  <Font size="12.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+   </bottom>
 </BorderPane>
