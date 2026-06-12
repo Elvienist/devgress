@@ -29,8 +29,7 @@ public class DBConnection {
             conn = DriverManager.getConnection(url, user, password);
 
         } catch (Exception e) {
-            System.out.println("Database Connection Failed");
-            e.printStackTrace();
+            System.err.println("[WARNING] Database is not connected: " + e.getMessage());
         }
         return conn;
     }
