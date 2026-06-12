@@ -2,36 +2,83 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0"
-            xmlns="http://javafx.com/javafx/17"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.example.byodsystem.byod.controller.LoginController">
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.devgress.controllers.LoginController" styleClass="login-container">
+    <center>
+        <VBox alignment="CENTER" spacing="20" fx:id="rootPane">
 
-    <children>
+            <!-- Logo + Brand -->
+            <VBox alignment="CENTER" spacing="12">
+                <StackPane styleClass="login-logo">
+                    <Label text="&#128737;" style="-fx-font-size: 32px;" />
+                </StackPane>
+                <Label styleClass="login-title" text="Devgress" />
+                <Label styleClass="login-subtitle" text="Campus Device Monitoring System" />
+            </VBox>
 
-        <VBox alignment="CENTER"
-              spacing="15"
-              layoutX="180"
-              layoutY="100">
+            <!-- Login Card -->
+            <VBox styleClass="login-card" spacing="20" alignment="CENTER">
 
-            <Label text="BYOD SYSTEM"
-                   style="-fx-font-size: 24px;"/>
+                <!-- Database Connected Banner -->
+                <HBox styleClass="db-status-bar" alignment="CENTER_LEFT" spacing="8" maxWidth="Infinity">
+                    <Label text="&#9989;" />
+                    <Label styleClass="db-status-text" text="Database Connected" />
+                </HBox>
 
-            <TextField fx:id="usernameField"
-                       promptText="Username"
-                       prefWidth="250"/>
+                <!-- Username -->
+                <VBox spacing="6" maxWidth="Infinity">
+                    <Label text="Username" style="-fx-font-weight: bold; -fx-font-size: 13px;" />
+                    <TextField fx:id="usernameField" promptText="Enter your username" maxWidth="Infinity" />
+                </VBox>
 
-            <PasswordField fx:id="passwordField"
-                           promptText="Password"
-                           prefWidth="250"/>
+                <!-- Password -->
+                <VBox spacing="6" maxWidth="Infinity">
+                    <Label text="Password" style="-fx-font-weight: bold; -fx-font-size: 13px;" />
+                    <PasswordField fx:id="passwordField" promptText="Enter your password" maxWidth="Infinity" />
+                </VBox>
 
-            <Button text="LOGIN"
-                    prefWidth="250"
-                    onAction="#login"/>
+                <!-- Login Button -->
+                <Button text="Login" styleClass="button-primary" onAction="#handleLogin" maxWidth="Infinity" />
 
+                <Label fx:id="statusLabel" style="-fx-text-fill: #e74c3c;" />
+
+                <Separator />
+
+                <!-- Demo Credentials -->
+                <VBox spacing="8" maxWidth="Infinity">
+                    <Label text="Demo Credentials" styleClass="text-muted" style="-fx-font-size: 12px;" alignment="CENTER" maxWidth="Infinity" />
+
+                    <HBox styleClass="demo-creds-row" alignment="CENTER_LEFT" maxWidth="Infinity">
+                        <Label styleClass="demo-creds-label" text="Admin:" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label styleClass="demo-creds-value" text="admin / admin" />
+                    </HBox>
+                    <HBox styleClass="demo-creds-row" alignment="CENTER_LEFT" maxWidth="Infinity">
+                        <Label styleClass="demo-creds-label" text="Officer:" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label styleClass="demo-creds-value" text="officer / officer" />
+                    </HBox>
+                    <HBox styleClass="demo-creds-row" alignment="CENTER_LEFT" maxWidth="Infinity">
+                        <Label styleClass="demo-creds-label" text="Student:" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label styleClass="demo-creds-value" text="student / student" />
+                    </HBox>
+                </VBox>
+
+                <!-- Hidden quick-fill buttons (kept for demo functionality) -->
+                <HBox spacing="10" alignment="CENTER">
+                    <Button text="Fill Admin" onAction="#fillAdmin" styleClass="button-outline" />
+                    <Button text="Fill Officer" onAction="#fillOfficer" styleClass="button-outline" />
+                    <Button text="Fill Student" onAction="#fillStudent" styleClass="button-outline" />
+                </HBox>
+            </VBox>
+
+            <Label text="© 2026 Campus Device Monitoring System" styleClass="text-muted" style="-fx-font-size: 11px;" />
+
+            <VBox.margin>
+                <Insets top="60" bottom="40" />
+            </VBox.margin>
         </VBox>
-
-    </children>
-
-</AnchorPane>
+    </center>
+</BorderPane>
