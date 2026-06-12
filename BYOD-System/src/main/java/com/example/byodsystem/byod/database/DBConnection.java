@@ -1,23 +1,35 @@
 package com.example.byodsystem.byod.database;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.Properties;
 
 public class DBConnection {
-
-    private static final String URL = "jdbc:postgresql://dpg-d82knujtqb8s73ehb140-a.singapore-postgres.render.com:5432/byod_system_database";
-    private static final String USER = "byod_system_database_user";
-    private static final String PASSWORD = "8WqB9gzpV743jgjcBZlWmETneYCUPh0P";
 
     public static Connection connect() {
         Connection conn = null;
         try {
+            Properties props = new Properties();
+            InputStream input = DBConnection.class
+                    .getClassLoader()
+                    .getResourceAsStream("config.properties");
+
+            if (input == null) {
+                System.out.println("config.properties not found!");
+                return null;
+            }
+
+            props.load(input);
+            String url = props.getProperty("db.url");
+            String user = props.getProperty("db.user");
+            String password = props.getProperty("db.password");
+
             Class.forName("org.postgresql.Driver");
-            conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            //System.out.println("Database Connected Successfully");
+            conn = DriverManager.getConnection(url, user, password);
+
         } catch (Exception e) {
-            System.out.println("Database Connection Failed");
-            e.printStackTrace();
+            System.err.println("[WARNING] Database is not connected: " + e.getMessage());
         }
         return conn;
     }
