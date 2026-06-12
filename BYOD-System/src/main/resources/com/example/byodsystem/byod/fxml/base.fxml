@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane fx:id="mainContainer" prefHeight="900.0" prefWidth="1440.0" style="-fx-background-color: #F8F9FA;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.BaseController">
+    <left>
+        <VBox prefWidth="260.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #E9ECEF; -fx-border-width: 0 1 0 0;" BorderPane.alignment="CENTER">
+            <children>
+                <HBox alignment="CENTER_LEFT" prefHeight="70.0" spacing="12.0">
+                    <padding>
+                        <Insets left="24.0" right="24.0" />
+                    </padding>
+                    <children>
+                        <StackPane maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" style="-fx-background-color: #7A0000; -fx-background-radius: 10;">
+                            <children>
+                                <Label style="-fx-text-fill: #FFFFFF;" text="🛡">
+                                    <font>
+                                        <Font size="20.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </StackPane>
+                        <VBox alignment="CENTER_LEFT">
+                            <children>
+                                <Label text="Devgress" textFill="#111111">
+                                    <font>
+                                        <Font name="System Bold" size="16.0" />
+                                    </font>
+                                </Label>
+                                <Label text="v2.0.0" textFill="#6C757D">
+                                    <font>
+                                        <Font size="11.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button mnemonicParsing="false" style="-fx-background-color: transparent; -fx-cursor: hand;" text="‹" textFill="#6C757D">
+                            <font>
+                                <Font name="System Bold" size="18.0" />
+                            </font>
+                        </Button>
+                    </children>
+                </HBox>
+
+                <VBox spacing="4.0" VBox.vgrow="ALWAYS">
+                    <padding>
+                        <Insets left="16.0" right="16.0" top="20.0" />
+                    </padding>
+                    <children>
+                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToDashboardContent" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Dashboard" textFill="#495057">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Students &amp; Devices" textFill="#495057">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Gate Screen" textFill="#495057">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Activity Log" textFill="#495057">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="User Management" textFill="#495057">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToProfileRequests" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Profile Requests" textFill="#495057">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Reports" textFill="#495057">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Audit Log" textFill="#495057">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Settings" textFill="#495057">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                    </children>
+                </VBox>
+
+                <VBox spacing="4.0" style="-fx-border-color: #E9ECEF; -fx-border-width: 1 0 0 0;">
+                    <padding>
+                        <Insets bottom="20.0" left="16.0" right="16.0" top="15.0" />
+                    </padding>
+                    <children>
+                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToChangePassword" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Change Password" textFill="#495057">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleLogout" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Logout" textFill="#495057">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+    </left>
+    <center>
+        <StackPane fx:id="contentArea" BorderPane.alignment="CENTER" />
+    </center>
+</BorderPane>
