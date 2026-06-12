@@ -1,62 +1,70 @@
-    package com.example.byodsystem.byod.controller;
+package com.example.byodsystem.byod.controller;
 
-    import com.example.byodsystem.byod.database.DBConnection;
-    import javafx.fxml.FXML;
-    import javafx.fxml.FXMLLoader;
-    import javafx.scene.Parent;
-    import javafx.scene.Scene;
-    import javafx.scene.control.Alert;
-    import javafx.scene.control.PasswordField;
-    import javafx.scene.control.TextField;
-    import javafx.stage.Stage;
+import org.mindrot.jbcrypt.BCrypt;
+import com.example.byodsystem.byod.database.DBConnection;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
-    import java.sql.Connection;
-    import java.sql.PreparedStatement;
-    import java.sql.ResultSet;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
-    import static com.example.byodsystem.byod.database.DBConnection.*;
+import static com.example.byodsystem.byod.database.DBConnection.*;
 
-    public class LoginController {
+public class LoginController {
 
-        @FXML
-        private TextField usernameField;
+    @FXML
+    private TextField usernameField;
 
-        @FXML
-        private PasswordField passwordField;
+    @FXML
+    private PasswordField passwordField;
 
-        @FXML
-        public void login() {
+    @FXML
+    public void login() {
 
-            try {
+        try {
 
-                Connection conn = connect();
+            Connection conn = connect();
 
-                String sql = "SELECT * FROM users WHERE username=? AND password=?";
+            String sql = "SELECT * FROM users WHERE username=?";
 
-                PreparedStatement pst = conn.prepareStatement(sql);
 
-                pst.setString(1, usernameField.getText());
-                pst.setString(2, passwordField.getText());
+            PreparedStatement pst = conn.prepareStatement(sql);
 
-                ResultSet rs = pst.executeQuery();
+            pst.setString(1, usernameField.getText());
 
-                if(rs.next()) {
+            ResultSet rs = pst.executeQuery();
 
-                    Parent root = FXMLLoader.load(getClass().getResource("/com/example/byodsystem/byod/dashboard.fxml"));
-
-                    Stage stage = (Stage) usernameField.getScene().getWindow();
-
-                    stage.setScene(new Scene(root));
-
-                } else {
-
+            if(rs.next()) {
+                String hashedPassword = rs.getString("password_hash");
+                if(!BCrypt.checkpw(passwordField.getText(), hashedPassword)) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setContentText("Invalid Credentials");
                     alert.show();
+                    return;
                 }
 
-            } catch (Exception e) {
-                e.printStackTrace();
+                Parent root = FXMLLoader.load(getClass().getResource("/com/example/byodsystem/byod/dashboard.fxml"));
+
+                Stage stage = (Stage) usernameField.getScene().getWindow();
+
+                stage.setScene(new Scene(root));
+
+            } else {
+
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setContentText("Invalid Credentials");
+                alert.show();
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
+}
