@@ -1,0 +1,26 @@
+# --- SECURITY ---
+# Ignore local configuration files containing database credentials
+config/config.properties
+
+# --- MAVEN BUILD TOOL ---
+# Ignore compiled code and build outputs
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# --- INTELLIJ IDEA ---
+# Ignore IDE-specific settings and files
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# --- OPERATING SYSTEMS ---
+# Ignore system-generated clutter
+.DS_Store
+Thumbs.db
