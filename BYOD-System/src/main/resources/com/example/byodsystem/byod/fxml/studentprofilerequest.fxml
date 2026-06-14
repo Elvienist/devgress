@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="900.0" prefWidth="1180.0" spacing="24.0" style="-fx-background-color: #F8F9FA;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.StudentProfileRequestController">
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+    </padding>
+
+    <StackPane fx:id="contentStackPane" VBox.vgrow="ALWAYS">
+        <VBox fx:id="registrationView" spacing="20.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-padding: 32;" visible="true">
+            <children>
+                <VBox spacing="4.0">
+                    <children>
+                        <Label text="Complete Student Registration" textFill="#111827">
+                            <font><Font name="System Bold" size="20.0" /></font>
+                        </Label>
+                        <Label text="Please link your institutional information profile to access your account dashboard details." textFill="#6B7280" />
+                    </children>
+                </VBox>
+
+                <GridPane hgap="20.0" vgap="16.0">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="150.0" prefWidth="200.0" />
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="200.0" />
+                    </columnConstraints>
+                    <children>
+                        <Label text="Student ID Number Code:" textFill="#374151" GridPane.rowIndex="0" />
+                        <TextField fx:id="regStudentCode" promptText="e.g., 2023-00123-SR-0" style="-fx-padding: 10; -fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                        <Label text="Full Name:" textFill="#374151" GridPane.rowIndex="1" />
+                        <TextField fx:id="regFullName" promptText="First Name, Middle Initials, Last Name" style="-fx-padding: 10; -fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                        <Label text="Academic Program / Course:" textFill="#374151" GridPane.rowIndex="2" />
+                        <TextField fx:id="regCourse" promptText="e.g., BS Information Technology" style="-fx-padding: 10; -fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                        <Label text="Year Level Status:" textFill="#374151" GridPane.rowIndex="3" />
+                        <ComboBox fx:id="regYearLevel" maxWidth="1.7976931348623157E308" style="-fx-padding: 6; -fx-background-color: #FFFFFF; -fx-border-color: #D1D5DB; -fx-border-radius: 6;" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="1ST YEAR" />
+                                    <String fx:value="2ND YEAR" />
+                                    <String fx:value="3RD YEAR" />
+                                    <String fx:value="4TH YEAR" />
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+
+                        <Label text="Active Contact Number:" textFill="#374151" GridPane.rowIndex="4" />
+                        <TextField fx:id="regContactNumber" promptText="e.g., 09123456789" style="-fx-padding: 10; -fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6;" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                    </children>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
+                </GridPane>
+
+                <HBox alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#handleSaveRegistration" style="-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-padding: 12 32; -fx-background-radius: 6; -fx-cursor: hand;" text="Submit Registration Data" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+
+        <VBox fx:id="updateRequestView" spacing="20.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-padding: 32;" visible="false">
+            <children>
+                <VBox spacing="4.0">
+                    <children>
+                        <Label text="Request Profile Update Modifications" textFill="#111827">
+                            <font><Font name="System Bold" size="20.0" /></font>
+                        </Label>
+                        <Label text="All updates will be dynamically stored inside profile_update_requests and require administrator clearance before activation." textFill="#6B7280" />
+                    </children>
+                </VBox>
+
+                <GridPane hgap="24.0" vgap="14.0">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="160.0" prefWidth="180.0" />
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="200.0" prefWidth="350.0" />
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="200.0" prefWidth="350.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="30.0" />
+                        <RowConstraints minHeight="45.0" />
+                        <RowConstraints minHeight="45.0" />
+                        <RowConstraints minHeight="45.0" />
+                        <RowConstraints minHeight="45.0" />
+                        <RowConstraints minHeight="100.0" />
+                    </rowConstraints>
+                    <children>
+                        <Label text="Profile Parameters Field" textFill="#4B5563" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <font><Font name="System Bold" size="13.0" /></font>
+                        </Label>
+                        <Label text="Current Registered Value" textFill="#4B5563" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <font><Font name="System Bold" size="13.0" /></font>
+                        </Label>
+                        <Label text="Requested Revision Value" textFill="#4B5563" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                            <font><Font name="System Bold" size="13.0" /></font>
+                        </Label>
+
+                        <Label text="Full Student Name:" textFill="#374151" GridPane.rowIndex="1" />
+                        <TextField fx:id="currentFullName" editable="false" style="-fx-background-color: #F3F4F6; -fx-padding: 8; -fx-text-fill: #6B7280; -fx-border-color: #E5E7EB; -fx-border-radius: 6;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <TextField fx:id="reqFullName" promptText="Leave blank if no change" style="-fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6; -fx-padding: 8;" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+
+                        <Label text="Course / Program:" textFill="#374151" GridPane.rowIndex="2" />
+                        <TextField fx:id="currentCourse" editable="false" style="-fx-background-color: #F3F4F6; -fx-padding: 8; -fx-text-fill: #6B7280; -fx-border-color: #E5E7EB; -fx-border-radius: 6;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <TextField fx:id="reqCourse" promptText="Leave blank if no change" style="-fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6; -fx-padding: 8;" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+
+                        <Label text="Year Level Status:" textFill="#374151" GridPane.rowIndex="3" />
+                        <TextField fx:id="currentYearLevel" editable="false" style="-fx-background-color: #F3F4F6; -fx-padding: 8; -fx-text-fill: #6B7280; -fx-border-color: #E5E7EB; -fx-border-radius: 6;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <ComboBox fx:id="reqYearLevel" maxWidth="1.7976931348623157E308" promptText="Select to modify" style="-fx-padding: 5; -fx-background-color: #FFFFFF; -fx-border-color: #D1D5DB; -fx-border-radius: 6;" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="1ST YEAR" />
+                                    <String fx:value="2ND YEAR" />
+                                    <String fx:value="3RD YEAR" />
+                                    <String fx:value="4TH YEAR" />
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+
+                        <Label text="Mobile Contact Number:" textFill="#374151" GridPane.rowIndex="4" />
+                        <TextField fx:id="currentContactNumber" editable="false" style="-fx-background-color: #F3F4F6; -fx-padding: 8; -fx-text-fill: #6B7280; -fx-border-color: #E5E7EB; -fx-border-radius: 6;" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        <TextField fx:id="reqContactNumber" promptText="Leave blank if no change" style="-fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6; -fx-padding: 8;" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+
+                        <Label text="Reason for Changes:" textFill="#374151" GridPane.rowIndex="5">
+                            <font><Font name="System Bold" size="14.0" /></font>
+                            <GridPane.margin><Insets top="4.0" /></GridPane.margin>
+                        </Label>
+                        <TextArea fx:id="txtReason" promptText="Provide a clear dynamic explanation for all altered fields above..." style="-fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6;" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="5" />
+                    </children>
+                </GridPane>
+
+                <HBox alignment="CENTER_RIGHT">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#handleSubmitUpdateRequest" style="-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-padding: 12 32; -fx-background-radius: 6; -fx-cursor: hand;" text="Submit Batch Changes" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </StackPane>
+</VBox>
