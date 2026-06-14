@@ -50,71 +50,84 @@
                         </Button>
                     </children>
                 </HBox>
-
                 <VBox spacing="4.0" VBox.vgrow="ALWAYS">
                     <padding>
                         <Insets left="16.0" right="16.0" top="20.0" />
                     </padding>
                     <children>
-                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToDashboardContent" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Dashboard" textFill="#495057">
+                        <Button fx:id="btnSidebarDashboard" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToDashboardContent" prefHeight="44.0" text="Dashboard">
                             <font>
                                 <Font size="13.0" />
                             </font>
                         </Button>
-                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Students &amp; Devices" textFill="#495057">
+                        <Button fx:id="btnSidebarUserManagement" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToUserManagement" prefHeight="44.0" text="User Management">
                             <font>
                                 <Font size="13.0" />
                             </font>
                         </Button>
-                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Gate Screen" textFill="#495057">
+                        <Button fx:id="btnSidebarRequests" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToRequests" prefHeight="44.0" text="Requests">
                             <font>
                                 <Font size="13.0" />
                             </font>
                         </Button>
-                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Activity Log" textFill="#495057">
+                        <Button fx:id="btnSidebarReports" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToReports" prefHeight="44.0" text="Reports">
                             <font>
                                 <Font size="13.0" />
                             </font>
                         </Button>
-                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="User Management" textFill="#495057">
+                        <Button fx:id="btnSidebarAuditLog" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToAuditLog" prefHeight="44.0" text="Audit Log">
                             <font>
                                 <Font size="13.0" />
                             </font>
                         </Button>
-                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToProfileRequests" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Profile Requests" textFill="#495057">
+                        <Button fx:id="btnSidebarSettings" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToSettings" prefHeight="44.0" text="Settings">
                             <font>
                                 <Font size="13.0" />
                             </font>
                         </Button>
-                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Reports" textFill="#495057">
+                        <Button fx:id="btnSidebarGateScreen" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToGateScreen" prefHeight="44.0" text="Gate Screen">
                             <font>
                                 <Font size="13.0" />
                             </font>
                         </Button>
-                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Audit Log" textFill="#495057">
+                        <Button fx:id="btnSidebarActivityLog" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToActivityLog" prefHeight="44.0" text="Activity Log">
                             <font>
                                 <Font size="13.0" />
                             </font>
                         </Button>
-                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Settings" textFill="#495057">
+                        <Button fx:id="btnSidebarStudentsDevices" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToStudentsDevices" prefHeight="44.0" text="Students and Devices">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                        <Button fx:id="btnSidebarProfile" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToProfile" prefHeight="44.0" text="Profile">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                        <Button fx:id="btnSidebarDeviceLog" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToDeviceLog" prefHeight="44.0" text="Device Log">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Button>
+                        <Button fx:id="btnSidebarUpdateRequest" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToUpdateRequest" prefHeight="44.0" text="Update Request">
                             <font>
                                 <Font size="13.0" />
                             </font>
                         </Button>
                     </children>
                 </VBox>
-
                 <VBox spacing="4.0" style="-fx-border-color: #E9ECEF; -fx-border-width: 1 0 0 0;">
                     <padding>
                         <Insets bottom="20.0" left="16.0" right="16.0" top="15.0" />
                     </padding>
                     <children>
-                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToChangePassword" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Change Password" textFill="#495057">
+                        <Button fx:id="btnSidebarChangePassword" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToChangePassword" prefHeight="44.0" text="Password Change">
                             <font>
                                 <Font size="13.0" />
                             </font>
                         </Button>
-                        <Button alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleLogout" prefHeight="44.0" style="-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15;" text="Logout" textFill="#495057">
+                        <Button fx:id="btnSidebarLogout" alignment="BASELINE_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleLogout" prefHeight="44.0" text="Logout">
                             <font>
                                 <Font size="13.0" />
                             </font>
@@ -125,6 +138,6 @@
         </VBox>
     </left>
     <center>
-        <StackPane fx:id="contentArea" BorderPane.alignment="CENTER" />
+        <StackPane fx:id="contentArea" style="-fx-background-color: #F8F9FA;" BorderPane.alignment="CENTER" />
     </center>
 </BorderPane>
