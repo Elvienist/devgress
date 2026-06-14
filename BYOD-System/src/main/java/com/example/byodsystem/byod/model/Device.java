@@ -6,29 +6,44 @@ public class Device {
     private String brand;
     private String model;
     private String deviceType;
-    private String ownerName;
-    private String ownerStudentId;
+    private int ownerId;
     private String status;
 
-    public Device(int deviceId, String serialNumber, String brand, String model, String deviceType, String ownerName, String ownerStudentId, String status) {
+    private String ownerName;
+
+
+    public Device(int deviceId, String serialNumber, String brand, String model, String deviceType, int ownerId, String status) {
         this.deviceId = deviceId;
         this.serialNumber = serialNumber;
         this.brand = brand;
         this.model = model;
         this.deviceType = deviceType;
-        this.ownerName = ownerName;
-        this.ownerStudentId = ownerStudentId;
+        this.ownerId = ownerId;
         this.status = status;
     }
 
+    // --- GETTERS AND SETTERS ---
     public int getDeviceId() { return deviceId; }
+    public void setDeviceId(int deviceId) { this.deviceId = deviceId; }
+
     public String getSerialNumber() { return serialNumber; }
+    public void setSerialNumber(String serialNumber) { this.serialNumber = serialNumber; }
+
     public String getBrand() { return brand; }
+    public void setBrand(String brand) { this.brand = brand; }
+
     public String getModel() { return model; }
+    public void setModel(String model) { this.model = model; }
+
     public String getDeviceType() { return deviceType; }
-    public String getOwnerName() { return ownerName; }
-    public String getOwnerStudentId() { return ownerStudentId; }
+    public void setDeviceType(String deviceType) { this.deviceType = deviceType; }
+
+    public int getOwnerId() { return ownerId; }
+    public void setOwnerId(int ownerId) { this.ownerId = ownerId; }
+
     public String getStatus() { return status; }
-    public String getDeviceInfo() { return brand + " " + model + "\n" + deviceType; }
-    public String getOwnerDetails() { return ownerName + "\n" + ownerStudentId; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getOwnerName() { return ownerName; }
+    public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
 }

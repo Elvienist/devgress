@@ -15,7 +15,7 @@ public class Main extends Application {
 
         Parent root = FXMLLoader.load(
                 Objects.requireNonNull(
-                        getClass().getResource("/com/example/byodsystem/byod/login.fxml")
+                        getClass().getResource("/com/example/byodsystem/byod/fxml/login.fxml")
                 ));
 
         Scene scene = new Scene(root);
