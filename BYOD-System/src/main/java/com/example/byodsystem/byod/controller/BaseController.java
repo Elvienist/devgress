@@ -266,7 +266,12 @@ public class BaseController {
 
             StudentProfileRequestController controller = loader.getController();
             UserSession session = UserSession.getInstance();
-            controller.initializeSession(session.getUserId(), session.isFirstLogin(), session.getStudentRefId());
+
+            int userId = session.getUserId();
+            boolean isFirstLogin = session.isFirstLogin();
+            int studentRefId = (session.getStudentRefId() != null) ? session.getStudentRefId() : 0;
+
+            controller.initializeSession(userId, isFirstLogin, studentRefId);
 
             if (contentArea != null) {
                 contentArea.getChildren().clear();

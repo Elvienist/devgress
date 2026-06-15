@@ -411,7 +411,7 @@ public class GateScreenController {
 
             lblConfirmBadge.setText("INGRESS");
             lblConfirmBadge.setStyle("-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-background-radius: 12; -fx-padding: 4 14; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-font-size: 11px;");
- 
+
             lblConfirmFor.setText("CONFIRM INGRESS FOR:");
             btnConfirmAction.setText("CONFIRM INGRESS");
             btnConfirmAction.setStyle("-fx-background-color: #7A0000; -fx-background-radius: 8; -fx-cursor: hand; -fx-text-fill: white; -fx-padding: 0 24; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;");

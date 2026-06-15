@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: #F8F9FA; -fx-background: #F8F9FA; -fx-padding: 0;" vbarPolicy="AS_NEEDED" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.StudentDeviceLogController">
+    <content>
+        <VBox style="-fx-background-color: #F8F9FA;">
+
+            <HBox alignment="CENTER_LEFT" prefHeight="64.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #EBF0F5; -fx-border-width: 0 0 1 0;">
+                <padding><Insets left="32.0" right="32.0" /></padding>
+                <Label fx:id="lblHeaderDate" style="-fx-text-fill: #6C757D; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter, sans-serif;" text="Loading..." />
+                <Region HBox.hgrow="ALWAYS" />
+                <HBox alignment="CENTER" spacing="16.0">
+                    <Label style="-fx-text-fill: #9A3412; -fx-background-color: #FFEDD5; -fx-background-radius: 20; -fx-font-size: 11px; -fx-font-weight: bold; -fx-font-family: 'Segoe UI', Inter; -fx-padding: 4 12 4 12;" text="Student View" />
+                    <HBox alignment="CENTER" spacing="10.0">
+                        <StackPane maxHeight="36.0" maxWidth="36.0" minHeight="36.0" minWidth="36.0" style="-fx-background-color: #7A0000; -fx-background-radius: 18;">
+                            <Label fx:id="lblHeaderInitial" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-font-size: 14px; -fx-font-family: 'Segoe UI', Inter;" text="S" />
+                        </StackPane>
+                        <VBox alignment="CENTER_LEFT">
+                            <Label fx:id="lblHeaderName" style="-fx-text-fill: #111111; -fx-font-weight: bold; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter;" text="Kirby Torres" />
+                            <Label style="-fx-text-fill: #6C757D; -fx-font-size: 11px; -fx-font-family: 'Segoe UI', Inter;" text="Student" />
+                        </VBox>
+                    </HBox>
+                </HBox>
+            </HBox>
+
+            <VBox spacing="24.0">
+                <padding><Insets bottom="32.0" left="32.0" right="32.0" top="32.0" /></padding>
+
+                <VBox spacing="4.0">
+                    <Label style="-fx-text-fill: #111111; -fx-font-weight: bold; -fx-font-size: 24px; -fx-font-family: 'Segoe UI', Inter; -fx-letter-spacing: -0.5;" text="Device Movements Log" />
+                    <Label style="-fx-text-fill: #6C757D; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter;" text="Complete personal verification record of all active device registration entries and exits." />
+                </VBox>
+
+                <HBox spacing="16.0">
+                    <VBox alignment="CENTER_LEFT" spacing="6.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #EBF0F5; -fx-border-radius: 12; -fx-border-width: 1;" HBox.hgrow="ALWAYS">
+                        <padding><Insets bottom="18.0" left="24.0" right="24.0" top="18.0" /></padding>
+                        <Label fx:id="lblSumEntries" style="-fx-text-fill: #15803D; -fx-font-weight: bold; -fx-font-size: 32px; -fx-font-family: 'Segoe UI', Inter;" text="0" />
+                        <Label style="-fx-text-fill: #6C757D; -fx-font-size: 12px; -fx-font-weight: 600; -fx-font-family: 'Segoe UI', Inter;" text="Total Entries" />
+                    </VBox>
+
+                    <VBox alignment="CENTER_LEFT" spacing="6.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #EBF0F5; -fx-border-radius: 12; -fx-border-width: 1;" HBox.hgrow="ALWAYS">
+                        <padding><Insets bottom="18.0" left="24.0" right="24.0" top="18.0" /></padding>
+                        <Label fx:id="lblSumExits" style="-fx-text-fill: #0EA5E9; -fx-font-weight: bold; -fx-font-size: 32px; -fx-font-family: 'Segoe UI', Inter;" text="0" />
+                        <Label style="-fx-text-fill: #6C757D; -fx-font-size: 12px; -fx-font-weight: 600; -fx-font-family: 'Segoe UI', Inter;" text="Total Exits" />
+                    </VBox>
+
+                    <VBox alignment="CENTER_LEFT" spacing="6.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #EBF0F5; -fx-border-radius: 12; -fx-border-width: 1;" HBox.hgrow="ALWAYS">
+                        <padding><Insets bottom="18.0" left="24.0" right="24.0" top="18.0" /></padding>
+                        <Label fx:id="lblSumTotal" style="-fx-text-fill: #7A0000; -fx-font-weight: bold; -fx-font-size: 32px; -fx-font-family: 'Segoe UI', Inter;" text="0" />
+                        <Label style="-fx-text-fill: #6C757D; -fx-font-size: 12px; -fx-font-weight: 600; -fx-font-family: 'Segoe UI', Inter;" text="Combined Records" />
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="12.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #EBF0F5; -fx-border-radius: 12; -fx-border-width: 1;">
+                    <padding><Insets bottom="20.0" left="24.0" right="24.0" top="20.0" /></padding>
+                    <HBox alignment="BOTTOM_LEFT" spacing="14.0">
+
+                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                            <Label style="-fx-text-fill: #4B5563; -fx-font-weight: bold; -fx-font-size: 11px; -fx-font-family: 'Segoe UI', Inter;" text="SELECT HARDWARE DEVICE" />
+                            <ComboBox fx:id="cbDeviceFilter" maxWidth="1.7976931348623157E308" prefHeight="38.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter;" />
+                        </VBox>
+
+                        <VBox spacing="6.0">
+                            <Label style="-fx-text-fill: #4B5563; -fx-font-weight: bold; -fx-font-size: 11px; -fx-font-family: 'Segoe UI', Inter;" text="DIRECTION" />
+                            <ComboBox fx:id="cbDirection" prefHeight="38.0" prefWidth="120.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter;" />
+                        </VBox>
+
+                        <VBox spacing="6.0">
+                            <Label style="-fx-text-fill: #4B5563; -fx-font-weight: bold; -fx-font-size: 11px; -fx-font-family: 'Segoe UI', Inter;" text="START DATE" />
+                            <DatePicker fx:id="dpFrom" prefHeight="38.0" prefWidth="145.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter;" />
+                        </VBox>
+
+                        <VBox spacing="6.0">
+                            <Label style="-fx-text-fill: #4B5563; -fx-font-weight: bold; -fx-font-size: 11px; -fx-font-family: 'Segoe UI', Inter;" text="END DATE" />
+                            <DatePicker fx:id="dpTo" prefHeight="38.0" prefWidth="145.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter;" />
+                        </VBox>
+
+                        <VBox alignment="BOTTOM_LEFT" spacing="6.0">
+                            <Label style="-fx-font-size: 11px;" text=" " />
+                            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                <Button mnemonicParsing="false" onAction="#handleApplyFilter" prefHeight="38.0" style="-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter; -fx-padding: 0 20 0 20;" text="Apply Filters" />
+                                <Button mnemonicParsing="false" onAction="#handleResetFilter" prefHeight="38.0" style="-fx-background-color: #F3F4F6; -fx-text-fill: #4B5563; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-weight: 600; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter; -fx-padding: 0 16 0 16;" text="Reset" />
+                            </HBox>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <VBox style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #EBF0F5; -fx-border-radius: 12; -fx-border-width: 1;">
+                    <padding><Insets bottom="16.0" left="24.0" right="24.0" top="20.0" /></padding>
+                    <children>
+                        <TableView fx:id="tblDeviceLog" fixedCellSize="44.0" prefHeight="420.0"
+                                   style="-fx-background-color: transparent; -fx-background-insets: 0; -fx-border-color: transparent; -fx-font-family: 'Segoe UI', Inter, sans-serif; -fx-font-size: 13px;
+                                          -fx-style-class: borderless-table;
+                                          -fx-css: '.table-view .column-header-background { -fx-background-color: #F9FAFB; -fx-border-color: #E5E7EB; -fx-border-width: 0 0 1 0; }
+                                                    .table-view .column-header { -fx-background-color: transparent; -fx-size: 40px; }
+                                                    .table-view .column-header .label { -fx-text-fill: #4B5563; -fx-font-weight: bold; -fx-alignment: CENTER; }
+                                                    .table-cell { -fx-alignment: CENTER; -fx-padding: 0 10 0 10; }
+                                                    .table-row-cell { -fx-background-color: transparent; -fx-border-color: #F3F4F6; -fx-border-width: 0 0 1 0; }
+                                                    .table-row-cell:filled:hover { -fx-background-color: #F9FAFB; }
+                                                    .table-view .placeholder .label { -fx-text-fill: #9CA3AF; }';">
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
+                            <columns>
+                                <TableColumn fx:id="colLogTime" minWidth="150.0" prefWidth="160.0" resizable="false" text="Timestamp" />
+                                <TableColumn fx:id="colDevice" minWidth="180.0" prefWidth="240.0" resizable="true" text="Device Details" />
+                                <TableColumn fx:id="colSerial" minWidth="120.0" prefWidth="160.0" resizable="true" text="Serial Number" />
+                                <TableColumn fx:id="colType" minWidth="100.0" prefWidth="120.0" resizable="false" text="Category Type" />
+                                <TableColumn fx:id="colDirection" minWidth="90.0" prefWidth="100.0" resizable="false" text="Direction" />
+                                <TableColumn fx:id="colStatus" minWidth="100.0" prefWidth="110.0" resizable="false" text="Log Status" />
+                            </columns>
+                            <placeholder>
+                                <Label style="-fx-text-fill: #9CA3AF; -fx-font-size: 13px;" text="No historical hardware logs correspond with chosen filters." />
+                            </placeholder>
+                        </TableView>
+                    </children>
+                </VBox>
+
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>
