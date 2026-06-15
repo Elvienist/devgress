@@ -12,9 +12,9 @@
 
 <BorderPane fx:id="mainContainer" prefHeight="900.0" prefWidth="1440.0" style="-fx-background-color: #F8F9FA;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.BaseController">
     <left>
-        <VBox prefWidth="260.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #EBF0F5; -fx-border-width: 0 1 0 0;" BorderPane.alignment="CENTER">
+        <VBox fx:id="sidebarContainer" prefWidth="260.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #EBF0F5; -fx-border-width: 0 1 0 0;" BorderPane.alignment="CENTER" onMouseClicked="#handleSidebarAreaClicked">
             <children>
-                <HBox alignment="CENTER_LEFT" prefHeight="90.0" spacing="14.0">
+                <HBox fx:id="sidebarHeader" alignment="CENTER_LEFT" prefHeight="90.0" spacing="14.0">
                     <padding>
                         <Insets left="24.0" right="24.0" />
                     </padding>
@@ -28,7 +28,7 @@
                                 </Label>
                             </children>
                         </StackPane>
-                        <VBox alignment="CENTER_LEFT">
+                        <VBox fx:id="sidebarBrandLabels" alignment="CENTER_LEFT">
                             <children>
                                 <Label text="Devgress" textFill="#111111">
                                     <font>
@@ -43,14 +43,14 @@
                             </children>
                         </VBox>
                         <Region HBox.hgrow="ALWAYS" />
-                        <Button mnemonicParsing="false" style="-fx-background-color: transparent; -fx-cursor: hand;" text="‹" textFill="#111111">
+                        <Button fx:id="btnCollapseSidebar" mnemonicParsing="false" onAction="#handleToggleSidebar" style="-fx-background-color: transparent; -fx-cursor: hand;" text="‹" textFill="#111111">
                             <font>
                                 <Font size="20.0" />
                             </font>
                         </Button>
                     </children>
                 </HBox>
-                <VBox spacing="8.0" VBox.vgrow="ALWAYS">
+                <VBox fx:id="sidebarNavContainer" spacing="8.0" VBox.vgrow="ALWAYS">
                     <padding>
                         <Insets left="16.0" right="16.0" top="15.0" />
                     </padding>
@@ -175,18 +175,6 @@
                                 </Label>
                             </graphic>
                         </Button>
-                        <Button fx:id="btnSidebarUpdateRequest" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToUpdateRequest" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Update Request">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                            <graphic>
-                                <Label text="📝" textFill="#4B5563">
-                                    <font>
-                                        <Font size="16.0" />
-                                    </font>
-                                </Label>
-                            </graphic>
-                        </Button>
                         <Button fx:id="btnSidebarSettings" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToSettings" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Settings">
                             <font>
                                 <Font size="14.0" />
@@ -201,7 +189,7 @@
                         </Button>
                     </children>
                 </VBox>
-                <VBox spacing="8.0" style="-fx-border-color: #EBF0F5; -fx-border-width: 1 0 0 0;">
+                <VBox fx:id="sidebarBottomContainer" spacing="8.0" style="-fx-border-color: #EBF0F5; -fx-border-width: 1 0 0 0;">
                     <padding>
                         <Insets bottom="24.0" left="16.0" right="16.0" top="20.0" />
                     </padding>

@@ -4,11 +4,14 @@ import com.example.byodsystem.byod.database.DBConnection;
 import com.example.byodsystem.byod.service.UserSession;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 
@@ -32,22 +35,30 @@ public class StudentUpdateRequestController {
     @FXML private TextArea taReason;
     @FXML private Label lblFormError;
     @FXML private Button btnSubmit;
+    @FXML private Button btnReturnToProfile;
     @FXML private VBox pastRequestsContainer;
 
+    @FXML private Button btnFilterAll;
+    @FXML private Button btnFilterPending;
+    @FXML private Button btnFilterApproved;
+    @FXML private Button btnFilterRejected;
+
     private int studentRefId;
+    private String currentFilter = null;
     private Map<String, String> fieldToColumn;
-    private Map<String, String> currentValues;
+    private Map<String, String> columnToLabel;
 
     @FXML
     public void initialize() {
-        UserSession session = UserSession.getInstance();
-        if (!"STUDENT".equalsIgnoreCase(session.getRole())) return;
-
-        studentRefId = session.getStudentRefId();
-        String name = session.getUsername() != null ? session.getUsername() : "Student";
         lblHeaderDate.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")));
+
+        UserSession session = UserSession.getInstance();
+        studentRefId = session.getStudentRefId() != null ? session.getStudentRefId() : 0;
+        String name = session.getFullName() != null ? session.getFullName() : "Student";
         lblHeaderName.setText(name);
-        lblHeaderInitial.setText(name.isEmpty() ? "S" : String.valueOf(name.charAt(0)).toUpperCase());
+        if (!name.isEmpty()) {
+            lblHeaderInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
+        }
 
         fieldToColumn = new LinkedHashMap<>();
         fieldToColumn.put("Full Name", "full_name");
@@ -55,28 +66,44 @@ public class StudentUpdateRequestController {
         fieldToColumn.put("Year Level", "year_level");
         fieldToColumn.put("Contact Number", "contact_number");
 
+        columnToLabel = new LinkedHashMap<>();
+        for (Map.Entry<String, String> entry : fieldToColumn.entrySet()) {
+            columnToLabel.put(entry.getValue(), entry.getKey());
+        }
+
         cbField.setItems(FXCollections.observableArrayList(fieldToColumn.keySet()));
+        cbYearLevelOptions.setItems(FXCollections.observableArrayList("1st Year", "2nd Year", "3rd Year", "4th Year"));
 
-        cbYearLevelOptions.setItems(FXCollections.observableArrayList(
-                "1st Year", "2nd Year", "3rd Year", "4th Year", "Irregular"
-        ));
+        if (taReason != null) {
+            taReason.setTextFormatter(new TextFormatter<String>(change -> {
+                if (change.isAdded() || change.isReplaced()) {
+                    if (change.getControlNewText().length() > 255) {
+                        return null;
+                    }
+                }
+                return change;
+            }));
+        }
 
-        currentValues = new LinkedHashMap<>();
-        loadCurrentValues();
+        if (pastRequestsContainer != null) {
+            pastRequestsContainer.setAlignment(Pos.TOP_LEFT);
+        }
+
+        loadCurrentStudentData();
         loadPastRequests();
     }
 
-    private void loadCurrentValues() {
+    private void loadCurrentStudentData() {
+        if (studentRefId == 0) return;
         String sql = "SELECT full_name, course, year_level, contact_number FROM students WHERE student_id = ?";
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, studentRefId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                currentValues.put("Full Name", rs.getString("full_name"));
-                currentValues.put("Course", rs.getString("course"));
-                currentValues.put("Year Level", rs.getString("year_level"));
-                currentValues.put("Contact Number", rs.getString("contact_number"));
+                cbField.getSelectionModel().select("Full Name");
+                tfCurrentValue.setText(rs.getString("full_name"));
+                toggleValueInputMode("Full Name");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -84,230 +111,277 @@ public class StudentUpdateRequestController {
     }
 
     @FXML
-    public void handleFieldSelected() {
-        String selected = cbField.getValue();
-        lblFormError.setText("");
-        tfNewValue.clear();
-        cbYearLevelOptions.setValue(null);
+    public void handleFieldChange() {
+        String selectedField = cbField.getValue();
+        if (selectedField == null || studentRefId == 0) return;
 
-        if (selected != null && currentValues.containsKey(selected)) {
-            String val = currentValues.get(selected);
-            tfCurrentValue.setText(val != null ? val : "");
+        toggleValueInputMode(selectedField);
+        String columnName = fieldToColumn.get(selectedField);
+        if (columnName == null) return;
 
-            if ("Year Level".equals(selected)) {
-                tfNewValue.setVisible(false);
-                cbYearLevelOptions.setVisible(true);
-            } else {
-                tfNewValue.setVisible(true);
-                cbYearLevelOptions.setVisible(false);
-            }
-        } else {
-            tfCurrentValue.clear();
-            tfNewValue.setVisible(true);
-            cbYearLevelOptions.setVisible(false);
-        }
-    }
-
-    private boolean hasPendingRequestForField(String columnName) {
-        String sql = "SELECT COUNT(*) FROM profile_update_requests WHERE student_id = ? AND field_name = ? AND status = 'PENDING'";
+        String sql = "SELECT " + columnName + " FROM students WHERE student_id = ?";
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, studentRefId);
-            ps.setString(2, columnName);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return rs.getInt(1) > 0;
+                String val = rs.getString(columnName);
+                tfCurrentValue.setText(val != null ? val : "");
+            } else {
+                tfCurrentValue.setText("");
             }
         } catch (Exception e) {
             e.printStackTrace();
+            tfCurrentValue.setText("");
         }
-        return false;
+    }
+
+    private void toggleValueInputMode(String selectedField) {
+        if ("Year Level".equals(selectedField)) {
+            tfNewValue.setVisible(false);
+            cbYearLevelOptions.setVisible(true);
+            cbYearLevelOptions.getSelectionModel().clearSelection();
+        } else {
+            cbYearLevelOptions.setVisible(false);
+            tfNewValue.setVisible(true);
+            tfNewValue.clear();
+        }
     }
 
     @FXML
     public void handleSubmit() {
         lblFormError.setText("");
-        lblFormError.setStyle("-fx-text-fill: #DC2626;");
-
-        String field = cbField.getValue();
+        String selectedField = cbField.getValue();
         String reason = taReason.getText() != null ? taReason.getText().trim() : "";
-        String currentVal = tfCurrentValue.getText() != null ? tfCurrentValue.getText().trim() : "";
+
+        if (selectedField == null) {
+            lblFormError.setText("Please select a field to update.");
+            return;
+        }
 
         String newValue;
-        if ("Year Level".equals(field)) {
-            newValue = cbYearLevelOptions.getValue() != null ? cbYearLevelOptions.getValue() : "";
+        if ("Year Level".equals(selectedField)) {
+            newValue = cbYearLevelOptions.getValue();
         } else {
             newValue = tfNewValue.getText() != null ? tfNewValue.getText().trim() : "";
         }
 
-        if (field == null) { lblFormError.setText("Please select a field."); return; }
-        if (newValue.isEmpty()) { lblFormError.setText("New value cannot be empty."); return; }
-        if (reason.isEmpty()) { lblFormError.setText("Reason cannot be empty."); return; }
-        if (newValue.equalsIgnoreCase(currentVal)) {
-            lblFormError.setText("New value is the same as the current value.");
+        if (newValue == null || newValue.isEmpty()) {
+            lblFormError.setText("New value cannot be empty.");
+            return;
+        }
+        if (reason.isEmpty()) {
+            lblFormError.setText("Please provide a reason for the update request.");
             return;
         }
 
-        String columnName = fieldToColumn.get(field);
-
-        if (hasPendingRequestForField(columnName)) {
-            lblFormError.setText("You already have a pending update request for " + field + ".");
-            return;
-        }
+        String dbColumnName = fieldToColumn.get(selectedField);
+        String currentValue = tfCurrentValue.getText();
 
         String sql = """
-                INSERT INTO profile_update_requests (student_id, field_name, current_value, requested_value, reason, status, submitted_at)
-                VALUES (?, ?, ?, ?, ?, 'PENDING', ?)
-                """;
+            INSERT INTO profile_update_requests (student_id, field_name, current_value, requested_value, reason, status, submitted_at)
+            VALUES (?, ?, ?, ?, ?, 'PENDING', NOW())
+        """;
+
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, studentRefId);
-            ps.setString(2, columnName);
-            ps.setString(3, currentVal.isEmpty() ? null : currentVal);
+            ps.setString(2, dbColumnName);
+            ps.setString(3, currentValue);
             ps.setString(4, newValue);
             ps.setString(5, reason);
 
-            ZoneId phZone = ZoneId.of("Asia/Manila");
-            ZonedDateTime phNow = ZonedDateTime.now(phZone);
-            Timestamp phTimestamp = Timestamp.from(phNow.toInstant());
-            ps.setTimestamp(6, phTimestamp);
-
             ps.executeUpdate();
 
-            cbField.setValue(null);
-            tfCurrentValue.clear();
-            tfNewValue.clear();
-            cbYearLevelOptions.setValue(null);
-            cbYearLevelOptions.setVisible(false);
-            tfNewValue.setVisible(true);
             taReason.clear();
+            if ("Year Level".equals(selectedField)) {
+                cbYearLevelOptions.getSelectionModel().clearSelection();
+            } else {
+                tfNewValue.clear();
+            }
 
-            lblFormError.setStyle("-fx-text-fill: #15803D;");
-            lblFormError.setText("Request submitted successfully.");
             loadPastRequests();
+            lblFormError.setStyle("-fx-text-fill: #15803D; -fx-font-weight: bold;");
+            lblFormError.setText("Request submitted successfully!");
+
+            navigateToProfile();
         } catch (Exception e) {
-            lblFormError.setStyle("-fx-text-fill: #B91C1C;");
-            lblFormError.setText("Failed to submit request. Please try again.");
+            e.printStackTrace();
+            lblFormError.setStyle("-fx-text-fill: #B91C1C; -fx-font-weight: bold;");
+            lblFormError.setText("Database error occurred while submitting.");
+        }
+    }
+
+    @FXML
+    public void handleReturnToProfile() {
+        navigateToProfile();
+    }
+
+    private void navigateToProfile() {
+        try {
+            StackPane contentArea = (StackPane) btnReturnToProfile.getScene().lookup("#contentArea");
+            if (contentArea != null) {
+                Parent view = FXMLLoader.load(getClass().getResource("/com/example/byodsystem/byod/fxml/studentprofile.fxml"));
+                contentArea.getChildren().clear();
+                contentArea.getChildren().add(view);
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML public void handleFilterAll() { setActiveFilter(null); }
+    @FXML public void handleFilterPending() { setActiveFilter("PENDING"); }
+    @FXML public void handleFilterApproved() { setActiveFilter("APPROVED"); }
+    @FXML public void handleFilterRejected() { setActiveFilter("REJECTED"); }
+
+    private void setActiveFilter(String filter) {
+        currentFilter = filter;
+
+        String active = "-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-background-radius: 20; -fx-padding: 6 14; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-size: 12px;";
+        String inactiveAll = "-fx-background-color: #F3F4F6; -fx-text-fill: #4B5563; -fx-background-radius: 20; -fx-padding: 6 14; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-size: 12px;";
+
+        btnFilterAll.setStyle(filter == null ? active : inactiveAll);
+        btnFilterPending.setStyle("PENDING".equals(filter) ? active : "-fx-background-color: #FEF3C7; -fx-text-fill: #92400E; -fx-background-radius: 20; -fx-padding: 6 14; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-size: 12px;");
+        btnFilterApproved.setStyle("APPROVED".equals(filter) ? active : "-fx-background-color: #DCFCE7; -fx-text-fill: #15803D; -fx-background-radius: 20; -fx-padding: 6 14; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-size: 12px;");
+        btnFilterRejected.setStyle("REJECTED".equals(filter) ? active : "-fx-background-color: #FEE2E2; -fx-text-fill: #B91C1C; -fx-background-radius: 20; -fx-padding: 6 14; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-size: 12px;");
+
+        loadPastRequests();
     }
 
     private void loadPastRequests() {
-        if (pastRequestsContainer == null) return;
         pastRequestsContainer.getChildren().clear();
+        pastRequestsContainer.setAlignment(Pos.TOP_LEFT);
+
+        if (studentRefId == 0) return;
+
         String sql = """
-                SELECT field_name, current_value, requested_value, reason, status, admin_response, submitted_at
-                FROM profile_update_requests
-                WHERE student_id = ?
-                ORDER BY submitted_at DESC
-                """;
+            SELECT field_name, current_value, requested_value, reason, status, admin_response, submitted_at
+            FROM profile_update_requests
+            WHERE student_id = ?
+        """ + (currentFilter != null ? " AND status = ?" : "") + """
+            ORDER BY submitted_at DESC
+        """;
+
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, studentRefId);
-            ResultSet rs = ps.executeQuery();
-            boolean hasRows = false;
+            if (currentFilter != null) {
+                ps.setString(2, currentFilter);
+            }
 
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm");
+            ResultSet rs = ps.executeQuery();
+            boolean hasItems = false;
 
             while (rs.next()) {
-                hasRows = true;
-                String fieldName = rs.getString("field_name");
-                String current = rs.getString("current_value");
-                String requested = rs.getString("requested_value");
+                hasItems = true;
+                String dbField = rs.getString("field_name");
+                String displayField = columnToLabel.getOrDefault(dbField, dbField);
+                String currentVal = rs.getString("current_value");
+                String requestedVal = rs.getString("requested_value");
                 String reason = rs.getString("reason");
                 String status = rs.getString("status");
                 String adminResponse = rs.getString("admin_response");
-                Timestamp submitted = rs.getTimestamp("submitted_at");
-                String submittedStr = submitted != null ? submitted.toLocalDateTime().format(fmt) : "—";
+                Timestamp ts = rs.getTimestamp("submitted_at");
 
-                String displayField = fieldToColumn.entrySet().stream()
-                        .filter(e -> e.getValue().equals(fieldName))
-                        .map(Map.Entry::getKey)
-                        .findFirst().orElse(fieldName);
+                String formattedDate = "—";
+                if (ts != null) {
+                    ZonedDateTime zdt = ts.toInstant().atZone(ZoneId.systemDefault());
+                    formattedDate = zdt.format(DateTimeFormatter.ofPattern("MMM dd, yyyy • hh:mm a"));
+                }
 
-                VBox card = buildRequestCard(displayField, current, requested, reason, status, adminResponse, submittedStr);
+                VBox card = new VBox(12);
+                card.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 16;");
+
+                HBox topRow = new HBox(8);
+                topRow.setAlignment(Pos.CENTER_LEFT);
+
+                VBox titleBox = new VBox(2);
+                Label fieldLabel = new Label("Update Request: " + displayField);
+                fieldLabel.setStyle("-fx-text-fill: #111111; -fx-font-weight: bold;");
+                fieldLabel.setFont(new Font("Segoe UI", 14));
+
+                Label dateLabel = new Label("Submitted on " + formattedDate);
+                dateLabel.setStyle("-fx-text-fill: #6B7280;");
+                dateLabel.setFont(new Font("Segoe UI", 11));
+                titleBox.getChildren().addAll(fieldLabel, dateLabel);
+
+                Region spacer = new Region();
+                HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                Label badge = new Label(status != null ? status.toUpperCase() : "PENDING");
+                badge.setFont(Font.font("Segoe UI", javafx.scene.text.FontWeight.BOLD, 11));
+                if ("APPROVED".equalsIgnoreCase(status)) {
+                    badge.setStyle("-fx-text-fill: #15803D; -fx-background-color: #DCFCE7; -fx-background-radius: 20; -fx-padding: 4 10 4 10;");
+                } else if ("REJECTED".equalsIgnoreCase(status)) {
+                    badge.setStyle("-fx-text-fill: #B91C1C; -fx-background-color: #FEE2E2; -fx-background-radius: 20; -fx-padding: 4 10 4 10;");
+                } else {
+                    badge.setStyle("-fx-text-fill: #92400E; -fx-background-color: #FEF3C7; -fx-background-radius: 20; -fx-padding: 4 10 4 10;");
+                }
+
+                topRow.getChildren().addAll(titleBox, spacer, badge);
+                card.getChildren().add(topRow);
+
+                VBox detail = new VBox(8);
+                detail.setStyle("-fx-background-color: #F9FAFB; -fx-background-radius: 6; -fx-padding: 12; -fx-border-color: #F3F4F6; -fx-border-width: 1; -fx-border-radius: 6;");
+                detail.setVisible(false);
+                detail.setManaged(false);
+
+                HBox changeRow = new HBox(16);
+                VBox curBox = new VBox(2);
+                Label cl = new Label("From (Current)"); cl.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
+                Label cv = new Label(currentVal != null && !currentVal.isEmpty() ? currentVal : "—"); cv.setStyle("-fx-text-fill: #374151; -fx-font-weight: bold; -fx-font-size: 13px;");
+                curBox.getChildren().addAll(cl, cv);
+
+                VBox newBox = new VBox(2);
+                Label nl = new Label("To (Requested)"); nl.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
+                Label nv = new Label(requestedVal != null && !requestedVal.isEmpty() ? requestedVal : "—"); nv.setStyle("-fx-text-fill: #7A0000; -fx-font-weight: bold; -fx-font-size: 13px;");
+                newBox.getChildren().addAll(nl, nv);
+
+                changeRow.getChildren().addAll(curBox, newBox);
+                detail.getChildren().add(changeRow);
+
+                Label reasonLabel = new Label("Reason: " + (reason != null ? reason : "—"));
+                reasonLabel.setStyle("-fx-text-fill: #4B5563;");
+                reasonLabel.setFont(new Font("Segoe UI", 12));
+                reasonLabel.setWrapText(true);
+                detail.getChildren().add(reasonLabel);
+
+                if (adminResponse != null && !adminResponse.isEmpty()) {
+                    VBox adminBox = new VBox(4);
+                    Label arl = new Label("Administrator Remarks:");
+                    arl.setStyle("-fx-text-fill: #374151; -fx-font-weight: bold; -fx-font-size: 11px;");
+                    Label respLabel = new Label(adminResponse);
+                    respLabel.setStyle("-fx-text-fill: #374151; -fx-background-color: #EFF6FF; -fx-background-radius: 6; -fx-padding: 8 12; -fx-border-color: #DBEAFE; -fx-border-width: 1; -fx-border-radius: 6;");
+                    respLabel.setFont(new Font("Segoe UI", 12));
+                    respLabel.setWrapText(true);
+                    adminBox.getChildren().addAll(arl, respLabel);
+                    detail.getChildren().add(adminBox);
+                }
+
+                Button toggle = new Button("Show details ▾");
+                toggle.setStyle("-fx-background-color: transparent; -fx-text-fill: #7A0000; -fx-cursor: hand; -fx-padding: 0; -fx-font-weight: bold;");
+                toggle.setFont(new Font("Segoe UI", 12));
+                toggle.setOnAction(e -> {
+                    boolean showing = detail.isVisible();
+                    detail.setVisible(!showing);
+                    detail.setManaged(!showing);
+                    toggle.setText(showing ? "Show details ▾" : "Hide details ▴");
+                });
+
+                card.getChildren().addAll(detail, toggle);
                 pastRequestsContainer.getChildren().add(card);
             }
-            if (!hasRows) {
-                Label empty = new Label("No past requests found.");
-                empty.setStyle("-fx-text-fill: #9CA3AF;");
-                empty.setFont(new Font("Segoe UI", 13));
-                pastRequestsContainer.getChildren().add(empty);
+
+            if (!hasItems) {
+                Label noRequestsLabel = new Label(currentFilter == null ? "No submission history found." : "No historic logs found for state: " + currentFilter.toLowerCase());
+                noRequestsLabel.setStyle("-fx-text-fill: #9CA3AF; -fx-font-style: italic; -fx-padding: 16 0 16 4;");
+                noRequestsLabel.setFont(new Font("Segoe UI", 13));
+                pastRequestsContainer.getChildren().add(noRequestsLabel);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private VBox buildRequestCard(String field, String current, String requested,
-                                  String reason, String status, String adminResponse, String submitted) {
-        VBox card = new VBox(8);
-        card.setStyle("-fx-background-color: #F8F9FA; -fx-background-radius: 8; -fx-border-color: #EBF0F5; -fx-border-radius: 8; -fx-border-width: 1; -fx-padding: 14 16 14 16;");
-
-        HBox topRow = new HBox(10);
-        topRow.setAlignment(Pos.CENTER_LEFT);
-
-        Label fieldLabel = new Label(field);
-        fieldLabel.setStyle("-fx-text-fill: #111111; -fx-font-weight: bold;");
-        fieldLabel.setFont(new Font("Segoe UI", 13));
-
-        Label statusChip = new Label(capitalize(status));
-        String chipStyle = switch (status) {
-            case "PENDING" -> "-fx-text-fill: #B45309; -fx-background-color: #FEF3C7; -fx-background-radius: 4; -fx-padding: 2 8 2 8; -fx-font-weight: bold;";
-            case "APPROVED" -> "-fx-text-fill: #15803D; -fx-background-color: #DCFCE7; -fx-background-radius: 4; -fx-padding: 2 8 2 8; -fx-font-weight: bold;";
-            case "REJECTED" -> "-fx-text-fill: #B91C1C; -fx-background-color: #FEE2E2; -fx-background-radius: 4; -fx-padding: 2 8 2 8; -fx-font-weight: bold;";
-            default -> "-fx-text-fill: #6C757D; -fx-background-color: #F3F4F6; -fx-background-radius: 4; -fx-padding: 2 8 2 8;";
-        };
-        statusChip.setStyle(chipStyle);
-        statusChip.setFont(new Font("Segoe UI", 11));
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Label dateLabel = new Label(submitted);
-        dateLabel.setStyle("-fx-text-fill: #9CA3AF;");
-        dateLabel.setFont(new Font("Segoe UI", 11));
-
-        topRow.getChildren().addAll(fieldLabel, statusChip, spacer, dateLabel);
-
-        Label changeLabel = new Label((current != null ? current : "—") + "  →  " + (requested != null ? requested : "—"));
-        changeLabel.setStyle("-fx-text-fill: #374151; -fx-font-weight: 500;");
-        changeLabel.setFont(new Font("Segoe UI", 12));
-
-        VBox detail = new VBox(4);
-        detail.setVisible(false);
-        detail.setManaged(false);
-
-        Label reasonLabel = new Label("Reason: " + (reason != null ? reason : "—"));
-        reasonLabel.setStyle("-fx-text-fill: #6C757D;");
-        reasonLabel.setFont(new Font("Segoe UI", 12));
-        reasonLabel.setWrapText(true);
-        detail.getChildren().add(reasonLabel);
-
-        if (adminResponse != null && !adminResponse.isEmpty()) {
-            Label respLabel = new Label("Admin Response: " + adminResponse);
-            respLabel.setStyle("-fx-text-fill: #374151; -fx-background-color: #EFF6FF; -fx-background-radius: 6; -fx-padding: 6 10 6 10;");
-            respLabel.setFont(new Font("Segoe UI", 12));
-            respLabel.setWrapText(true);
-            detail.getChildren().add(respLabel);
-        }
-
-        Button toggle = new Button("Show details ▾");
-        toggle.setStyle("-fx-background-color: transparent; -fx-text-fill: #7A0000; -fx-cursor: hand; -fx-padding: 0;");
-        toggle.setFont(new Font("Segoe UI", 12));
-        toggle.setOnAction(e -> {
-            boolean showing = detail.isVisible();
-            detail.setVisible(!showing);
-            detail.setManaged(!showing);
-            toggle.setText(showing ? "Show details ▾" : "Hide details ▴");
-        });
-
-        card.getChildren().addAll(topRow, changeLabel, toggle, detail);
-        return card;
-    }
-
-    private String capitalize(String s) {
-        if (s == null || s.isEmpty()) return s;
-        return s.charAt(0) + s.substring(1).toLowerCase();
     }
 }

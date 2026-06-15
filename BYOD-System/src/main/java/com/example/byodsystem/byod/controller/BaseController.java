@@ -1,15 +1,22 @@
 package com.example.byodsystem.byod.controller;
 
 import com.example.byodsystem.byod.service.UserSession;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import java.io.IOException;
 
 public class BaseController {
@@ -30,10 +37,20 @@ public class BaseController {
 
     @FXML private Button btnSidebarProfile;
     @FXML private Button btnSidebarDeviceLog;
-    @FXML private Button btnSidebarUpdateRequest;
 
     @FXML private Button btnSidebarChangePassword;
     @FXML private Button btnSidebarLogout;
+
+    @FXML private VBox sidebarContainer;
+    @FXML private HBox sidebarHeader;
+    @FXML private VBox sidebarBrandLabels;
+    @FXML private VBox sidebarNavContainer;
+    @FXML private VBox sidebarBottomContainer;
+    @FXML private Button btnCollapseSidebar;
+
+    private static final double EXPANDED_WIDTH = 260.0;
+    private static final double COLLAPSED_WIDTH = 70.0;
+    private boolean collapsed = false;
 
     private Button currentActiveButton = null;
 
@@ -66,8 +83,6 @@ public class BaseController {
         btnSidebarProfile.setManaged(false);
         btnSidebarDeviceLog.setVisible(false);
         btnSidebarDeviceLog.setManaged(false);
-        btnSidebarUpdateRequest.setVisible(false);
-        btnSidebarUpdateRequest.setManaged(false);
 
         setupHoverAnimations();
 
@@ -107,8 +122,6 @@ public class BaseController {
             btnSidebarProfile.setManaged(true);
             btnSidebarDeviceLog.setVisible(true);
             btnSidebarDeviceLog.setManaged(true);
-            btnSidebarUpdateRequest.setVisible(true);
-            btnSidebarUpdateRequest.setManaged(true);
 
             handleNavigateToProfile();
         }
@@ -119,7 +132,7 @@ public class BaseController {
                 btnSidebarDashboard, btnSidebarUserManagement, btnSidebarRequests,
                 btnSidebarReports, btnSidebarAuditLog, btnSidebarSettings,
                 btnSidebarGateScreen, btnSidebarActivityLog, btnSidebarStudentsDevices,
-                btnSidebarProfile, btnSidebarDeviceLog, btnSidebarUpdateRequest,
+                btnSidebarProfile, btnSidebarDeviceLog,
                 btnSidebarChangePassword, btnSidebarLogout
         };
 
@@ -151,7 +164,7 @@ public class BaseController {
                 btnSidebarDashboard, btnSidebarUserManagement, btnSidebarRequests,
                 btnSidebarReports, btnSidebarAuditLog, btnSidebarSettings,
                 btnSidebarGateScreen, btnSidebarActivityLog, btnSidebarStudentsDevices,
-                btnSidebarProfile, btnSidebarDeviceLog, btnSidebarUpdateRequest,
+                btnSidebarProfile, btnSidebarDeviceLog,
                 btnSidebarChangePassword, btnSidebarLogout
         };
 
@@ -199,7 +212,7 @@ public class BaseController {
     @FXML
     public void handleNavigateToSettings() {
         updateActiveButtonStyle(btnSidebarSettings);
-       // loadSubView("/com/example/byodsystem/byod/fxml/settings.fxml");
+        // loadSubView("/com/example/byodsystem/byod/fxml/settings.fxml");
     }
 
     @FXML
@@ -233,15 +246,73 @@ public class BaseController {
     }
 
     @FXML
-    public void handleNavigateToUpdateRequest() {
-        updateActiveButtonStyle(btnSidebarUpdateRequest);
-        loadSubView("/com/example/byodsystem/byod/fxml/studentupdaterequest.fxml");
-    }
-
-    @FXML
     public void handleNavigateToChangePassword() {
         updateActiveButtonStyle(btnSidebarChangePassword);
         loadSubView("/com/example/byodsystem/byod/fxml/changepassword.fxml");
+    }
+
+    @FXML
+    public void handleToggleSidebar() {
+        if (collapsed) {
+            expandSidebar();
+        } else {
+            collapseSidebar();
+        }
+    }
+
+    @FXML
+    public void handleSidebarAreaClicked() {
+        if (collapsed) {
+            expandSidebar();
+        }
+    }
+
+    private void collapseSidebar() {
+        collapsed = true;
+        setNavLabelsVisible(false);
+        btnCollapseSidebar.setText("›");
+        animateSidebarWidth(COLLAPSED_WIDTH);
+    }
+
+    private void expandSidebar() {
+        collapsed = false;
+        btnCollapseSidebar.setText("‹");
+        animateSidebarWidth(EXPANDED_WIDTH);
+        setNavLabelsVisible(true);
+    }
+
+    private void animateSidebarWidth(double targetWidth) {
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.millis(220),
+                        new KeyValue(sidebarContainer.prefWidthProperty(), targetWidth),
+                        new KeyValue(sidebarContainer.minWidthProperty(), targetWidth),
+                        new KeyValue(sidebarContainer.maxWidthProperty(), targetWidth)
+                )
+        );
+        timeline.play();
+    }
+
+    private void setNavLabelsVisible(boolean visible) {
+        sidebarBrandLabels.setVisible(visible);
+        sidebarBrandLabels.setManaged(visible);
+
+        for (Node node : sidebarNavContainer.getChildren()) {
+            setButtonTextVisible(node, visible);
+        }
+        for (Node node : sidebarBottomContainer.getChildren()) {
+            setButtonTextVisible(node, visible);
+        }
+    }
+
+    private void setButtonTextVisible(Node node, boolean visible) {
+        if (node instanceof Button) {
+            Button btn = (Button) node;
+            if (!btn.getProperties().containsKey("fullText")) {
+                btn.getProperties().put("fullText", btn.getText());
+            }
+            String fullText = (String) btn.getProperties().get("fullText");
+            btn.setText(visible ? fullText : "");
+        }
     }
 
     private void loadSubView(String fxmlPath) {

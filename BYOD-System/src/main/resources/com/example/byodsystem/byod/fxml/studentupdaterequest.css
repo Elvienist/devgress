@@ -1,0 +1,7 @@
+.scroll-pane:focused > .viewport {
+    -fx-font-size: 1em;
+}
+
+.scroll-pane:focused {
+    -fx-font-size: 1em;
+}
