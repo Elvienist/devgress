@@ -6,6 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -34,181 +35,226 @@ public class BaseController {
     @FXML private Button btnSidebarChangePassword;
     @FXML private Button btnSidebarLogout;
 
+    private Button currentActiveButton = null;
+
     @FXML
     public void initialize() {
         UserSession session = UserSession.getInstance();
         String role = session.getRole() != null ? session.getRole().toUpperCase() : "";
 
-        configureSidebarAccess(role);
+        btnSidebarDashboard.setVisible(false);
+        btnSidebarDashboard.setManaged(false);
+        btnSidebarUserManagement.setVisible(false);
+        btnSidebarUserManagement.setManaged(false);
+        btnSidebarRequests.setVisible(false);
+        btnSidebarRequests.setManaged(false);
+        btnSidebarReports.setVisible(false);
+        btnSidebarReports.setManaged(false);
+        btnSidebarAuditLog.setVisible(false);
+        btnSidebarAuditLog.setManaged(false);
+        btnSidebarSettings.setVisible(false);
+        btnSidebarSettings.setManaged(false);
 
-        if (session.isFirstLogin()) {
-            handleNavigateToChangePassword();
-        } else {
-            routeDefaultViewByRole(role);
+        btnSidebarGateScreen.setVisible(false);
+        btnSidebarGateScreen.setManaged(false);
+        btnSidebarActivityLog.setVisible(false);
+        btnSidebarActivityLog.setManaged(false);
+        btnSidebarStudentsDevices.setVisible(false);
+        btnSidebarStudentsDevices.setManaged(false);
+
+        btnSidebarProfile.setVisible(false);
+        btnSidebarProfile.setManaged(false);
+        btnSidebarDeviceLog.setVisible(false);
+        btnSidebarDeviceLog.setManaged(false);
+        btnSidebarUpdateRequest.setVisible(false);
+        btnSidebarUpdateRequest.setManaged(false);
+
+        setupHoverAnimations();
+
+        if ("ADMIN".equals(role)) {
+            btnSidebarDashboard.setVisible(true);
+            btnSidebarDashboard.setManaged(true);
+            btnSidebarUserManagement.setVisible(true);
+            btnSidebarUserManagement.setManaged(true);
+            btnSidebarRequests.setVisible(true);
+            btnSidebarRequests.setManaged(true);
+            btnSidebarReports.setVisible(true);
+            btnSidebarReports.setManaged(true);
+            btnSidebarAuditLog.setVisible(true);
+            btnSidebarAuditLog.setManaged(true);
+            btnSidebarSettings.setVisible(true);
+            btnSidebarSettings.setManaged(true);
+
+            btnSidebarGateScreen.setVisible(true);
+            btnSidebarGateScreen.setManaged(true);
+            btnSidebarActivityLog.setVisible(true);
+            btnSidebarActivityLog.setManaged(true);
+            btnSidebarStudentsDevices.setVisible(true);
+            btnSidebarStudentsDevices.setManaged(true);
+
+            handleNavigateToDashboard();
+        } else if ("OFFICER".equals(role)) {
+            btnSidebarGateScreen.setVisible(true);
+            btnSidebarGateScreen.setManaged(true);
+            btnSidebarActivityLog.setVisible(true);
+            btnSidebarActivityLog.setManaged(true);
+            btnSidebarStudentsDevices.setVisible(true);
+            btnSidebarStudentsDevices.setManaged(true);
+
+            handleNavigateToGateScreen();
+        } else if ("STUDENT".equals(role)) {
+            btnSidebarProfile.setVisible(true);
+            btnSidebarProfile.setManaged(true);
+            btnSidebarDeviceLog.setVisible(true);
+            btnSidebarDeviceLog.setManaged(true);
+            btnSidebarUpdateRequest.setVisible(true);
+            btnSidebarUpdateRequest.setManaged(true);
+
+            handleNavigateToProfile();
         }
     }
 
-    private void configureSidebarAccess(String role) {
-        // Reset everything to hidden first
-        setButtonVisibility(btnSidebarDashboard, false);
-        setButtonVisibility(btnSidebarUserManagement, false);
-        setButtonVisibility(btnSidebarRequests, false);
-        setButtonVisibility(btnSidebarReports, false);
-        setButtonVisibility(btnSidebarAuditLog, false);
-        setButtonVisibility(btnSidebarSettings, false);
-        setButtonVisibility(btnSidebarGateScreen, false);
-        setButtonVisibility(btnSidebarActivityLog, false);
-        setButtonVisibility(btnSidebarStudentsDevices, false);
-        setButtonVisibility(btnSidebarProfile, false);
-        setButtonVisibility(btnSidebarDeviceLog, false);
-        setButtonVisibility(btnSidebarUpdateRequest, false);
-
-        setButtonVisibility(btnSidebarChangePassword, true);
-        setButtonVisibility(btnSidebarLogout, true);
-
-        switch (role) {
-            case "ADMIN":
-                setButtonVisibility(btnSidebarDashboard, true);
-                setButtonVisibility(btnSidebarUserManagement, true);
-                setButtonVisibility(btnSidebarRequests, true);
-                setButtonVisibility(btnSidebarReports, true);
-                setButtonVisibility(btnSidebarAuditLog, true);
-                setButtonVisibility(btnSidebarSettings, true);
-                setButtonVisibility(btnSidebarStudentsDevices, true); // Added exclusively to ADMIN here
-                break;
-
-            case "OFFICER":
-                setButtonVisibility(btnSidebarGateScreen, true);
-                setButtonVisibility(btnSidebarActivityLog, true);
-                break;
-
-            case "STUDENT":
-                setButtonVisibility(btnSidebarProfile, true);
-                setButtonVisibility(btnSidebarDeviceLog, true);
-                setButtonVisibility(btnSidebarUpdateRequest, true);
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    private void setButtonVisibility(Button btn, boolean isVisible) {
-        if (btn != null) {
-            btn.setVisible(isVisible);
-            btn.setManaged(isVisible);
-        }
-    }
-
-    private void routeDefaultViewByRole(String role) {
-        switch (role) {
-            case "ADMIN":
-                handleNavigateToDashboardContent();
-                break;
-            case "OFFICER":
-                handleNavigateToGateScreen();
-                break;
-            case "STUDENT":
-                handleNavigateToProfile();
-                break;
-            default:
-                handleNavigateToDashboardContent();
-                break;
-        }
-    }
-
-    private void updateActiveButtonStyle(Button activeTarget) {
-        Button[] navigationButtons = {
-                btnSidebarDashboard, btnSidebarUserManagement, btnSidebarRequests, btnSidebarReports,
-                btnSidebarAuditLog, btnSidebarSettings, btnSidebarGateScreen, btnSidebarActivityLog,
-                btnSidebarStudentsDevices, btnSidebarProfile, btnSidebarDeviceLog, btnSidebarUpdateRequest,
+    private void setupHoverAnimations() {
+        Button[] buttons = {
+                btnSidebarDashboard, btnSidebarUserManagement, btnSidebarRequests,
+                btnSidebarReports, btnSidebarAuditLog, btnSidebarSettings,
+                btnSidebarGateScreen, btnSidebarActivityLog, btnSidebarStudentsDevices,
+                btnSidebarProfile, btnSidebarDeviceLog, btnSidebarUpdateRequest,
                 btnSidebarChangePassword, btnSidebarLogout
         };
 
-        for (Button btn : navigationButtons) {
+        for (Button btn : buttons) {
             if (btn != null) {
-                btn.setStyle("-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15; -fx-text-fill: #495057;");
+                btn.setOnMouseEntered(e -> {
+                    if (btn != currentActiveButton) {
+                        btn.setStyle("-fx-background-color: #F3F4F6; -fx-text-fill: #111111; -fx-background-radius: 12; -fx-alignment: BASELINE_LEFT; -fx-graphic-text-gap: 16.0; -fx-padding: 0 0 0 16; -fx-cursor: hand;");
+                        if (btn.getGraphic() instanceof Label) {
+                            ((Label) btn.getGraphic()).setStyle("-fx-text-fill: #111111;");
+                        }
+                    }
+                });
+                btn.setOnMouseExited(e -> {
+                    if (btn != currentActiveButton) {
+                        btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-background-radius: 0; -fx-alignment: BASELINE_LEFT; -fx-graphic-text-gap: 16.0; -fx-padding: 0 0 0 16; -fx-cursor: hand;");
+                        if (btn.getGraphic() instanceof Label) {
+                            ((Label) btn.getGraphic()).setStyle("-fx-text-fill: #4B5563;");
+                        }
+                    }
+                });
             }
         }
-
-        if (activeTarget != null) {
-            activeTarget.setStyle("-fx-background-color: #7A0000; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 0 0 15; -fx-text-fill: #FFFFFF;");
-        }
     }
 
-    private void changeSubView(String fxmlPath, Button targetButton) {
-        updateActiveButtonStyle(targetButton);
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Parent view = loader.load();
+    private void updateActiveButtonStyle(Button activeTemplateButton) {
+        currentActiveButton = activeTemplateButton;
+        Button[] buttons = {
+                btnSidebarDashboard, btnSidebarUserManagement, btnSidebarRequests,
+                btnSidebarReports, btnSidebarAuditLog, btnSidebarSettings,
+                btnSidebarGateScreen, btnSidebarActivityLog, btnSidebarStudentsDevices,
+                btnSidebarProfile, btnSidebarDeviceLog, btnSidebarUpdateRequest,
+                btnSidebarChangePassword, btnSidebarLogout
+        };
 
-            if (contentArea != null) {
-                contentArea.getChildren().clear();
-                contentArea.getChildren().add(view);
-            } else {
-                System.err.println("Error: contentArea StackPane is null. Check fx:id in base.fxml");
+        for (Button btn : buttons) {
+            if (btn != null) {
+                if (btn == activeTemplateButton) {
+                    btn.setStyle("-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-background-radius: 12; -fx-font-weight: bold; -fx-alignment: BASELINE_LEFT; -fx-graphic-text-gap: 16.0; -fx-padding: 0 0 0 16; -fx-cursor: hand;");
+                    if (btn.getGraphic() instanceof Label) {
+                        ((Label) btn.getGraphic()).setStyle("-fx-text-fill: #FFFFFF; -fx-font-weight: bold;");
+                    }
+                } else {
+                    btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-background-radius: 0; -fx-font-weight: normal; -fx-alignment: BASELINE_LEFT; -fx-graphic-text-gap: 16.0; -fx-padding: 0 0 0 16; -fx-cursor: hand;");
+                    if (btn.getGraphic() instanceof Label) {
+                        ((Label) btn.getGraphic()).setStyle("-fx-text-fill: #4B5563; -fx-font-weight: normal;");
+                    }
+                }
             }
-        } catch (IOException e) {
-            System.err.println("Fatal: Could not transition sub-view panel: " + fxmlPath);
-            e.printStackTrace();
         }
     }
 
     @FXML
-    public void handleNavigateToDashboardContent() {
-        changeSubView("/com/example/byodsystem/byod/fxml/dashboard.fxml", btnSidebarDashboard);
+    public void handleNavigateToDashboard() {
+        updateActiveButtonStyle(btnSidebarDashboard);
+        loadSubView("/com/example/byodsystem/byod/fxml/dashboard.fxml");
     }
 
     @FXML
-    public void handleNavigateToUserManagement() { // changeSubView("/com/example/byodsystem/byod/fxml/usermanagement.fxml", btnSidebarUserManagement);
+    public void handleNavigateToUserManagement() {
+        updateActiveButtonStyle(btnSidebarUserManagement);
+        //loadSubView("/com/example/byodsystem/byod/fxml/usermanagement.fxml");
     }
 
     @FXML
-    public void handleNavigateToRequests() { // changeSubView("/com/example/byodsystem/byod/fxml/requests.fxml", btnSidebarRequests);
+    public void handleNavigateToReports() {
+        updateActiveButtonStyle(btnSidebarReports);
+        //loadSubView("/com/example/byodsystem/byod/fxml/reports.fxml");
     }
 
     @FXML
-    public void handleNavigateToReports() { // changeSubView("/com/example/byodsystem/byod/fxml/reports.fxml", btnSidebarReports);
+    public void handleNavigateToAuditLog() {
+        updateActiveButtonStyle(btnSidebarAuditLog);
+        //loadSubView("/com/example/byodsystem/byod/fxml/auditlog.fxml");
     }
 
     @FXML
-    public void handleNavigateToAuditLog() { // changeSubView("/com/example/byodsystem/byod/fxml/auditlog.fxml", btnSidebarAuditLog);
-    }
-
-    @FXML
-    public void handleNavigateToSettings() { // changeSubView("/com/example/byodsystem/byod/fxml/settings.fxml", btnSidebarSettings);
+    public void handleNavigateToSettings() {
+        updateActiveButtonStyle(btnSidebarSettings);
+       // loadSubView("/com/example/byodsystem/byod/fxml/settings.fxml");
     }
 
     @FXML
     public void handleNavigateToGateScreen() {
-        changeSubView("/com/example/byodsystem/byod/fxml/gatescreen.fxml", btnSidebarGateScreen);
+        updateActiveButtonStyle(btnSidebarGateScreen);
+        loadSubView("/com/example/byodsystem/byod/fxml/gatescreen.fxml");
     }
 
     @FXML
-    public void handleNavigateToActivityLog() { // changeSubView("/com/example/byodsystem/byod/fxml/activitylog.fxml", btnSidebarActivityLog);
+    public void handleNavigateToActivityLog() {
+        updateActiveButtonStyle(btnSidebarActivityLog);
+        loadSubView("/com/example/byodsystem/byod/fxml/activity.fxml");
     }
 
     @FXML
     public void handleNavigateToStudentsDevices() {
-        changeSubView("/com/example/byodsystem/byod/fxml/studentsdevices.fxml", btnSidebarStudentsDevices);
+        updateActiveButtonStyle(btnSidebarStudentsDevices);
+        loadSubView("/com/example/byodsystem/byod/fxml/studentsdevices.fxml");
     }
 
     @FXML
     public void handleNavigateToProfile() {
-        changeSubView("/com/example/byodsystem/byod/fxml/studentprofile.fxml", btnSidebarProfile);
+        updateActiveButtonStyle(btnSidebarProfile);
+        loadSubView("/com/example/byodsystem/byod/fxml/studentprofile.fxml");
     }
 
     @FXML
-    public void handleNavigateToDeviceLog() { // changeSubView("/com/example/byodsystem/byod/fxml/devicelog.fxml", btnSidebarDeviceLog);
+    public void handleNavigateToDeviceLog() {
+        updateActiveButtonStyle(btnSidebarDeviceLog);
+        loadSubView("/com/example/byodsystem/byod/fxml/studentdevicelog.fxml");
     }
 
     @FXML
-    public void handleNavigateToUpdateRequest() { // changeSubView("/com/example/byodsystem/byod/fxml/updaterequest.fxml", btnSidebarUpdateRequest);
+    public void handleNavigateToUpdateRequest() {
+        updateActiveButtonStyle(btnSidebarUpdateRequest);
+        loadSubView("/com/example/byodsystem/byod/fxml/studentupdaterequest.fxml");
     }
 
     @FXML
     public void handleNavigateToChangePassword() {
-        changeSubView("/com/example/byodsystem/byod/fxml/changepassword.fxml", btnSidebarChangePassword);
+        updateActiveButtonStyle(btnSidebarChangePassword);
+        loadSubView("/com/example/byodsystem/byod/fxml/changepassword.fxml");
+    }
+
+    private void loadSubView(String fxmlPath) {
+        try {
+            Parent view = FXMLLoader.load(getClass().getResource(fxmlPath));
+            if (contentArea != null) {
+                contentArea.getChildren().clear();
+                contentArea.getChildren().add(view);
+            }
+        } catch (IOException e) {
+            System.err.println("Fatal: Could not load layout sub-view: " + fxmlPath);
+            e.printStackTrace();
+        }
     }
 
     @FXML

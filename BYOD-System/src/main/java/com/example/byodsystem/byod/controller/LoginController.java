@@ -288,7 +288,7 @@ public class LoginController {
     public void fillOfficer() {
         clearInlineError();
         usernameField.setText("officer");
-        passwordField.setText("officer123");
+        passwordField.setText("officer1234");
     }
 
     @FXML
