@@ -78,7 +78,7 @@
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.example.byodsystem/com.example.byodsystem.HelloApplication</mainClass>
+                            <mainClass>com.example.byodsystem/com.example.byodsystem.byod.Main</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>
