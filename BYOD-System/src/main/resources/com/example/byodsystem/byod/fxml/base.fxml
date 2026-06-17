@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane fx:id="mainContainer" prefHeight="900.0" prefWidth="1440.0" style="-fx-background-color: #F8F9FA;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.BaseController">
+    <left>
+        <VBox fx:id="sidebarContainer" prefWidth="260.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #EBF0F5; -fx-border-width: 0 1 0 0;" BorderPane.alignment="CENTER" onMouseClicked="#handleSidebarAreaClicked">
+            <children>
+                <HBox fx:id="sidebarHeader" alignment="CENTER_LEFT" prefHeight="90.0" spacing="14.0">
+                    <padding>
+                        <Insets left="24.0" right="24.0" />
+                    </padding>
+                    <children>
+                        <StackPane maxHeight="44.0" maxWidth="44.0" minHeight="44.0" minWidth="44.0" style="-fx-background-color: #7A0000; -fx-background-radius: 22;">
+                            <children>
+                                <Label style="-fx-text-fill: #FFFFFF;" text="🛡">
+                                    <font>
+                                        <Font size="22.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </StackPane>
+                        <VBox fx:id="sidebarBrandLabels" alignment="CENTER_LEFT">
+                            <children>
+                                <Label text="Devgress" textFill="#111111">
+                                    <font>
+                                        <Font name="System Bold" size="18.0" />
+                                    </font>
+                                </Label>
+                                <Label text="v2.0.0" textFill="#6C757D">
+                                    <font>
+                                        <Font size="12.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button fx:id="btnCollapseSidebar" mnemonicParsing="false" onAction="#handleToggleSidebar" style="-fx-background-color: transparent; -fx-cursor: hand;" text="‹" textFill="#111111">
+                            <font>
+                                <Font size="20.0" />
+                            </font>
+                        </Button>
+                    </children>
+                </HBox>
+                <VBox fx:id="sidebarNavContainer" spacing="8.0" VBox.vgrow="ALWAYS">
+                    <padding>
+                        <Insets left="16.0" right="16.0" top="15.0" />
+                    </padding>
+                    <children>
+                        <Button fx:id="btnSidebarDashboard" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToDashboard" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Dashboard">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="⊞" textFill="#4B5563">
+                                    <font>
+                                        <Font size="18.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnSidebarStudentsDevices" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToStudentsDevices" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Students &amp; Devices">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="👥" textFill="#4B5563">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnSidebarGateScreen" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToGateScreen" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Gate Screen">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="💻" textFill="#4B5563">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnSidebarActivityLog" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToActivityLog" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Activity Log">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="⚡" textFill="#4B5563">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnSidebarUserManagement" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToUserManagement" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="User Management">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="👤" textFill="#4B5563">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnSidebarRequests" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToProfileRequests" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Profile Requests">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="📝" textFill="#4B5563">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnSidebarReports" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToReports" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Reports">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="📄" textFill="#4B5563">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnSidebarAuditLog" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToAuditLog" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Audit Log">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="🛡" textFill="#4B5563">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnSidebarProfile" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToProfile" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Profile">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="👤" textFill="#4B5563">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnSidebarDeviceLog" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToDeviceLog" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Device Log">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="⚡" textFill="#4B5563">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnSidebarSettings" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToSettings" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Settings">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="⚙" textFill="#4B5563">
+                                    <font>
+                                        <Font size="18.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                    </children>
+                </VBox>
+                <VBox fx:id="sidebarBottomContainer" spacing="8.0" style="-fx-border-color: #EBF0F5; -fx-border-width: 1 0 0 0;">
+                    <padding>
+                        <Insets bottom="24.0" left="16.0" right="16.0" top="20.0" />
+                    </padding>
+                    <children>
+                        <Button fx:id="btnSidebarChangePassword" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToChangePassword" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Change Password">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="🔑" textFill="#4B5563">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnSidebarLogout" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleLogout" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Logout">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="↪" textFill="#4B5563">
+                                    <font>
+                                        <Font size="18.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+    </left>
+    <center>
+        <StackPane fx:id="contentArea" style="-fx-background-color: #F8F9FA;" BorderPane.alignment="CENTER" />
+    </center>
+</BorderPane>

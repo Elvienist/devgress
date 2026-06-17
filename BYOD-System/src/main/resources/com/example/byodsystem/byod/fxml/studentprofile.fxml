@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -13,114 +14,222 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="900.0" prefWidth="1180.0" spacing="24.0" style="-fx-background-color: #F8F9FA;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.StudentProfileController">
-    <padding>
-        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
-    </padding>
-    <children>
-        <VBox spacing="4.0">
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: #F8F9FA; -fx-background: #F8F9FA;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.StudentProfileController">
+    <content>
+        <VBox spacing="0.0" style="-fx-background-color: #F8F9FA;">
             <children>
-                <Label text="My Profile" textFill="#111827">
-                    <font><Font name="System Bold" size="24.0" /></font>
-                </Label>
-                <Label text="View your information and registered system devices" textFill="#6B7280" />
-            </children>
-        </VBox>
 
-        <HBox spacing="24.0">
-            <children>
-                <VBox prefWidth="420.0" spacing="24.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-padding: 32;">
+                <HBox alignment="CENTER_LEFT" prefHeight="64.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #EBF0F5; -fx-border-width: 0 0 1 0;">
+                    <padding>
+                        <Insets left="32.0" right="32.0" />
+                    </padding>
                     <children>
-                        <HBox alignment="CENTER_LEFT" spacing="20.0">
+                        <VBox alignment="CENTER_LEFT">
                             <children>
-                                <StackPane prefHeight="70.0" prefWidth="70.0" style="-fx-background-color: #7A0000; -fx-background-radius: 50;">
+                                <Label fx:id="lblHeaderDate" style="-fx-text-fill: #6C757D;" text="Loading...">
+                                    <font><Font size="13.0" /></font>
+                                </Label>
+                            </children>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <HBox alignment="CENTER" spacing="12.0">
+                            <children>
+                                <StackPane maxHeight="36.0" maxWidth="36.0" minHeight="36.0" minWidth="36.0" style="-fx-background-color: #7A0000; -fx-background-radius: 18;">
                                     <children>
-                                        <Label fx:id="lblAvatarInitials" text="KT" textFill="#FFFFFF">
-                                            <font><Font name="System Bold" size="24.0" /></font>
+                                        <Label fx:id="lblHeaderAvatarInitial" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold;" text="J">
+                                            <font><Font size="14.0" /></font>
                                         </Label>
                                     </children>
                                 </StackPane>
-                                <VBox spacing="4.0">
+                                <VBox alignment="CENTER_LEFT">
                                     <children>
-                                        <Label fx:id="lblFullName" text="Kirby Torres" textFill="#111827">
-                                            <font><Font name="System Bold" size="18.0" /></font>
+                                        <Label fx:id="lblHeaderName" style="-fx-text-fill: #111111; -fx-font-weight: bold;" text="John Doe">
+                                            <font><Font size="13.0" /></font>
                                         </Label>
-                                        <Label fx:id="lblStudentCode" text="2024-00214-SR-0" textFill="#6B7280" />
+                                        <Label style="-fx-text-fill: #6C757D;" text="Student">
+                                            <font><Font size="11.0" /></font>
+                                        </Label>
                                     </children>
                                 </VBox>
                             </children>
                         </HBox>
-
-                        <GridPane hgap="12.0" vgap="16.0">
-                            <columnConstraints>
-                                <ColumnConstraints minWidth="100.0" prefWidth="120.0" />
-                                <ColumnConstraints hgrow="ALWAYS" />
-                            </columnConstraints>
-                            <rowConstraints>
-                                <RowConstraints />
-                                <RowConstraints />
-                                <RowConstraints />
-                                <RowConstraints />
-                            </rowConstraints>
-                            <children>
-                                <Label text="Program / Course:" textFill="#6B7280" GridPane.rowIndex="0" />
-                                <Label fx:id="lblCourse" text="BS Information Technology" textFill="#111827" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-
-                                <Label text="Year Level:" textFill="#6B7280" GridPane.rowIndex="1" />
-                                <Label fx:id="lblYearLevel" text="3rd Year" textFill="#111827" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-                                <Label text="Contact Number:" textFill="#6B7280" GridPane.rowIndex="2" />
-                                <Label fx:id="lblContactNumber" text="09123456789" textFill="#111827" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-                                <Label text="Account Status:" textFill="#6B7280" GridPane.rowIndex="3" />
-                                <Label fx:id="lblStatus" style="-fx-background-color: #EBF7EE; -fx-text-fill: #059669; -fx-padding: 4 10; -fx-background-radius: 4; -fx-font-weight: bold;" text="ACTIVE" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                            </children>
-                        </GridPane>
-
-                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToRequest" style="-fx-background-color: transparent; -fx-border-color: #D1D5DB; -fx-border-radius: 6; -fx-padding: 10; -fx-cursor: hand;" text="Request Profile Update" textFill="#374151" />
                     </children>
-                </VBox>
+                </HBox>
 
-                <VBox spacing="20.0" HBox.hgrow="ALWAYS">
+                <VBox spacing="20.0">
+                    <padding>
+                        <Insets bottom="32.0" left="32.0" right="32.0" top="32.0" />
+                    </padding>
                     <children>
-                        <HBox spacing="20.0">
+
+                        <VBox spacing="4.0">
                             <children>
-                                <VBox alignment="CENTER_LEFT" prefHeight="110.0" spacing="6.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 10; -fx-border-color: #E5E7EB; -fx-padding: 20 24;" HBox.hgrow="ALWAYS">
+                                <Label style="-fx-text-fill: #111111; -fx-font-weight: bold;" text="My Profile">
+                                    <font><Font size="22.0" /></font>
+                                </Label>
+                                <Label style="-fx-text-fill: #6C757D;" text="View your information and device activity">
+                                    <font><Font size="13.0" /></font>
+                                </Label>
+                            </children>
+                        </VBox>
+
+                        <VBox style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #EBF0F5; -fx-border-radius: 12; -fx-border-width: 1;" spacing="0.0">
+                            <padding>
+                                <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
+                            </padding>
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="20.0">
                                     <children>
-                                        <Label fx:id="lblTotalEntries" text="0" textFill="#059669"><font><Font name="System Bold" size="32.0" /></font></Label>
-                                        <Label text="Total Ingress Entries" textFill="#6B7280" />
+                                        <StackPane maxHeight="72.0" maxWidth="72.0" minHeight="72.0" minWidth="72.0" style="-fx-background-color: #7A0000; -fx-background-radius: 36;">
+                                            <children>
+                                                <Label fx:id="lblAvatarInitial" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold;" text="J">
+                                                    <font><Font size="28.0" /></font>
+                                                </Label>
+                                            </children>
+                                        </StackPane>
+                                        <VBox alignment="CENTER_LEFT" spacing="6.0" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <Label fx:id="lblFullName" style="-fx-text-fill: #111111; -fx-font-weight: bold;" text="John Doe">
+                                                    <font><Font size="20.0" /></font>
+                                                </Label>
+                                                <Label fx:id="lblStudentCode" style="-fx-text-fill: #6C757D;" text="STU-2024-001">
+                                                    <font><Font size="13.0" /></font>
+                                                </Label>
+                                                <GridPane hgap="40.0" vgap="10.0">
+                                                    <columnConstraints>
+                                                        <ColumnConstraints minWidth="160.0" />
+                                                        <ColumnConstraints minWidth="160.0" />
+                                                    </columnConstraints>
+                                                    <rowConstraints>
+                                                        <RowConstraints />
+                                                        <RowConstraints />
+                                                    </rowConstraints>
+                                                    <children>
+                                                        <VBox spacing="2.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                                            <children>
+                                                                <Label style="-fx-text-fill: #9CA3AF;" text="Course">
+                                                                    <font><Font size="11.0" /></font>
+                                                                </Label>
+                                                                <Label fx:id="lblCourse" style="-fx-text-fill: #111111; -fx-font-weight: bold;" text="Computer Science">
+                                                                    <font><Font size="13.0" /></font>
+                                                                </Label>
+                                                            </children>
+                                                        </VBox>
+                                                        <VBox spacing="2.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                                            <children>
+                                                                <Label style="-fx-text-fill: #9CA3AF;" text="Year Level">
+                                                                    <font><Font size="11.0" /></font>
+                                                                </Label>
+                                                                <Label fx:id="lblYearLevel" style="-fx-text-fill: #111111; -fx-font-weight: bold;" text="3rd Year">
+                                                                    <font><Font size="13.0" /></font>
+                                                                </Label>
+                                                            </children>
+                                                        </VBox>
+                                                        <VBox spacing="2.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                                            <children>
+                                                                <Label style="-fx-text-fill: #9CA3AF;" text="Contact Number">
+                                                                    <font><Font size="11.0" /></font>
+                                                                </Label>
+                                                                <Label fx:id="lblContactNumber" style="-fx-text-fill: #111111; -fx-font-weight: bold;" text="+63 912 345 6789">
+                                                                    <font><Font size="13.0" /></font>
+                                                                </Label>
+                                                            </children>
+                                                        </VBox>
+                                                        <VBox spacing="2.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                                            <children>
+                                                                <Label style="-fx-text-fill: #9CA3AF;" text="Status">
+                                                                    <font><Font size="11.0" /></font>
+                                                                </Label>
+                                                                <HBox>
+                                                                    <children>
+                                                                        <Label fx:id="lblStatus" style="-fx-text-fill: #15803D; -fx-background-color: #DCFCE7; -fx-background-radius: 6; -fx-padding: 2 10 2 10; -fx-font-weight: bold;" text="Active">
+                                                                            <font><Font size="12.0" /></font>
+                                                                        </Label>
+                                                                    </children>
+                                                                </HBox>
+                                                            </children>
+                                                        </VBox>
+                                                    </children>
+                                                </GridPane>
+                                            </children>
+                                        </VBox>
+                                        <Button fx:id="btnRequestUpdate" mnemonicParsing="false" onAction="#handleRequestUpdate" style="-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-background-radius: 8; -fx-cursor: hand; -fx-font-weight: bold;" text="⟳  Request Update">
+                                            <font><Font size="13.0" /></font>
+                                            <padding>
+                                                <Insets bottom="10.0" left="16.0" right="16.0" top="10.0" />
+                                            </padding>
+                                        </Button>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                        <HBox spacing="16.0">
+                            <children>
+                                <VBox alignment="CENTER_LEFT" spacing="4.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #EBF0F5; -fx-border-radius: 12; -fx-border-width: 1;" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="20.0" left="24.0" right="24.0" top="20.0" />
+                                    </padding>
+                                    <children>
+                                        <Label fx:id="lblTotalEntries" style="-fx-text-fill: #15803D; -fx-font-weight: bold;" text="—">
+                                            <font><Font size="32.0" /></font>
+                                        </Label>
+                                        <Label style="-fx-text-fill: #6C757D;" text="Total Entries">
+                                            <font><Font size="13.0" /></font>
+                                        </Label>
                                     </children>
                                 </VBox>
-                                <VBox alignment="CENTER_LEFT" prefHeight="110.0" spacing="6.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 10; -fx-border-color: #E5E7EB; -fx-padding: 20 24;" HBox.hgrow="ALWAYS">
+                                <VBox alignment="CENTER_LEFT" spacing="4.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #EBF0F5; -fx-border-radius: 12; -fx-border-width: 1;" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="20.0" left="24.0" right="24.0" top="20.0" />
+                                    </padding>
                                     <children>
-                                        <Label fx:id="lblTotalExits" text="0" textFill="#3B82F6"><font><Font name="System Bold" size="32.0" /></font></Label>
-                                        <Label text="Total Egress Exits" textFill="#6B7280" />
+                                        <Label fx:id="lblTotalExits" style="-fx-text-fill: #0EA5E9; -fx-font-weight: bold;" text="—">
+                                            <font><Font size="32.0" /></font>
+                                        </Label>
+                                        <Label style="-fx-text-fill: #6C757D;" text="Total Exits">
+                                            <font><Font size="13.0" /></font>
+                                        </Label>
+                                    </children>
+                                </VBox>
+                                <VBox alignment="CENTER_LEFT" spacing="4.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #EBF0F5; -fx-border-radius: 12; -fx-border-width: 1;" HBox.hgrow="ALWAYS">
+                                    <padding>
+                                        <Insets bottom="20.0" left="24.0" right="24.0" top="20.0" />
+                                    </padding>
+                                    <children>
+                                        <Label style="-fx-text-fill: #6C757D;" text="Last Movement">
+                                            <font><Font size="12.0" /></font>
+                                        </Label>
+                                        <Label fx:id="lblLastMovement" style="-fx-text-fill: #111111; -fx-font-weight: bold;" text="—">
+                                            <font><Font size="13.0" /></font>
+                                        </Label>
                                     </children>
                                 </VBox>
                             </children>
                         </HBox>
-                        <VBox alignment="CENTER_LEFT" prefHeight="90.0" spacing="6.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 10; -fx-border-color: #E5E7EB; -fx-padding: 16 24;" VBox.vgrow="NEVER">
+
+                        <VBox spacing="12.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #EBF0F5; -fx-border-radius: 12; -fx-border-width: 1;">
+                            <padding>
+                                <Insets bottom="20.0" left="24.0" right="24.0" top="20.0" />
+                            </padding>
                             <children>
-                                <Label text="Last Verified Gate Activity Sweep Time:" textFill="#6B7280" />
-                                <Label fx:id="lblLastMovement" text="No dynamic ledger movements recorded today" textFill="#111827"><font><Font name="System Bold" size="14.0" /></font></Label>
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <children>
+                                        <Label style="-fx-text-fill: #6C757D;" text="💻">
+                                            <font><Font size="14.0" /></font>
+                                        </Label>
+                                        <Label style="-fx-text-fill: #111111; -fx-font-weight: bold;" text="Registered Devices">
+                                            <font><Font size="15.0" /></font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <VBox fx:id="devicesContainer" spacing="10.0" />
                             </children>
                         </VBox>
 
-                        <VBox style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-padding: 24;" VBox.vgrow="ALWAYS">
-                            <children>
-                                <Label text="My Registered BYOD Hardware Devices" textFill="#111827" style="-fx-padding: 0 0 16 0;">
-                                    <font><Font name="System Bold" size="16.0" /></font>
-                                </Label>
-                                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #FFFFFF; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
-                                    <content>
-                                        <VBox fx:id="devicesContainer" spacing="12.0" />
-                                    </content>
-                                </ScrollPane>
-                            </children>
-                        </VBox>
                     </children>
                 </VBox>
             </children>
-        </HBox>
-    </children>
-</VBox>
+        </VBox>
+    </content>
+</ScrollPane>

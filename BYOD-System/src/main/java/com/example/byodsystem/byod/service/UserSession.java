@@ -5,8 +5,9 @@ public class UserSession {
 
     private int userId;
     private String username;
+    private String fullName;
     private String role;
-    private Integer studentRefId;
+    private String studentRefId;
     private boolean isFirstLogin;
 
     private UserSession() {}
@@ -24,18 +25,22 @@ public class UserSession {
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
-    public Integer getStudentRefId() { return studentRefId; }
-    public void setStudentRefId(Integer studentRefId) { this.studentRefId = studentRefId; }
+    public String getStudentRefId() { return studentRefId; }
+    public void setStudentRefId(String studentRefId) { this.studentRefId = studentRefId; }
 
     public boolean isFirstLogin() { return isFirstLogin; }
-    public void setFirstLogin(boolean firstLogin) { this.isFirstLogin = firstLogin; }
+    public void setFirstLogin(boolean isFirstLogin) { this.isFirstLogin = isFirstLogin; }
 
     public void cleanSession() {
         userId = 0;
         username = null;
+        fullName = null;
         role = null;
         studentRefId = null;
         isFirstLogin = false;

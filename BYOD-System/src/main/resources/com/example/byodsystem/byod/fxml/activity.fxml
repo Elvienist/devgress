@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.byodsystem.byod.controller.ActivityLogController"
+            style="-fx-background-color: #FFFFFF;">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" prefHeight="64" spacing="12"
+              style="-fx-background-color: #FFFFFF; -fx-border-color: #E5E7EB; -fx-border-width: 0 0 1 0;">
+            <padding><Insets left="24" right="24" /></padding>
+            <Label text="📅" style="-fx-font-size: 14;" />
+            <Label fx:id="lblCurrentDate" text="Date"
+                   style="-fx-text-fill: #111111; -fx-font-size: 13px;" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label text="🔔" style="-fx-font-size: 18;" />
+            <VBox alignment="CENTER_RIGHT" spacing="2">
+                <Label text="Administrator"
+                       style="-fx-text-fill: #111111; -fx-font-weight: bold; -fx-font-size: 13px;" />
+                <Label fx:id="lblRoleBadge" text="Admin"
+                       style="-fx-background-color: #7A0000; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 1 8; -fx-font-size: 10px;" />
+            </VBox>
+            <StackPane maxHeight="36" maxWidth="36" minHeight="36" minWidth="36"
+                       style="-fx-background-color: #7A0000; -fx-background-radius: 50;">
+                <Label fx:id="lblUserInitial" text="A"
+                       style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;" />
+            </StackPane>
+        </HBox>
+    </top>
+
+    <center>
+        <HBox style="-fx-background-color: #FFFFFF;">
+
+            <ScrollPane fitToWidth="true" HBox.hgrow="ALWAYS"
+                        style="-fx-background-color: transparent; -fx-background: #FFFFFF; -fx-border-color: transparent;">
+                <VBox spacing="20" style="-fx-background-color: #FFFFFF;">
+                    <padding><Insets bottom="28" left="28" right="28" top="28" /></padding>
+
+                    <VBox spacing="4">
+                        <Label text="Activity Log"
+                               style="-fx-text-fill: #111111; -fx-font-weight: bold; -fx-font-size: 22px;" />
+                        <Label text="Complete record of all device movements"
+                               style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" />
+                    </VBox>
+
+                    <HBox spacing="16">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: #F0F2F5; -fx-background-radius: 10; -fx-border-color: #E5E7EB; -fx-border-radius: 10;">
+                            <padding><Insets bottom="20" left="20" right="20" top="20" /></padding>
+                            <Label fx:id="lblTotalEntries" text="0"
+                                   style="-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-font-size: 30px;" />
+                            <Label text="Total Entries"
+                                   style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" />
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: #F0F2F5; -fx-background-radius: 10; -fx-border-color: #E5E7EB; -fx-border-radius: 10;">
+                            <padding><Insets bottom="20" left="20" right="20" top="20" /></padding>
+                            <Label fx:id="lblTotalExits" text="0"
+                                   style="-fx-text-fill: #06B6D4; -fx-font-weight: bold; -fx-font-size: 30px;" />
+                            <Label text="Total Exits"
+                                   style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" />
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: #F0F2F5; -fx-background-radius: 10; -fx-border-color: #E5E7EB; -fx-border-radius: 10;">
+                            <padding><Insets bottom="20" left="20" right="20" top="20" /></padding>
+                            <Label fx:id="lblUniqueStudents" text="0"
+                                   style="-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 30px;" />
+                            <Label text="Unique Students"
+                                   style="-fx-text-fill: #6B7280; -fx-font-size: 13px;" />
+                        </VBox>
+                    </HBox>
+
+                    <VBox style="-fx-background-color: #F0F2F5; -fx-background-radius: 10; -fx-border-color: #E5E7EB; -fx-border-radius: 10;">
+
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <padding><Insets bottom="14" left="16" right="16" top="14" /></padding>
+                            <TextField fx:id="txtSearch"
+                                       promptText="Search by student name, ID, or serial number..."
+                                       prefHeight="38" HBox.hgrow="ALWAYS"
+                                       style="-fx-background-color: #FFFFFF; -fx-background-radius: 8; -fx-border-color: #E5E7EB; -fx-border-radius: 8; -fx-padding: 0 12; -fx-font-size: 13px;" />
+                            <TextField fx:id="txtDateFilter"
+                                       promptText="YYYY-MM-DD"
+                                       prefHeight="38" prefWidth="150"
+                                       style="-fx-background-color: #FFFFFF; -fx-background-radius: 8; -fx-border-color: #E5E7EB; -fx-border-radius: 8; -fx-padding: 0 12; -fx-font-size: 13px;" />
+                            <Button fx:id="btnFilter" mnemonicParsing="false"
+                                    onAction="#handleFilter"
+                                    prefHeight="38" text="⚙  Filter"
+                                    style="-fx-background-color: #FFFFFF; -fx-text-fill: #374151; -fx-background-radius: 8; -fx-border-color: #E5E7EB; -fx-border-radius: 8; -fx-cursor: hand; -fx-font-size: 13px;" />
+                        </HBox>
+
+                        <HBox style="-fx-background-color: #E5E7EB; -fx-border-color: #D1D5DB; -fx-border-width: 1 0 1 0;" alignment="CENTER_LEFT">
+                            <padding><Insets bottom="10" left="16" right="16" top="10" /></padding>
+                            <Label text="Timestamp" prefWidth="140" minWidth="140" maxWidth="140"
+                                   style="-fx-text-fill: #374151; -fx-font-weight: bold; -fx-font-size: 11px;" />
+                            <Label text="Student" prefWidth="160" minWidth="160" maxWidth="160"
+                                   style="-fx-text-fill: #374151; -fx-font-weight: bold; -fx-font-size: 11px;" />
+                            <Label text="Device" prefWidth="160" minWidth="160" maxWidth="160"
+                                   style="-fx-text-fill: #374151; -fx-font-weight: bold; -fx-font-size: 11px;" />
+                            <Label text="Serial" prefWidth="120" minWidth="120" maxWidth="120"
+                                   style="-fx-text-fill: #374151; -fx-font-weight: bold; -fx-font-size: 11px;" />
+                            <Label text="Direction" prefWidth="60" minWidth="60" maxWidth="60" alignment="CENTER"
+                                   style="-fx-text-fill: #374151; -fx-font-weight: bold; -fx-font-size: 11px;" />
+                            <Label text="Operator" prefWidth="130" minWidth="130" maxWidth="130"
+                                   style="-fx-text-fill: #374151; -fx-font-weight: bold; -fx-font-size: 11px;" />
+                            <Label text="Status" prefWidth="90" minWidth="90" maxWidth="90"
+                                   style="-fx-text-fill: #374151; -fx-font-weight: bold; -fx-font-size: 11px;" />
+                        </HBox>
+
+                        <VBox fx:id="paneTableRows" style="-fx-background-color: transparent;" />
+
+                    </VBox>
+                </VBox>
+            </ScrollPane>
+
+            <ScrollPane prefWidth="350" minWidth="350" maxWidth="350"
+                        fitToWidth="true"
+                        hbarPolicy="NEVER"
+                        vbarPolicy="AS_NEEDED"
+                        style="-fx-background: #FFFFFF; -fx-background-color: #FFFFFF; -fx-border-color: #E5E7EB; -fx-border-width: 0 0 0 1;">
+
+                <VBox spacing="0" style="-fx-background-color: #FFFFFF;">
+
+                    <VBox style="-fx-border-color: #7A0000; -fx-border-width: 1; -fx-border-radius: 10; -fx-background-radius: 10; -fx-background-color: #FFFFFF;">
+                        <VBox.margin><Insets bottom="12" left="16" right="16" top="16" /></VBox.margin>
+
+                        <HBox alignment="CENTER_LEFT" spacing="10"
+                              style="-fx-background-color: #7A0000; -fx-background-radius: 8 8 0 0;">
+                            <padding><Insets bottom="14" left="16" right="16" top="14" /></padding>
+                            <Label text="AUDIT INSPECTOR"
+                                   style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="lblInspectorLogId" text="#00000"
+                                   style="-fx-text-fill: #F59E0B; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                        </HBox>
+
+                        <VBox spacing="16">
+                            <padding><Insets bottom="16" left="16" right="16" top="16" /></padding>
+
+                            <VBox spacing="8">
+                                <Label text="TRANSACTION METRICS"
+                                       style="-fx-text-fill: #7A0000; -fx-font-weight: bold; -fx-font-size: 10px;" />
+                                <GridPane hgap="8" vgap="6">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="ALWAYS" minWidth="110" maxWidth="130" />
+                                        <ColumnConstraints hgrow="ALWAYS" minWidth="150" />
+                                    </columnConstraints>
+                                    <Label text="Logged Time:"
+                                           style="-fx-text-fill: #374151; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                    <Label fx:id="lblInspLoggedTime" text="---" wrapText="true"
+                                           style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                    <Label text="Direction Event:"
+                                           style="-fx-text-fill: #374151; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                    <Label fx:id="lblInspDirection" text="---" wrapText="true"
+                                           style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    <Label text="Log Entry Status:"
+                                           style="-fx-text-fill: #374151; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                    <Label fx:id="lblInspStatus" text="---" wrapText="true"
+                                           style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <Label text="Batch UUID Reference Identifier:"
+                                           style="-fx-text-fill: #374151; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="0" GridPane.rowIndex="3"
+                                           GridPane.columnSpan="2" wrapText="true" />
+                                    <Label fx:id="lblInspBatchId" text="---"
+                                           style="-fx-text-fill: #6B7280; -fx-font-size: 11px;"
+                                           GridPane.columnIndex="0" GridPane.rowIndex="4"
+                                           GridPane.columnSpan="2" wrapText="true" />
+                                </GridPane>
+                                <Region prefHeight="1" style="-fx-background-color: #D4A017;" />
+                            </VBox>
+
+                            <VBox spacing="8">
+                                <Label text="STUDENT ACCOUNT METADATA"
+                                       style="-fx-text-fill: #7A0000; -fx-font-weight: bold; -fx-font-size: 10px;" />
+                                <GridPane hgap="8" vgap="6">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="ALWAYS" minWidth="110" maxWidth="130" />
+                                        <ColumnConstraints hgrow="ALWAYS" minWidth="150" />
+                                    </columnConstraints>
+                                    <Label text="Student Name:"
+                                           style="-fx-text-fill: #374151; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                    <Label fx:id="lblInspStudentName" text="---" wrapText="true"
+                                           style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                    <Label text="Student Code ID:"
+                                           style="-fx-text-fill: #374151; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                    <Label fx:id="lblInspStudentCode" text="---" wrapText="true"
+                                           style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    <Label text="Course &amp; Level:"
+                                           style="-fx-text-fill: #374151; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                    <Label fx:id="lblInspCourse" text="---" wrapText="true"
+                                           style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                </GridPane>
+                                <Region prefHeight="1" style="-fx-background-color: #D4A017;" />
+                            </VBox>
+
+                            <VBox spacing="8">
+                                <Label text="HARDWARE TRACKING METRICS"
+                                       style="-fx-text-fill: #7A0000; -fx-font-weight: bold; -fx-font-size: 10px;" />
+                                <GridPane hgap="8" vgap="6">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="ALWAYS" minWidth="110" maxWidth="130" />
+                                        <ColumnConstraints hgrow="ALWAYS" minWidth="150" />
+                                    </columnConstraints>
+                                    <Label text="Brand Provider:"
+                                           style="-fx-text-fill: #374151; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                    <Label fx:id="lblInspBrand" text="---" wrapText="true"
+                                           style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                    <Label text="Hardware Model:"
+                                           style="-fx-text-fill: #374151; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                    <Label fx:id="lblInspModel" text="---" wrapText="true"
+                                           style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    <Label text="Serial Key Identity:"
+                                           style="-fx-text-fill: #374151; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                    <Label fx:id="lblInspSerial" text="---" wrapText="true"
+                                           style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"
+                                           GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                </GridPane>
+                                <Region prefHeight="1" style="-fx-background-color: #D4A017;" />
+                            </VBox>
+
+                            <VBox spacing="4"
+                                  style="-fx-background-color: #F9FAFB; -fx-background-radius: 8; -fx-border-color: #E5E7EB; -fx-border-radius: 8;">
+                                <padding><Insets bottom="12" left="12" right="12" top="12" /></padding>
+                                <Label text="Gate Action Operator Authority:"
+                                       style="-fx-text-fill: #6B7280; -fx-font-size: 11px;" />
+                                <Label fx:id="lblInspOperator" text="---" wrapText="true"
+                                       style="-fx-text-fill: #374151; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                            </VBox>
+
+                            <Button mnemonicParsing="false" onAction="#handleClearSelection"
+                                    prefHeight="32" maxWidth="1000" text="✕ Clear Current Selection"
+                                    style="-fx-background-color: #F3F4F6; -fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6; -fx-cursor: hand; -fx-text-fill: #4B5563; -fx-font-weight: bold; -fx-font-size: 11px;" />
+
+                        </VBox>
+                    </VBox>
+
+                    <VBox spacing="14"
+                          style="-fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 10; -fx-background-radius: 10; -fx-background-color: #FFFFFF;">
+                        <VBox.margin><Insets bottom="16" left="16" right="16" top="0" /></VBox.margin>
+                        <padding><Insets bottom="16" left="16" right="16" top="16" /></padding>
+
+                        <Label text="Amend Log Record"
+                               style="-fx-text-fill: #111111; -fx-font-weight: bold; -fx-font-size: 14px;" />
+
+                        <VBox spacing="6">
+                            <Label text="Correction Status Option"
+                                   style="-fx-text-fill: #374151; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                            <ComboBox fx:id="cmbAmendStatus" prefHeight="38" maxWidth="1000"
+                                      style="-fx-background-color: #FFFFFF; -fx-border-color: #D1D5DB; -fx-border-radius: 6; -fx-background-radius: 6;" />
+                        </VBox>
+
+                        <VBox spacing="6">
+                            <Label text="Amendment Auditing Reason Note"
+                                   style="-fx-text-fill: #374151; -fx-font-weight: bold; -fx-font-size: 12px;" />
+                            <TextArea fx:id="txtAmendReason" prefHeight="90" prefRowCount="4"
+                                      promptText="State explicitly why this log trace requires data modification state overrides..."
+                                      wrapText="true"
+                                      style="-fx-background-color: #FFFFFF; -fx-border-color: #D1D5DB; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 12px;" />
+                            <Label fx:id="lblAmendError" text="Please provide an amendment reason note." visible="false" managed="false"
+                                   style="-fx-text-fill: #EF4444; -fx-font-size: 11px; -fx-font-weight: bold;" />
+                        </VBox>
+
+                        <Button fx:id="btnSubmitAmend" mnemonicParsing="false"
+                                onAction="#handleSubmitAmend"
+                                prefHeight="40" maxWidth="1000"
+                                text="Submit State Amendment"
+                                style="-fx-background-color: #7A0000; -fx-background-radius: 6; -fx-cursor: hand; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;" />
+                    </VBox>
+
+                </VBox>
+            </ScrollPane>
+
+        </HBox>
+    </center>
+
+</BorderPane>

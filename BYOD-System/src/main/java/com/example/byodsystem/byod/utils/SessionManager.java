@@ -15,7 +15,7 @@ public class SessionManager {
     public static void navigate(Button triggerButton, String fxmlName) {
         try {
             Stage stage = (Stage) triggerButton.getScene().getWindow();
-            Parent root = FXMLLoader.load(SessionManager.class.getResource("/com/example/byodsystem/byod/" + fxmlName));
+            Parent root = FXMLLoader.load(SessionManager.class.getResource("/com/example/byodsystem/byod/fxml/" + fxmlName));
             stage.setScene(new Scene(root));
         } catch (IOException e) {
             e.printStackTrace();

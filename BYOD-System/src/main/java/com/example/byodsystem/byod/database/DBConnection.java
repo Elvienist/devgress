@@ -25,11 +25,16 @@ public class DBConnection {
             String user = props.getProperty("db.user");
             String password = props.getProperty("db.password");
 
+            if (url != null && !url.contains("prepareThreshold")) {
+                url = url.contains("?") ? url + "&prepareThreshold=0" : url + "?prepareThreshold=0";
+            }
+
             Class.forName("org.postgresql.Driver");
             conn = DriverManager.getConnection(url, user, password);
 
         } catch (Exception e) {
-            System.err.println("[WARNING] Database is not connected: " + e.getMessage());
+            System.out.println("Database Connection Failed");
+            e.printStackTrace();
         }
         return conn;
     }
