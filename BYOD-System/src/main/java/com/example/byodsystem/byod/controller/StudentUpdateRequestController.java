@@ -44,6 +44,7 @@ public class StudentUpdateRequestController {
     @FXML private Button btnFilterRejected;
 
     private String studentRefId;
+    private int numericStudentId = -1;
     private String currentFilter = null;
     private Map<String, String> fieldToColumn;
     private Map<String, String> columnToLabel;
@@ -89,20 +90,37 @@ public class StudentUpdateRequestController {
             pastRequestsContainer.setAlignment(Pos.TOP_LEFT);
         }
 
+        resolveNumericStudentId();
         loadCurrentStudentData();
         loadPastRequests();
     }
 
-    private void loadCurrentStudentData() {
+    private void resolveNumericStudentId() {
         if (studentRefId == null || studentRefId.trim().isEmpty()) return;
+
+        String sql = "SELECT student_id FROM students WHERE student_code = ?";
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, studentRefId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                this.numericStudentId = rs.getInt("student_id");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadCurrentStudentData() {
+        if (numericStudentId == -1) return;
 
         String sql = "SELECT full_name, course, year_level, contact_number FROM students WHERE student_id = ?";
 
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // FIX: Parse String studentRefId to integer to match database integer type
-            ps.setInt(1, Integer.parseInt(studentRefId));
+            ps.setInt(1, numericStudentId);
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -118,7 +136,7 @@ public class StudentUpdateRequestController {
     @FXML
     public void handleFieldChange() {
         String selectedField = cbField.getValue();
-        if (selectedField == null || studentRefId == null) return;
+        if (selectedField == null || numericStudentId == -1) return;
 
         toggleValueInputMode(selectedField);
         String columnName = fieldToColumn.get(selectedField);
@@ -128,8 +146,7 @@ public class StudentUpdateRequestController {
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // FIX: Parse String studentRefId to integer to match database integer type
-            ps.setInt(1, Integer.parseInt(studentRefId));
+            ps.setInt(1, numericStudentId);
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -182,6 +199,10 @@ public class StudentUpdateRequestController {
             lblFormError.setText("Please provide a reason for the update request.");
             return;
         }
+        if (numericStudentId == -1) {
+            lblFormError.setText("Session error: Failed to map student reference identifier.");
+            return;
+        }
 
         String dbColumnName = fieldToColumn.get(selectedField);
         String currentValue = tfCurrentValue.getText();
@@ -194,8 +215,7 @@ public class StudentUpdateRequestController {
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // FIX: Parse String studentRefId to integer to prevent execution crash upon form submission
-            ps.setInt(1, Integer.parseInt(studentRefId));
+            ps.setInt(1, numericStudentId);
             ps.setString(2, dbColumnName);
             ps.setString(3, currentValue);
             ps.setString(4, newValue);
@@ -263,7 +283,7 @@ public class StudentUpdateRequestController {
         pastRequestsContainer.getChildren().clear();
         pastRequestsContainer.setAlignment(Pos.TOP_LEFT);
 
-        if (studentRefId == null || studentRefId.trim().isEmpty()) return;
+        if (numericStudentId == -1) return;
 
         String sql = """
             SELECT field_name, current_value, requested_value, reason, status, admin_response, submitted_at
@@ -276,8 +296,7 @@ public class StudentUpdateRequestController {
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // FIX: Parse String studentRefId to integer to match database integer type
-            ps.setInt(1, Integer.parseInt(studentRefId));
+            ps.setInt(1, numericStudentId);
             if (currentFilter != null) {
                 ps.setString(2, currentFilter);
             }
