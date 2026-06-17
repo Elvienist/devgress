@@ -47,7 +47,7 @@ CREATE TABLE users (
     first_login      BOOLEAN DEFAULT TRUE,
     created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login       TIMESTAMP
-)
+);
 
 
 -- =============================================================
