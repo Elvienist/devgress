@@ -39,14 +39,15 @@ CREATE TABLE users (
     role             VARCHAR(20) NOT NULL
                      CHECK (role IN ('ADMIN', 'OFFICER', 'STUDENT')),
     password_hash    VARCHAR(255) NOT NULL,
-    student_ref_id   INT REFERENCES students(student_id)
+    student_ref_id   VARCHAR(20)
+                     REFERENCES students(student_code)
                      ON DELETE SET NULL,
     status           VARCHAR(20) DEFAULT 'ACTIVE'
                      CHECK (status IN ('ACTIVE', 'INACTIVE')),
     first_login      BOOLEAN DEFAULT TRUE,
     created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login       TIMESTAMP
-);
+)
 
 
 -- =============================================================
