@@ -1,37 +1,187 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0"
-            xmlns="http://javafx.com/javafx/17"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.example.byodsystem.byod.controller.LoginController">
+<BorderPane style="-fx-background-color: #F8F9FA;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.LoginController">
+    <center>
+        <VBox alignment="CENTER" spacing="24.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+            </padding>
+            <children>
+                <VBox alignment="CENTER" spacing="12.0">
+                    <children>
+                        <StackPane maxHeight="64.0" maxWidth="64.0" minHeight="64.0" minWidth="64.0" style="-fx-background-color: #7A0000; -fx-background-radius: 16;">
+                            <children>
+                                <Label text="🛡" textFill="WHITE">
+                                    <font>
+                                        <Font size="28.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </StackPane>
+                        <Label text="Devgress" textFill="#111111">
+                            <font>
+                                <Font name="System Bold" size="26.0" />
+                            </font>
+                        </Label>
+                        <Label text="Campus Device Monitoring System" textFill="#6C757D">
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
 
-    <children>
-
-        <VBox alignment="CENTER"
-              spacing="15"
-              layoutX="180"
-              layoutY="100">
-
-            <Label text="BYOD SYSTEM"
-                   style="-fx-font-size: 24px;"/>
-
-            <TextField fx:id="usernameField"
-                       promptText="Username"
-                       prefWidth="250"/>
-
-            <PasswordField fx:id="passwordField"
-                           promptText="Password"
-                           prefWidth="250"/>
-
-            <Button text="LOGIN"
-                    prefWidth="250"
-                    onAction="#login"/>
-
+                <VBox maxWidth="440.0" prefWidth="440.0" spacing="20.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 16; -fx-border-color: #E5E7EB; -fx-border-radius: 16;">
+                    <padding>
+                        <Insets bottom="32.0" left="32.0" right="32.0" top="32.0" />
+                    </padding>
+                    <effect>
+                        <DropShadow blurType="GAUSSIAN" height="30.0" radius="14.5" width="30.0">
+                            <color>
+                                <Color red="0.0" green="0.0" blue="0.0" opacity="0.03" />
+                            </color>
+                        </DropShadow>
+                    </effect>
+                    <children>
+                        <HBox fx:id="dbStatusBanner" alignment="CENTER_LEFT" prefHeight="40.0" spacing="10.0" style="-fx-background-color: #EBF7EE; -fx-background-radius: 8; -fx-border-color: #D3ECD9; -fx-border-radius: 8;">
+                            <padding>
+                                <Insets left="14.0" right="14.0" />
+                            </padding>
+                            <children>
+                                <Label text="✓" textFill="#10B981">
+                                    <font>
+                                        <Font name="System Bold" size="13.0" />
+                                    </font>
+                                </Label>
+                                <Label fx:id="dbStatusLabel" text="Database Connected" textFill="#059669">
+                                    <font>
+                                        <Font name="System Bold" size="12.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                        </HBox>
+                        <VBox spacing="16.0">
+                            <children>
+                                <VBox spacing="6.0">
+                                    <children>
+                                        <Label text="Username" textFill="#374151">
+                                            <font>
+                                                <Font name="System Bold" size="12.0" />
+                                            </font>
+                                        </Label>
+                                        <TextField fx:id="usernameField" promptText="Enter your username" style="-fx-background-radius: 8; -fx-border-color: #D1D5DB; -fx-border-radius: 8; -fx-padding: 10;" />
+                                    </children>
+                                </VBox>
+                                <VBox spacing="6.0">
+                                    <children>
+                                        <Label text="Password" textFill="#374151">
+                                            <font>
+                                                <Font name="System Bold" size="12.0" />
+                                            </font>
+                                        </Label>
+                                        <StackPane alignment="CENTER_RIGHT">
+                                            <children>
+                                                <PasswordField fx:id="passwordField" promptText="Enter your password" style="-fx-background-radius: 8; -fx-border-color: #D1D5DB; -fx-border-radius: 8; -fx-padding: 10 40 10 10;" />
+                                                <TextField fx:id="passwordTextField" promptText="Enter your password" visible="false" style="-fx-background-radius: 8; -fx-border-color: #D1D5DB; -fx-border-radius: 8; -fx-padding: 10 40 10 10;" />
+                                                <Button fx:id="togglePasswordBtn" mnemonicParsing="false" onAction="#togglePasswordVisibility" style="-fx-background-color: transparent; -fx-cursor: hand;" text="👁" textFill="#6B7280">
+                                                    <StackPane.margin>
+                                                        <Insets right="8.0" />
+                                                    </StackPane.margin>
+                                                </Button>
+                                            </children>
+                                        </StackPane>
+                                    </children>
+                                </VBox>
+                                <Label fx:id="errorLabel" text="Inline error text" textFill="#DC2626" visible="false" wrapText="true">
+                                    <font>
+                                        <Font size="12.0" />
+                                    </font>
+                                </Label>
+                                <Button fx:id="loginButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleLogin" prefHeight="44.0" style="-fx-background-color: #7A0000; -fx-background-radius: 8; -fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-cursor: hand;" text="Sign In" />
+                            </children>
+                        </VBox>
+                        <VBox spacing="10.0" style="-fx-border-color: #F3F4F6; -fx-border-width: 1 0 0 0; -fx-padding: 16 0 0 0;">
+                            <children>
+                                <Label text="Quick Demo Presets:" textFill="#6B7280">
+                                    <font>
+                                        <Font size="11.0" />
+                                    </font>
+                                </Label>
+                                <HBox alignment="CENTER_LEFT" onMouseClicked="#fillAdmin" style="-fx-cursor: hand; -fx-padding: 4 0;">
+                                    <children>
+                                        <Label text="Administrator" textFill="#4B5563">
+                                            <font>
+                                                <Font size="12.0" />
+                                            </font>
+                                        </Label>
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Label text="admin / admin123" textFill="#212529">
+                                            <font>
+                                                <Font name="System Bold" size="12.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <HBox alignment="CENTER_LEFT" onMouseClicked="#fillOfficer" style="-fx-cursor: hand; -fx-padding: 4 0;">
+                                    <children>
+                                        <Label text="Security Officer" textFill="#4B5563">
+                                            <font>
+                                                <Font size="12.0" />
+                                            </font>
+                                        </Label>
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Label text="officer / officer" textFill="#212529">
+                                            <font>
+                                                <Font name="System Bold" size="12.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                <HBox alignment="CENTER_LEFT" onMouseClicked="#fillStudent" style="-fx-cursor: hand; -fx-padding: 4 0;">
+                                    <children>
+                                        <Label text="Student Account" textFill="#4B5563">
+                                            <font>
+                                                <Font size="12.0" />
+                                            </font>
+                                        </Label>
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Label text="student / student" textFill="#212529">
+                                            <font>
+                                                <Font name="System Bold" size="12.0" />
+                                            </font>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+            </children>
         </VBox>
-
-    </children>
-
-</AnchorPane>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER" prefHeight="60.0" BorderPane.alignment="CENTER">
+            <children>
+                <Label text="© 2026 Campus Device Monitoring System" textFill="#9CA3AF">
+                    <font>
+                        <Font size="12.0" />
+                    </font>
+                </Label>
+            </children>
+        </HBox>
+    </bottom>
+</BorderPane>
