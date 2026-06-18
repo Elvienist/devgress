@@ -3,6 +3,7 @@ package com.example.byodsystem.byod.controller;
 import com.example.byodsystem.byod.database.DBConnection;
 import com.example.byodsystem.byod.service.AuditLogger;
 import com.example.byodsystem.byod.service.UserSession;
+import com.example.byodsystem.byod.utils.AlertHelper;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -17,12 +18,12 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.util.Duration;
+import javafx.stage.Window;
 
 import java.net.URL;
 import java.sql.*;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class UserManagementController implements Initializable {
@@ -60,6 +61,7 @@ public class UserManagementController implements Initializable {
     @FXML private Button btnAddStatusInactive;
     @FXML private PasswordField txtAddPassword;
     @FXML private PasswordField txtAddConfirmPassword;
+    @FXML private Label lblAddGeneralError;
 
     @FXML private StackPane editUserOverlay;
     @FXML private TextField txtEditFullName;
@@ -70,6 +72,7 @@ public class UserManagementController implements Initializable {
     @FXML private ComboBox<String> cmbEditRole;
     @FXML private Button btnEditStatusActive;
     @FXML private Button btnEditStatusInactive;
+    @FXML private Label lblEditGeneralError;
 
     private final ObservableList<UserManagementController.UserRow> allUsers = FXCollections.observableArrayList();
     private final int currentUserId = UserSession.getInstance().getUserId();
@@ -78,6 +81,10 @@ public class UserManagementController implements Initializable {
     private String selectedAddStatus = "ACTIVE";
     private String selectedEditStatus = "ACTIVE";
     private UserManagementController.UserRow targetedRowForAction = null;
+    private String originalEditFullName = "";
+    private String originalEditRole = "";
+    private String originalEditStatus = "";
+    private String originalEditStudentRef = "";
 
     private StackPane rootStackPane = null;
 
@@ -283,6 +290,8 @@ public class UserManagementController implements Initializable {
         txtAddPassword.clear();
         txtAddConfirmPassword.clear();
         lblAddRefError.setVisible(false);
+        lblAddGeneralError.setVisible(false);
+        lblAddGeneralError.setManaged(false);
 
         cmbAddRole.getSelectionModel().select("STUDENT");
         boxAddStudentRef.setVisible(true);
@@ -306,11 +315,11 @@ public class UserManagementController implements Initializable {
         String studentRef = txtAddStudentRef.getText().trim();
 
         if (username.isEmpty() || fullName.isEmpty() || role == null || password.isEmpty()) {
-            showOverlayPopup("Validation Error", "Please fill in all required fields.");
+            showInlineAddError("Please fill in all required fields.");
             return;
         }
         if (!password.equals(confirmPw)) {
-            showOverlayPopup("Validation Error", "Passwords do not match.");
+            showInlineAddError("Passwords do not match.");
             return;
         }
 
@@ -363,6 +372,10 @@ public class UserManagementController implements Initializable {
         cmbEditRole.setValue(row.getRole());
 
         boolean isStudent = "STUDENT".equals(row.getRole());
+        originalEditFullName = row.getFullName();
+        originalEditRole = row.getRole();
+        originalEditStatus = row.getStatus();
+        originalEditStudentRef = txtEditStudentRef.getText().trim();
         boxEditStudentRef.setVisible(isStudent);
         boxEditStudentRef.setManaged(isStudent);
 
@@ -391,64 +404,87 @@ public class UserManagementController implements Initializable {
 
     @FXML
     private void handleEditModalSubmit() {
+
         if (targetedRowForAction == null) return;
         String fullName = txtEditFullName.getText().trim();
         String role = cmbEditRole.getValue();
         String studentRef = txtEditStudentRef.getText().trim();
 
         if (fullName.isEmpty() || role == null) {
-            showOverlayPopup("Validation Error", "Full Name and Role fields cannot be empty.");
+            showInlineEditError("Full Name and Role fields cannot be empty.");
             return;
         }
 
         if ("STUDENT".equals(role)) {
             if (studentRef.isEmpty() || !checkStudentIdExists(studentRef)) {
+                lblEditRefError.setText("This Student ID is required and must exist in our system.");
                 lblEditRefError.setVisible(true);
                 return;
             } else {
                 lblEditRefError.setVisible(false);
             }
         }
+        boolean changed = !fullName.equals(originalEditFullName)
+                || !role.equals(originalEditRole)
+                || !selectedEditStatus.equals(originalEditStatus)
+                || !studentRef.equals(originalEditStudentRef);
 
-        try (Connection conn = DBConnection.connect()) {
-            String sql = "UPDATE users SET full_name=?, role=?, status=?, student_ref_id=? WHERE user_id=?";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, fullName);
-                ps.setString(2, role);
-                ps.setString(3, selectedEditStatus);
-                if ("STUDENT".equals(role)) {
-                    ps.setString(4, studentRef);
-                } else {
-                    ps.setNull(4, Types.VARCHAR);
-                }
-                ps.setInt(5, targetedRowForAction.getUserId());
-                ps.executeUpdate();
-            }
-            AuditLogger.log(conn, currentUserId, "RECORD_EDITED", "User", targetedRowForAction.getUserId(),
-                    "{\"username\":\"" + targetedRowForAction.getUsername() + "\",\"role\":\"" + role + "\"}");
-
+        if (!changed) {
             hideOverlay(editUserOverlay);
-            showOverlayPopup("Success", "Changes saved successfully.");
-            loadUsers();
-        } catch (SQLException ex) {
-            showOverlayPopup("Database Error", "Failed to save changes: " + ex.getMessage());
+            return;
         }
+
+        Window owner = txtEditFullName.getScene().getWindow();
+        AlertHelper.showConfirm(owner, "Save Changes",
+                "You are about to update the account details for '" + targetedRowForAction.getUsername() + "'. Proceed?", () -> {
+                    try (Connection conn = DBConnection.connect()) {
+                        String sql = "UPDATE users SET full_name=?, role=?, status=?, student_ref_id=? WHERE user_id=?";
+                        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                            ps.setString(1, fullName);
+                            ps.setString(2, role);
+                            ps.setString(3, selectedEditStatus);
+                            if ("STUDENT".equals(role)) {
+                                ps.setString(4, studentRef);
+                            } else {
+                                ps.setNull(4, Types.VARCHAR);
+                            }
+                            ps.setInt(5, targetedRowForAction.getUserId());
+                            ps.executeUpdate();
+                        }
+                        AuditLogger.log(conn, currentUserId, "RECORD_EDITED", "User", targetedRowForAction.getUserId(),
+                                "{\"username\":\"" + targetedRowForAction.getUsername() + "\",\"role\":\"" + role + "\"}");
+
+                        hideOverlay(editUserOverlay);
+                        showOverlayPopup("Success", "Changes saved successfully.");
+                        loadUsers();
+                    } catch (SQLException ex) {
+                        showOverlayPopup("Database Error", "Failed to save changes: " + ex.getMessage());
+                    }
+                });
     }
 
     private void toggleUserStatus(UserManagementController.UserRow row) {
         String nextStatus = "ACTIVE".equals(row.getStatus()) ? "INACTIVE" : "ACTIVE";
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Change status of '" + row.getUsername() + "' to " + nextStatus + "?", ButtonType.YES, ButtonType.NO);
-        confirm.setTitle("Change Account Status");
-        confirm.setHeaderText(null);
-        Optional<ButtonType> choice = confirm.showAndWait();
-
-        if (choice.isPresent() && choice.get() == ButtonType.YES) {
+        Window owner = tblUsers.getScene().getWindow();
+        AlertHelper.showConfirm(owner, "Change Account Status",
+                "Change status of '" + row.getUsername() + "' to " + nextStatus + "?", () -> {
             try (Connection conn = DBConnection.connect();
                  PreparedStatement ps = conn.prepareStatement("UPDATE users SET status=? WHERE user_id=?")) {
                 ps.setString(1, nextStatus);
                 ps.setInt(2, row.getUserId());
                 ps.executeUpdate();
+
+                if ("STUDENT".equals(row.getRole())) {
+                    String syncSql = "UPDATE students SET status = ? " +
+                            "WHERE student_code = (" +
+                            "SELECT student_ref_id FROM users WHERE user_id = ?)";
+                    try (PreparedStatement syncPst = conn.prepareStatement(syncSql)) {
+                        syncPst.setString(1, nextStatus);
+                        syncPst.setInt(2, row.getUserId());
+                        syncPst.executeUpdate();
+                    }
+                }
 
                 AuditLogger.log(conn, currentUserId, "ACTIVE".equals(nextStatus) ? "RECORD_REACTIVATED" : "RECORD_DEACTIVATED",
                         "User", row.getUserId(), "{\"username\":\"" + row.getUsername() + "\"}");
@@ -457,7 +493,7 @@ public class UserManagementController implements Initializable {
             } catch (SQLException e) {
                 showOverlayPopup("Database Error", "Error updating account status.");
             }
-        }
+        });
     }
 
 
@@ -506,6 +542,18 @@ public class UserManagementController implements Initializable {
         StackPane root = getRootStack();
         if (root == null) return;
 
+        boolean isError = title.toLowerCase().contains("error") || title.toLowerCase().contains("fail");
+        boolean isWarning = title.toLowerCase().contains("validation");
+
+        String iconColor = isError ? "#DC2626" : isWarning ? "#D97706" : "#2E7D32";
+        String iconBg    = isError ? "#FEE2E2" : isWarning ? "#FEF3C7" : "#E8F5E9";
+        String btnColor  = isError ? "#DC2626" : isWarning ? "#D97706" : "#2E7D32";
+        String iconPath  = isError
+                ? "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                : isWarning
+                  ? "M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"
+                  : "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z";
+
         Region dimLayer = new Region();
         dimLayer.setStyle("-fx-background-color: rgba(0,0,0,0.45);");
         dimLayer.prefWidthProperty().bind(root.widthProperty());
@@ -517,13 +565,13 @@ public class UserManagementController implements Initializable {
             }
         });
 
-        SVGPath checkIcon = new SVGPath();
-        checkIcon.setContent("M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z");
-        checkIcon.setFill(Color.web("#2E7D32"));
-        checkIcon.setScaleX(2.2);
-        checkIcon.setScaleY(2.2);
-        StackPane iconCircle = new StackPane(checkIcon);
-        iconCircle.setStyle("-fx-background-color: #E8F5E9; -fx-background-radius: 50%;");
+        SVGPath icon = new SVGPath();
+        icon.setContent(iconPath);
+        icon.setFill(Color.web(iconColor));
+        icon.setScaleX(2.2);
+        icon.setScaleY(2.2);
+        StackPane iconCircle = new StackPane(icon);
+        iconCircle.setStyle("-fx-background-color: " + iconBg + "; -fx-background-radius: 50%;");
         iconCircle.setPrefSize(56, 56);
         iconCircle.setMinSize(56, 56);
         iconCircle.setMaxSize(56, 56);
@@ -539,7 +587,7 @@ public class UserManagementController implements Initializable {
         lblSubtitle.setMaxWidth(240);
 
         Button btnClose = new Button("Close");
-        btnClose.setStyle("-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 9 32;");
+        btnClose.setStyle("-fx-background-color: " + btnColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 9 32;");
 
         VBox card = new VBox(14, iconCircle, lblTitle, lblSubtitle, btnClose);
         card.setAlignment(Pos.CENTER);
@@ -583,5 +631,15 @@ public class UserManagementController implements Initializable {
         public String getStatus()    { return status; }
         public String getCreatedAt() { return createdAt; }
         public String getLastLogin() { return lastLogin; }
+    }
+
+    private void showInlineAddError(String message) {
+        lblAddGeneralError.setText(message);
+        lblAddGeneralError.setVisible(true);
+        lblAddGeneralError.setManaged(true);
+    }
+    private void showInlineEditError(String message) {
+        lblEditRefError.setText(message);
+        lblEditRefError.setVisible(true);
     }
 }

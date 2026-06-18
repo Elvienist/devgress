@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane fitToWidth="true" focusTraversable="false" hbarPolicy="NEVER" style="-fx-background-color: #F8F9FA; -fx-background: #F8F9FA; -fx-padding: 0;" stylesheets="@studentupdaterequest.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.StudentUpdateRequestController">
+<ScrollPane fitToWidth="true" focusTraversable="false" hbarPolicy="NEVER" style="-fx-background-color: #F8F9FA; -fx-background: #F8F9FA; -fx-padding: 0;" stylesheets="@../css/studentupdaterequest.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.StudentUpdateRequestController">
     <content>
         <VBox spacing="24.0" style="-fx-background-color: #F8F9FA;">
             <padding><Insets bottom="32.0" left="32.0" right="32.0" top="0.0" /></padding>

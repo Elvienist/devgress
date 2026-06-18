@@ -7,6 +7,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import com.example.byodsystem.byod.utils.AlertHelper;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -349,7 +350,7 @@ public class ActivityLogController {
     @FXML
     public void handleSubmitAmend() {
         if (selectedLogId < 0) {
-            showAlert(Alert.AlertType.WARNING, "No Selection", "Please select a log entry first.");
+            AlertHelper.showNegative(lblAmendError.getScene().getWindow(), "No Selection", "Please select a log entry first. ");
             return;
         }
 
@@ -400,7 +401,7 @@ public class ActivityLogController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to read original log data.");
+            AlertHelper.showNegative(lblAmendError.getScene().getWindow(), "Error", "Failed to read original log data. ");
             return;
         }
 
@@ -452,17 +453,16 @@ public class ActivityLogController {
             } catch (SQLException e) {
                 conn.rollback();
                 e.printStackTrace();
-                showAlert(Alert.AlertType.ERROR, "Error", "Amendment failed. Transaction rolled back.");
+                AlertHelper.showNegative(lblAmendError.getScene().getWindow(), "Error", "Amendment failed. Transaction rolled back. ");
                 return;
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Database connection failed.");
+            AlertHelper.showNegative(lblAmendError.getScene().getWindow(), "Error", "Database connnection failed. ");
             return;
         }
 
-        showAlert(Alert.AlertType.INFORMATION, "Success",
-                "Log #" + selectedLogId + " status updated to " + newStatus + ".");
+        AlertHelper.showPositive(lblAmendError.getScene().getWindow(), "Success", "Log #" + selectedLogId + " status updated to " + newStatus + ".");
 
         selectedLogId   = -1;
         selectedBatchId = null;
@@ -490,13 +490,5 @@ public class ActivityLogController {
         btnSubmitAmend.setDisable(true);
         txtAmendReason.setDisable(true);
         cmbAmendStatus.setDisable(true);
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String msg) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(msg);
-        alert.showAndWait();
     }
 }

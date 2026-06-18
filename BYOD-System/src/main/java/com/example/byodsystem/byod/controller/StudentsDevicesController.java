@@ -2,8 +2,16 @@ package com.example.byodsystem.byod.controller;
 
 import com.example.byodsystem.byod.database.DBConnection;
 import com.example.byodsystem.byod.model.ActivityLog;
+import com.example.byodsystem.byod.service.UserSession;
+import com.example.byodsystem.byod.service.AuditLogger;
 import com.example.byodsystem.byod.model.Device;
 import com.example.byodsystem.byod.model.Student;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.stage.FileChooser;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -73,6 +81,15 @@ public class StudentsDevicesController {
 
     @FXML private Button btnStudentFilterActive, btnStudentFilterInactive;
     @FXML private Button btnDeviceFilterActive, btnDeviceFilterInactive;
+
+    @FXML private VBox paneMassAddModal;
+    @FXML private VBox paneMassAddTimerModal;
+    @FXML private Label lblSelectedFile;
+    @FXML private Label lblCountdown;
+    @FXML private Button btnConfirmMassAdd;
+
+    private File selectedCsvFile = null;
+    private Timeline massAddTimeline;
 
     private final ObservableList<Student> studentMasterList = FXCollections.observableArrayList();
     private final ObservableList<Device> deviceMasterList = FXCollections.observableArrayList();
@@ -163,35 +180,40 @@ public class StudentsDevicesController {
         StackPane root = getRootStack();
         if (root == null) return;
 
-        // ── Blur / dim overlay ──────────────────────────────────────────────
+        boolean isError = title.toLowerCase().contains("error") || title.toLowerCase().contains("fail");
+        boolean isWarning = title.toLowerCase().contains("validation");
+
+        String iconColor = isError ? "#DC2626" : isWarning ? "#D97706" : "#2E7D32";
+        String iconBg    = isError ? "#FEE2E2" : isWarning ? "#FEF3C7" : "#E8F5E9";
+        String btnColor  = isError ? "#DC2626" : isWarning ? "#D97706" : "#2E7D32";
+        String iconSvg   = isError
+                ? "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                : isWarning
+                  ? "M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"
+                  : "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z";
+
         Region dimLayer = new Region();
         dimLayer.setStyle("-fx-background-color: rgba(0,0,0,0.45);");
         dimLayer.prefWidthProperty().bind(root.widthProperty());
         dimLayer.prefHeightProperty().bind(root.heightProperty());
 
-        // Apply blur to everything currently in the root except this overlay
-        // We blur the existing children individually via effect
         root.getChildren().forEach(child -> {
             if (!(child instanceof StackPane && child.getId() != null && child.getId().equals("__overlay__"))) {
                 child.setEffect(new GaussianBlur(6));
             }
         });
 
-        // ── Green circle check icon (SVG) ────────────────────────────────────
-        SVGPath checkIcon = new SVGPath();
-        checkIcon.setContent("M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 " +
-                "10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 " +
-                "1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z");
-        checkIcon.setFill(Color.web("#2E7D32"));
-        checkIcon.setScaleX(2.2);
-        checkIcon.setScaleY(2.2);
-        StackPane iconCircle = new StackPane(checkIcon);
-        iconCircle.setStyle("-fx-background-color: #E8F5E9; -fx-background-radius: 50%;");
+        SVGPath icon = new SVGPath();
+        icon.setContent(iconSvg);
+        icon.setFill(Color.web(iconColor));
+        icon.setScaleX(2.2);
+        icon.setScaleY(2.2);
+        StackPane iconCircle = new StackPane(icon);
+        iconCircle.setStyle("-fx-background-color: " + iconBg + "; -fx-background-radius: 50%;");
         iconCircle.setPrefSize(56, 56);
         iconCircle.setMinSize(56, 56);
         iconCircle.setMaxSize(56, 56);
 
-        // ── Text ─────────────────────────────────────────────────────────────
         Label lblTitle = new Label(title);
         lblTitle.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #1E293B;");
         lblTitle.setAlignment(Pos.CENTER);
@@ -202,31 +224,16 @@ public class StudentsDevicesController {
         lblSubtitle.setWrapText(true);
         lblSubtitle.setMaxWidth(240);
 
-        // ── Close button ──────────────────────────────────────────────────────
         Button btnClose = new Button("Close");
-        btnClose.setStyle(
-                "-fx-background-color: #2E7D32; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-font-size: 13px; " +
-                        "-fx-background-radius: 8; " +
-                        "-fx-cursor: hand; " +
-                        "-fx-padding: 9 32;"
-        );
+        btnClose.setStyle("-fx-background-color: " + btnColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 9 32;");
 
-        // ── Card VBox ─────────────────────────────────────────────────────────
         VBox card = new VBox(14, iconCircle, lblTitle, lblSubtitle, btnClose);
         card.setAlignment(Pos.CENTER);
-        card.setStyle(
-                "-fx-background-color: white; " +
-                        "-fx-background-radius: 18; " +
-                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.22), 24, 0, 0, 6);"
-        );
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 18; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.22), 24, 0, 0, 6);");
         card.setPadding(new Insets(28, 32, 28, 32));
         card.setMaxWidth(300);
         card.setMaxHeight(Region.USE_PREF_SIZE);
 
-        // ── Overlay wrapper ────────────────────────────────────────────────────
         StackPane overlay = new StackPane(dimLayer, card);
         overlay.setId("__overlay__");
         overlay.setAlignment(Pos.CENTER);
@@ -235,14 +242,12 @@ public class StudentsDevicesController {
 
         root.getChildren().add(overlay);
 
-        // Close action
         Runnable dismiss = () -> {
             root.getChildren().remove(overlay);
             root.getChildren().forEach(child -> child.setEffect(null));
         };
         btnClose.setOnAction(e -> dismiss.run());
 
-        // Also auto-dismiss after 6 seconds
         PauseTransition auto = new PauseTransition(Duration.seconds(6));
         auto.setOnFinished(e -> {
             if (root.getChildren().contains(overlay)) dismiss.run();
@@ -459,6 +464,8 @@ public class StudentsDevicesController {
     @FXML public void handleCloseModal() {
         paneStudentFormModal.setVisible(false);
         paneDeviceFormModal.setVisible(false);
+        paneMassAddModal.setVisible(false);
+        paneMassAddTimerModal.setVisible(false);
     }
 
     // =========================================================================
@@ -877,6 +884,138 @@ public class StudentsDevicesController {
     }
 
     // =========================================================================
+    // MASS STUDENT REGISTRY
+    // =========================================================================
+
+    @FXML
+    public void handleOpenMassAddForm() {
+        selectedCsvFile = null;
+        lblSelectedFile.setText("No file selected");
+        btnConfirmMassAdd.setDisable(true);
+        paneMassAddModal.setVisible(true);
+        paneMassAddModal.toFront();
+    }
+
+    @FXML
+    public void handleUploadCsv() {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Select CSV File for Mass Addition");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+
+        selectedCsvFile = fc.showOpenDialog(paneStudentsView.getScene().getWindow());
+        if (selectedCsvFile != null) {
+            lblSelectedFile.setText(selectedCsvFile.getName());
+            btnConfirmMassAdd.setDisable(false);
+        } else {
+            lblSelectedFile.setText("No file selected");
+            btnConfirmMassAdd.setDisable(true);
+        }
+    }
+
+    @FXML
+    public void handleCancelMassAdd() {
+        if (massAddTimeline != null) {
+            massAddTimeline.stop();
+        }
+        handleCloseModal();
+    }
+
+    @FXML
+    public void handleConfirmMassAdd() {
+        if (selectedCsvFile == null) return;
+
+        paneMassAddModal.setVisible(false);
+        paneMassAddTimerModal.setVisible(true);
+        paneMassAddTimerModal.toFront();
+
+        final int[] secondsLeft = {10};
+        lblCountdown.setText(String.valueOf(secondsLeft[0]));
+
+        if (massAddTimeline != null) massAddTimeline.stop();
+
+        massAddTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            secondsLeft[0]--;
+            lblCountdown.setText(String.valueOf(secondsLeft[0]));
+            if (secondsLeft[0] <= 0) {
+                massAddTimeline.stop();
+                processMassAddition();
+            }
+        }));
+        massAddTimeline.setCycleCount(10);
+        massAddTimeline.play();
+    }
+
+    private void processMassAddition() {
+        handleCloseModal();
+        if (selectedCsvFile == null) return;
+
+        int successCount = 0;
+        int skipCount = 0;
+
+        String insertSql = "INSERT INTO students (student_code, full_name, course, year_level, contact_number) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        String checkSql = "SELECT COUNT(*) FROM students WHERE student_code = ?";
+
+        try (Connection conn = DBConnection.connect();
+             BufferedReader br = new BufferedReader(new FileReader(selectedCsvFile))) {
+
+            String line;
+            boolean isFirstLine = true;
+
+            while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+
+                // Skip header logic if file contains headers
+                if (isFirstLine && line.toLowerCase().contains("code")) {
+                    isFirstLine = false;
+                    continue;
+                }
+                isFirstLine = false;
+
+                String[] data = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+                if (data.length < 4) continue; // Minimum required fields
+
+                String code = data[0].replace("\"", "").trim();
+                String name = data[1].replace("\"", "").trim();
+                String course = data[2].replace("\"", "").trim();
+                String year = data[3].replace("\"", "").trim();
+                String contact = data.length >= 5 ? data[4].replace("\"", "").trim() : "";
+
+                // Check for duplicates
+                try (PreparedStatement checkPst = conn.prepareStatement(checkSql)) {
+                    checkPst.setString(1, code);
+                    try (ResultSet rs = checkPst.executeQuery()) {
+                        if (rs.next() && rs.getInt(1) > 0) {
+                            skipCount++;
+                            continue;
+                        }
+                    }
+                }
+
+                // Insert Student
+                try (PreparedStatement pst = conn.prepareStatement(insertSql)) {
+                    pst.setString(1, code);
+                    pst.setString(2, name);
+                    pst.setString(3, course);
+                    pst.setString(4, year);
+                    pst.setString(5, contact);
+                    pst.executeUpdate();
+                }
+
+                // Auto-create User account
+                createUserForStudent(conn, code, name);
+                successCount++;
+            }
+
+            loadStudentsFromDatabase();
+            showOverlayPopup("Mass Addition Complete", successCount + " records added.\n" + skipCount + " duplicates skipped.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showOverlayPopup("Error", "Failed to process the CSV file.");
+        }
+    }
+    // =========================================================================
     // SAVE STUDENT  (add → also creates user account)
     // =========================================================================
 
@@ -980,15 +1119,43 @@ public class StudentsDevicesController {
     @FXML
     public void handleToggleStudentStatus() {
         if (currentlySelectedStudent == null) return;
-        String targetStatus = "ACTIVE".equalsIgnoreCase(currentlySelectedStudent.getStatus()) ? "INACTIVE" : "ACTIVE";
-        String sql = "UPDATE students SET status = ? WHERE student_id = ?";
-        try (Connection conn = DBConnection.connect();
-             PreparedStatement pst = conn.prepareStatement(sql)) {
-            pst.setString(1, targetStatus);
-            pst.setInt(2, currentlySelectedStudent.getStudentId());
-            pst.executeUpdate();
+
+        String targetStatus = "ACTIVE".equalsIgnoreCase(
+                currentlySelectedStudent.getStatus()) ? "INACTIVE" : "ACTIVE";
+        String actionType = "INACTIVE".equals(targetStatus)
+                ? "RECORD_DEACTIVATED" : "RECORD_REACTIVATED";
+
+        String studentSql = "UPDATE students SET status = ? WHERE student_id = ?";
+        String userSql    = "UPDATE users SET status = ? WHERE student_ref_id = ?";
+
+        try (Connection conn = DBConnection.connect()) {
+            // Update student
+            try (PreparedStatement pst = conn.prepareStatement(studentSql)) {
+                pst.setString(1, targetStatus);
+                pst.setInt(2, currentlySelectedStudent.getStudentId());
+                pst.executeUpdate();
+            }
+
+            // Sync user account
+            try (PreparedStatement pst = conn.prepareStatement(userSql)) {
+                pst.setString(1, targetStatus);
+                pst.setString(2, currentlySelectedStudent.getStudentCode());
+                pst.executeUpdate();
+            }
+
+            // Audit log
+            AuditLogger.log(conn,
+                    UserSession.getInstance().getUserId(),
+                    actionType,
+                    "Student",
+                    currentlySelectedStudent.getStudentId(),
+                    "{\"student_code\": \"" +
+                            currentlySelectedStudent.getStudentCode() + "\"}"
+            );
+
             loadStudentsFromDatabase();
             handleCloseModal();
+            showOverlayPopup("Success", "Student status updated to " + targetStatus + ".");
         } catch (SQLException e) { e.printStackTrace(); }
     }
 

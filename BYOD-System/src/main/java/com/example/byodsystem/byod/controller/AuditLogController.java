@@ -9,6 +9,8 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
+import com.example.byodsystem.byod.utils.AlertHelper;
+import javafx.stage.Window;
 
 import java.net.URL;
 import java.sql.*;
@@ -33,7 +35,6 @@ public class AuditLogController implements Initializable {
     @FXML private TableColumn<AuditRow, String> colAction;
     @FXML private TableColumn<AuditRow, String> colRecordType;
     @FXML private TableColumn<AuditRow, String> colIdentifier;
-
     private final ObservableList<AuditRow> allRows = FXCollections.observableArrayList();
 
     @Override
@@ -220,13 +221,6 @@ public class AuditLogController implements Initializable {
         return jsonDetails;
     }
 
-    private void showAlert(Alert.AlertType type, String title, String msg) {
-        Alert alert = new Alert(type, msg, ButtonType.OK);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.showAndWait();
-    }
-
     @FXML private void onSearchKeyReleased() { applyFilter(); }
     @FXML private void onFilterChanged()     { applyFilter(); }
 
@@ -327,7 +321,7 @@ public class AuditLogController implements Initializable {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Database Error", "Failed to load audit log: " + e.getMessage());
+            AlertHelper.showNegative(btnClearDates.getScene().getWindow(), "Database Error", "Failed to load audit log: " + e.getMessage());
         }
 
         tblAuditLog.setItems(allRows);

@@ -5,6 +5,7 @@ import com.example.byodsystem.byod.service.UserSession;
 import com.example.byodsystem.byod.database.DBConnection;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
+import com.example.byodsystem.byod.utils.AlertHelper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -17,6 +18,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.Window ;
+
 
 import java.io.*;
 import java.net.URL;
@@ -267,6 +270,9 @@ public class ReportsController implements Initializable {
                         "{\"report_type\":\"" + type + "\",\"date_start\":\"" + start + "\"}");
             }
             loadReports();
+            Window owner = dpDateEnd.getScene().getWindow();
+            AlertHelper.showPositive(owner, "Success", "Report file: " + title + " successfully created.");
+
         } catch (SQLException e) {
             e.printStackTrace();
             showGlobalError("Write Failure: Unable to save generated calculations to database storage.");
@@ -416,7 +422,7 @@ public class ReportsController implements Initializable {
     @FXML private void navigateToReports() { navigate("/com/example/byodsystem/byod/Reports.fxml"); }
     @FXML private void navigateToAuditLog() { navigate("/com/example/byodsystem/byod/AuditLog.fxml"); }
     @FXML private void navigateToSettings() { navigate("/com/example/byodsystem/byod/Settings.fxml"); }
-    @FXML private void changePassword() { navigate("/com/example/byodsystem/byod/ChangePassword.fxml"); }
+    @FXML private void changePassword() { navigate("/com/example/byodsystem/byod/changepassword.fxml"); }
     @FXML private void logout() { navigate("/com/example/byodsystem/byod/Login.fxml"); }
 
     public static class ReportRow {

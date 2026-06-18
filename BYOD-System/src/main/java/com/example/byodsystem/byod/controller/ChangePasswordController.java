@@ -7,12 +7,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.stage.Window;
+import com.example.byodsystem.byod.utils.AlertHelper;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -190,8 +191,8 @@ public class ChangePasswordController {
 
                 UserSession.getInstance().setFirstLogin(false);
 
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Password updated successfully! Please log in again with your new credentials.");
-
+                Window owner = confirmPasswordTextField.getScene().getWindow();
+                AlertHelper.showPositive(owner, "Success", "Password updated successfully! Please log in again with your new credentials.");
                 currentPasswordField.clear();
                 currentPasswordTextField.clear();
                 newPasswordField.clear();
@@ -206,7 +207,8 @@ public class ChangePasswordController {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Database Error", "An error occurred while connecting to system services.");
+            Window owner = confirmPasswordTextField.getScene().getWindow();
+            AlertHelper.showNegative(owner, "Database Error", "An error occurred while connecting to system services.");
         }
     }
 
@@ -264,15 +266,8 @@ public class ChangePasswordController {
             stage.setScene(new Scene(root));
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Navigation Error", "Could not return to the login user interface component.");
+            Window owner = confirmPasswordTextField.getScene().getWindow();
+            AlertHelper.showNegative(owner, "Navigation Error", "Could not return to the login user interface component.");
         }
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }

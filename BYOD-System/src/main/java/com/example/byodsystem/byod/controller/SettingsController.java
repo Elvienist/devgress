@@ -1,9 +1,9 @@
 package com.example.byodsystem.byod.controller;
 import com.example.byodsystem.byod.service.AuditLogger;
 import com.example.byodsystem.byod.service.UserSession;
-
 import com.example.byodsystem.byod.database.DBConnection;
 
+import com.example.byodsystem.byod.utils.AlertHelper;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -11,6 +11,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 import java.io.IOException;
 import java.net.URL;
@@ -30,6 +31,7 @@ public class SettingsController implements Initializable {
 
     private int currentUserId = UserSession.getInstance().getUserId();
     private int settingId = -1;
+    private Window owner = txtInstitutionName.getScene().getWindow();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -57,7 +59,8 @@ public class SettingsController implements Initializable {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Database Error", "Failed to load settings: " + e.getMessage());
+
+            AlertHelper.showNegative(owner, "Database Error", "Failed to load settings: " + e.getMessage());
         }
     }
 
@@ -69,11 +72,11 @@ public class SettingsController implements Initializable {
         String endOfDay = txtEndOfDayTime.getText().trim();
 
         if (institution.isBlank()) {
-            showAlert(Alert.AlertType.WARNING, "Validation", "Institution name cannot be empty.");
+            AlertHelper.showNegative(owner, "Validation", "Institution name cannot be empty.");
             return;
         }
         if (academicYear.isBlank()) {
-            showAlert(Alert.AlertType.WARNING, "Validation", "Academic year cannot be empty.");
+            AlertHelper.showNegative(owner, "Validation", "Academic year cannot be empty.");
             return;
         }
         int correctionMinutes;
@@ -81,11 +84,11 @@ public class SettingsController implements Initializable {
             correctionMinutes = Integer.parseInt(correctionStr);
             if (correctionMinutes < 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            showAlert(Alert.AlertType.WARNING, "Validation", "Gate correction time must be a valid positive number.");
+            AlertHelper.showNegative(owner, "Validation", "Gate correction time must be a valid positive number.");
             return;
         }
         if (!endOfDay.isBlank() && !endOfDay.matches("^([01]\\d|2[0-3]):[0-5]\\d$")) {
-            showAlert(Alert.AlertType.WARNING, "Validation", "End of day time must be in HH:MM format (24-hour).");
+            AlertHelper.showNegative(owner, "Validation", "End of day time must be in HH:MM format (24-hour).");
             return;
         }
         Time eodTime = endOfDay.isBlank() ? null : Time.valueOf(endOfDay + ":00");
@@ -120,10 +123,10 @@ public class SettingsController implements Initializable {
             AuditLogger.log(conn, currentUserId, "SETTINGS_CHANGED", "System", settingId,
                     "{\"institution\":\"" + institution + "\",\"academic_year\":\"" + academicYear +
                             "\",\"correction_window\":" + correctionMinutes + "}");
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Settings saved successfully.");
+            AlertHelper.showPositive(owner, "Success", "Settings saved successfully.");
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Database Error", "Failed to save settings: " + e.getMessage());
+            AlertHelper.showNegative(owner, "Database Error", "Failed to save settings: " + e.getMessage());
         }
     }
 
@@ -136,7 +139,7 @@ public class SettingsController implements Initializable {
     @FXML private void navigateToReports() { navigate("/com/example/byodsystem/byod/Reports.fxml"); }
     @FXML private void navigateToAuditLog() { navigate("/com/example/byodsystem/byod/AuditLog.fxml"); }
     @FXML private void navigateToSettings() { navigate("/com/example/byodsystem/byod/Settings.fxml"); }
-    @FXML private void changePassword() { navigate("/com/example/byodsystem/byod/ChangePassword.fxml"); }
+    @FXML private void changePassword() { navigate("/com/example/byodsystem/byod/changepassword.fxml"); }
     @FXML private void logout() { navigate("/com/example/byodsystem/byod/Login.fxml"); }
 
     private void navigate(String fxml) {
@@ -148,12 +151,5 @@ public class SettingsController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String msg) {
-        Alert alert = new Alert(type, msg, ButtonType.OK);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.showAndWait();
     }
 }

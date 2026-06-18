@@ -211,6 +211,11 @@
                                                 <PasswordField fx:id="txtAddConfirmPassword" prefHeight="34.0" style="-fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6;" />
                                             </children>
                                         </VBox>
+                                        <Label fx:id="lblAddGeneralError" managed="false" visible="false" textFill="#7A0000" wrapText="true">
+                                            <font>
+                                                <Font name="System Bold Italic" size="11.0" />
+                                            </font>
+                                        </Label>
                                     </children>
                                 </VBox>
                             </children>

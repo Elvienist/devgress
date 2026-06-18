@@ -3,17 +3,18 @@ package com.example.byodsystem.byod.controller;
 import org.mindrot.jbcrypt.BCrypt;
 import com.example.byodsystem.byod.database.DBConnection;
 import com.example.byodsystem.byod.service.UserSession;
+import com.example.byodsystem.byod.utils.AlertHelper;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -196,7 +197,9 @@ public class LoginController {
                     updateLastLoginTimestamp(userId);
 
                     if (isFirstLogin) {
-                        showFirstLoginAlert();
+                        Window owner = usernameField.getScene().getWindow();
+                        AlertHelper.showPositive(owner, "Security Setup",
+                                "You are using a temporary password. You must update your password before gaining access to the main application dashboard features.");
                         navigateToChangePassword();
                     } else {
                         navigateToDashboard();
@@ -209,11 +212,8 @@ public class LoginController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            showAlert(
-                    Alert.AlertType.ERROR,
-                    "Database Error",
-                    "An error occurred while connecting to system services."
-            );
+            Window owner = usernameField.getScene().getWindow();
+            AlertHelper.showNegative(owner, "Database Error", "An error occurred while connecting to system services.");
         }
     }
 
@@ -260,23 +260,6 @@ public class LoginController {
         }
     }
 
-    private void showFirstLoginAlert() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Security Setup");
-        alert.setHeaderText("First-Time Login Warning");
-        alert.setContentText("You are using a temporary password. You must update your password before gaining access to the main application dashboard features.");
-
-        alert.getDialogPane().setStyle(
-                "-fx-font-family: 'Segoe UI', system-ui; " +
-                        "-fx-font-size: 14px;"
-        );
-
-        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-        stage.setAlwaysOnTop(true);
-
-        alert.showAndWait();
-    }
-
     private void navigateToChangePassword() {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/com/example/byodsystem/byod/fxml/changepassword.fxml"));
@@ -284,11 +267,9 @@ public class LoginController {
             stage.setScene(new Scene(root));
         } catch (Exception e) {
             e.printStackTrace();
-            showAlert(
-                    Alert.AlertType.ERROR,
-                    "Navigation Error",
-                    "Could not load the password change utility view."
-            );
+
+            Window owner = usernameField.getScene().getWindow();
+            AlertHelper.showNegative(owner, "Navigation Error", "Could not load the password change utility view.");
         }
     }
 
@@ -299,20 +280,10 @@ public class LoginController {
             stage.setScene(new Scene(root));
         } catch (Exception e) {
             e.printStackTrace();
-            showAlert(
-                    Alert.AlertType.ERROR,
-                    "Navigation Error",
-                    "Could not load the application dashboard component."
-            );
-        }
-    }
 
-    private void showAlert(Alert.AlertType type, String title, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+            Window owner = usernameField.getScene().getWindow();
+            AlertHelper.showNegative(owner, "Navigation Error", "Could not load the application dashboard component");
+        }
     }
 
     @FXML
