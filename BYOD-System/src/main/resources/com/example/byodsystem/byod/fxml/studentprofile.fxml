@@ -24,34 +24,19 @@
                         <Insets left="32.0" right="32.0" />
                     </padding>
                     <children>
-                        <VBox alignment="CENTER_LEFT">
-                            <children>
-                                <Label fx:id="lblHeaderDate" style="-fx-text-fill: #6C757D;" text="Loading...">
-                                    <font><Font size="13.0" /></font>
-                                </Label>
-                            </children>
-                        </VBox>
+                        <Label fx:id="lblHeaderDate" style="-fx-text-fill: #6C757D; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter, sans-serif;" text="Loading..." />
                         <Region HBox.hgrow="ALWAYS" />
-                        <HBox alignment="CENTER" spacing="12.0">
-                            <children>
+                        <HBox alignment="CENTER" spacing="16.0">
+                            <Label style="-fx-text-fill: #9A3412; -fx-background-color: #FFEDD5; -fx-background-radius: 20; -fx-font-size: 11px; -fx-font-weight: bold; -fx-font-family: 'Segoe UI', Inter; -fx-padding: 4 12 4 12;" text="Student View" />
+                            <HBox alignment="CENTER" spacing="10.0">
                                 <StackPane maxHeight="36.0" maxWidth="36.0" minHeight="36.0" minWidth="36.0" style="-fx-background-color: #7A0000; -fx-background-radius: 18;">
-                                    <children>
-                                        <Label fx:id="lblHeaderAvatarInitial" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold;" text="J">
-                                            <font><Font size="14.0" /></font>
-                                        </Label>
-                                    </children>
+                                    <Label fx:id="lblHeaderAvatarInitial" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-font-size: 14px; -fx-font-family: 'Segoe UI', Inter;" text="J" />
                                 </StackPane>
                                 <VBox alignment="CENTER_LEFT">
-                                    <children>
-                                        <Label fx:id="lblHeaderName" style="-fx-text-fill: #111111; -fx-font-weight: bold;" text="John Doe">
-                                            <font><Font size="13.0" /></font>
-                                        </Label>
-                                        <Label style="-fx-text-fill: #6C757D;" text="Student">
-                                            <font><Font size="11.0" /></font>
-                                        </Label>
-                                    </children>
+                                    <Label fx:id="lblHeaderName" style="-fx-text-fill: #111111; -fx-font-weight: bold; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter;" text="John Doe" />
+                                    <Label style="-fx-text-fill: #6C757D; -fx-font-size: 11px; -fx-font-family: 'Segoe UI', Inter;" text="Student" />
                                 </VBox>
-                            </children>
+                            </HBox>
                         </HBox>
                     </children>
                 </HBox>

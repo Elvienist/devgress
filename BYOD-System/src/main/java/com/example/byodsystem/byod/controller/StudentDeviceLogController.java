@@ -51,7 +51,7 @@ public class StudentDeviceLogController {
         studentRefId = session.getStudentRefId();  // e.g. "2024-00599-SR-0"
         studentId = resolveStudentId(studentRefId); // look up the integer PK
 
-        String name = session.getUsername() != null ? session.getUsername() : "Student";
+        String name = session.getFullName() != null ? session.getFullName() : "Student";
         lblHeaderDate.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")));
         lblHeaderName.setText(name);
         lblHeaderInitial.setText(name.isEmpty() ? "S" : String.valueOf(name.charAt(0)).toUpperCase());

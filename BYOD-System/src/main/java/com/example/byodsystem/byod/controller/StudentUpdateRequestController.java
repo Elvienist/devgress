@@ -43,7 +43,7 @@ public class StudentUpdateRequestController {
     @FXML private Button btnFilterApproved;
     @FXML private Button btnFilterRejected;
 
-    private String studentRefId;
+    private String studentRefId; // This holds the String student_code
     private String currentFilter = null;
     private Map<String, String> fieldToColumn;
     private Map<String, String> columnToLabel;
@@ -96,13 +96,12 @@ public class StudentUpdateRequestController {
     private void loadCurrentStudentData() {
         if (studentRefId == null || studentRefId.trim().isEmpty()) return;
 
-        String sql = "SELECT full_name, course, year_level, contact_number FROM students WHERE student_id = ?";
+        String sql = "SELECT full_name, course, year_level, contact_number FROM students WHERE student_code = ?";
 
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // FIX: Parse String studentRefId to integer to match database integer type
-            ps.setInt(1, Integer.parseInt(studentRefId));
+            ps.setString(1, studentRefId);
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -122,14 +121,13 @@ public class StudentUpdateRequestController {
 
         toggleValueInputMode(selectedField);
         String columnName = fieldToColumn.get(selectedField);
-        if (columnName == null) return;
+        if (columnName == null || !fieldToColumn.containsValue(columnName)) return;
 
-        String sql = "SELECT " + columnName + " FROM students WHERE student_id = ?";
+        String sql = "SELECT full_name, course, year_level, contact_number FROM students WHERE student_code = ?";
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // FIX: Parse String studentRefId to integer to match database integer type
-            ps.setInt(1, Integer.parseInt(studentRefId));
+            ps.setString(1, studentRefId);
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -186,16 +184,14 @@ public class StudentUpdateRequestController {
         String dbColumnName = fieldToColumn.get(selectedField);
         String currentValue = tfCurrentValue.getText();
 
-        String sql = """
-           INSERT INTO profile_update_requests (student_id, field_name, current_value, requested_value, reason, status, submitted_at)
-           VALUES (?, ?, ?, ?, ?, 'PENDING', NOW() AT TIME ZONE 'Asia/Manila');
-        """;
+        // Fixed: Added subquery to map your String studentRefId to the required INT student_id
+        String sql = "INSERT INTO profile_update_requests (student_id, field_name, current_value, requested_value, reason, status, submitted_at) " +
+                "VALUES ((SELECT student_id FROM students WHERE student_code = ?), ?, ?, ?, ?, 'PENDING', NOW() AT TIME ZONE 'Asia/Manila')";
 
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // FIX: Parse String studentRefId to integer to prevent execution crash upon form submission
-            ps.setInt(1, Integer.parseInt(studentRefId));
+            ps.setString(1, studentRefId); // Binds tracking code string safely
             ps.setString(2, dbColumnName);
             ps.setString(3, currentValue);
             ps.setString(4, newValue);
@@ -265,19 +261,24 @@ public class StudentUpdateRequestController {
 
         if (studentRefId == null || studentRefId.trim().isEmpty()) return;
 
-        String sql = """
-            SELECT field_name, current_value, requested_value, reason, status, admin_response, submitted_at
-            FROM profile_update_requests
-            WHERE student_id = ?
-        """ + (currentFilter != null ? " AND status = ?" : "") + """
-            ORDER BY submitted_at DESC
-        """;
+        // Fixed: Joined profile_update_requests with students on student_id to validate via string student_code text column
+        String sql;
+        if (currentFilter != null) {
+            sql = "SELECT r.field_name, r.current_value, r.requested_value, r.reason, r.status, r.admin_response, r.submitted_at " +
+                    "FROM profile_update_requests r " +
+                    "JOIN students s ON r.student_id = s.student_id " +
+                    "WHERE s.student_code = ? AND r.status = ? ORDER BY r.submitted_at DESC";
+        } else {
+            sql = "SELECT r.field_name, r.current_value, r.requested_value, r.reason, r.status, r.admin_response, r.submitted_at " +
+                    "FROM profile_update_requests r " +
+                    "JOIN students s ON r.student_id = s.student_id " +
+                    "WHERE s.student_code = ? ORDER BY r.submitted_at DESC";
+        }
 
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            // FIX: Parse String studentRefId to integer to match database integer type
-            ps.setInt(1, Integer.parseInt(studentRefId));
+            ps.setString(1, studentRefId);
             if (currentFilter != null) {
                 ps.setString(2, currentFilter);
             }

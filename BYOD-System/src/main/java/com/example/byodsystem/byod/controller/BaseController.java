@@ -3,16 +3,19 @@ package com.example.byodsystem.byod.controller;
 import com.example.byodsystem.byod.database.DBConnection;
 import com.example.byodsystem.byod.service.AuditLogger;
 import com.example.byodsystem.byod.service.UserSession;
+import javafx.application.Platform;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -61,6 +64,16 @@ public class BaseController {
 
     @FXML
     public void initialize() {
+        Platform.runLater(() -> {
+            if (mainContainer != null && mainContainer.getScene() != null) {
+                Stage stage = (Stage) mainContainer.getScene().getWindow();
+                if (stage != null) {
+                    stage.setFullScreen(true);
+                    stage.setFullScreenExitHint("");
+                }
+            }
+        });
+
         UserSession session = UserSession.getInstance();
         String role = session.getRole() != null ? session.getRole().toUpperCase() : "";
 
@@ -364,6 +377,117 @@ public class BaseController {
 
     @FXML
     public void handleLogout() {
+        showLogoutConfirmation();
+    }
+
+    private void showLogoutConfirmation() {
+        StackPane overlay = new StackPane();
+        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.55);");
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setOnMouseClicked(javafx.event.Event::consume);
+
+        overlay.prefWidthProperty().bind(mainContainer.getScene().widthProperty());
+        overlay.prefHeightProperty().bind(mainContainer.getScene().heightProperty());
+
+        StackPane iconCircle = new StackPane();
+        iconCircle.setMinSize(64, 64);
+        iconCircle.setMaxSize(64, 64);
+        iconCircle.setStyle("-fx-background-color: #FEF3C7; -fx-background-radius: 32;");
+
+        Label iconLabel = new Label("⚠");
+        iconLabel.setStyle("-fx-text-fill: #D97706; -fx-font-size: 28px;");
+        iconCircle.getChildren().add(iconLabel);
+
+        Label lblTitle = new Label("Confirm Logout");
+        lblTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111111; -fx-font-family: 'Segoe UI', Inter, sans-serif;");
+
+        Label lblSub = new Label("Are you sure you want to logout?");
+        lblSub.setStyle("-fx-font-size: 13px; -fx-text-fill: #6B7280; -fx-font-family: 'Segoe UI', Inter, sans-serif;");
+        lblSub.setWrapText(true);
+        lblSub.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+        Button btnCancel = new Button("Cancel");
+        btnCancel.setPrefWidth(120);
+        btnCancel.setPrefHeight(40);
+        btnCancel.setStyle(
+                "-fx-background-color: #FFFFFF; " +
+                        "-fx-text-fill: #374151; " +
+                        "-fx-border-color: #D1D5DB; " +
+                        "-fx-border-radius: 8; " +
+                        "-fx-background-radius: 8; " +
+                        "-fx-font-size: 13px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-cursor: hand; " +
+                        "-fx-font-family: 'Segoe UI', Inter, sans-serif;"
+        );
+
+        Button btnConfirm = new Button("Logout");
+        btnConfirm.setPrefWidth(120);
+        btnConfirm.setPrefHeight(40);
+        btnConfirm.setStyle(
+                "-fx-background-color: #7A0000; " +
+                        "-fx-text-fill: #FFFFFF; " +
+                        "-fx-background-radius: 8; " +
+                        "-fx-border-radius: 8; " +
+                        "-fx-font-size: 13px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-cursor: hand; " +
+                        "-fx-font-family: 'Segoe UI', Inter, sans-serif;"
+        );
+
+        HBox btnRow = new HBox(12, btnCancel, btnConfirm);
+        btnRow.setAlignment(Pos.CENTER);
+
+        VBox dialog = new VBox(16, iconCircle, lblTitle, lblSub, btnRow);
+        dialog.setAlignment(Pos.CENTER);
+        dialog.setStyle(
+                "-fx-background-color: #FFFFFF; " +
+                        "-fx-background-radius: 20; " +
+                        "-fx-padding: 36 48 36 48; " +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 15, 0, 0, 4);"
+        );
+        dialog.setMaxWidth(380);
+        dialog.setMaxHeight(260);
+        dialog.setMinWidth(380);
+
+        overlay.getChildren().add(dialog);
+        StackPane.setAlignment(dialog, Pos.CENTER);
+
+        GaussianBlur lightBlur = new GaussianBlur(3.5);
+        if (sidebarContainer != null) sidebarContainer.setEffect(lightBlur);
+        if (contentArea != null) contentArea.setEffect(lightBlur);
+
+        Parent currentRoot = mainContainer.getScene().getRoot();
+        if (currentRoot instanceof StackPane && "windowRootWrapper".equals(currentRoot.getId())) {
+            ((StackPane) currentRoot).getChildren().add(overlay);
+        } else {
+            StackPane windowRootWrapper = new StackPane();
+            windowRootWrapper.setId("windowRootWrapper");
+            mainContainer.getScene().setRoot(windowRootWrapper);
+            windowRootWrapper.getChildren().addAll(currentRoot, overlay);
+        }
+
+        btnCancel.setOnAction(e -> {
+            Parent activeRoot = mainContainer.getScene().getRoot();
+            if (activeRoot instanceof StackPane) {
+                ((StackPane) activeRoot).getChildren().remove(overlay);
+            }
+            if (sidebarContainer != null) sidebarContainer.setEffect(null);
+            if (contentArea != null) contentArea.setEffect(null);
+        });
+
+        btnConfirm.setOnAction(e -> {
+            Parent activeRoot = mainContainer.getScene().getRoot();
+            if (activeRoot instanceof StackPane) {
+                ((StackPane) activeRoot).getChildren().remove(overlay);
+            }
+            if (sidebarContainer != null) sidebarContainer.setEffect(null);
+            if (contentArea != null) contentArea.setEffect(null);
+            performLogout();
+        });
+    }
+
+    private void performLogout() {
         updateActiveButtonStyle(btnSidebarLogout);
         UserSession session = UserSession.getInstance();
         int userId = session.getUserId();
@@ -382,8 +506,9 @@ public class BaseController {
             Parent loginRoot = FXMLLoader.load(getClass().getResource("/com/example/byodsystem/byod/fxml/login.fxml"));
             Stage stage = (Stage) mainContainer.getScene().getWindow();
             stage.setScene(new Scene(loginRoot));
+            stage.setFullScreen(true);
         } catch (IOException e) {
-            System.err.println("Fatal error navigating back to Login View");
+            System.err.println("Fatal error navigating back to Login");
             e.printStackTrace();
         }
     }

@@ -19,13 +19,19 @@
 
             <HBox alignment="CENTER_LEFT" prefHeight="64.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #EBF0F5; -fx-border-width: 0 0 1 0;">
                 <padding><Insets left="32.0" right="32.0" /></padding>
-                <Label fx:id="lblHeaderDate" style="-fx-text-fill: #6B7280; -fx-font-size: 14px; -fx-font-family: 'Segoe UI', Arial;" text="Monday, October 14, 2024" />
+                <Label fx:id="lblHeaderDate" style="-fx-text-fill: #6C757D; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter, sans-serif;" text="Monday, October 14, 2024" />
                 <Region HBox.hgrow="ALWAYS" />
-                <HBox alignment="CENTER_LEFT" spacing="12.0">
-                    <StackPane style="-fx-background-color: #7A0000; -fx-background-radius: 50; -fx-min-width: 36; -fx-min-height: 36; -fx-max-width: 36; -fx-max-height: 36;">
-                        <Label fx:id="lblHeaderInitial" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-font-size: 14px; -fx-font-family: 'Segoe UI', Arial;" text="K" />
-                    </StackPane>
-                    <Label fx:id="lblHeaderName" style="-fx-text-fill: #111111; -fx-font-weight: bold; -fx-font-size: 14px; -fx-font-family: 'Segoe UI', Arial;" text="Kirby Torres" />
+                <HBox alignment="CENTER" spacing="16.0">
+                    <Label style="-fx-text-fill: #9A3412; -fx-background-color: #FFEDD5; -fx-background-radius: 20; -fx-font-size: 11px; -fx-font-weight: bold; -fx-font-family: 'Segoe UI', Inter; -fx-padding: 4 12 4 12;" text="Student View" />
+                    <HBox alignment="CENTER" spacing="10.0">
+                        <StackPane style="-fx-background-color: #7A0000; -fx-background-radius: 18; -fx-min-width: 36; -fx-min-height: 36; -fx-max-width: 36; -fx-max-height: 36;">
+                            <Label fx:id="lblHeaderInitial" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-font-size: 14px; -fx-font-family: 'Segoe UI', Inter;" text="K" />
+                        </StackPane>
+                        <VBox alignment="CENTER_LEFT">
+                            <Label fx:id="lblHeaderName" style="-fx-text-fill: #111111; -fx-font-weight: bold; -fx-font-size: 13px; -fx-font-family: 'Segoe UI', Inter;" text="Kirby Torres" />
+                            <Label style="-fx-text-fill: #6C757D; -fx-font-size: 11px; -fx-font-family: 'Segoe UI', Inter;" text="Student" />
+                        </VBox>
+                    </HBox>
                 </HBox>
             </HBox>
 

@@ -1,8 +1,8 @@
 package com.example.byodsystem.byod.controller;
+
 import com.example.byodsystem.byod.service.AuditLogger;
 import com.example.byodsystem.byod.service.UserSession;
 import com.example.byodsystem.byod.database.DBConnection;
-
 import com.example.byodsystem.byod.utils.AlertHelper;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -31,7 +31,6 @@ public class SettingsController implements Initializable {
 
     private int currentUserId = UserSession.getInstance().getUserId();
     private int settingId = -1;
-    private Window owner = txtInstitutionName.getScene().getWindow();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -59,13 +58,14 @@ public class SettingsController implements Initializable {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-
+            Window owner = txtInstitutionName.getScene() != null ? txtInstitutionName.getScene().getWindow() : null;
             AlertHelper.showNegative(owner, "Database Error", "Failed to load settings: " + e.getMessage());
         }
     }
 
     @FXML
     private void saveSettings() {
+        Window owner = txtInstitutionName.getScene().getWindow();
         String institution = txtInstitutionName.getText().trim();
         String academicYear = txtAcademicYear.getText().trim();
         String correctionStr = txtCorrectionWindow.getText().trim();
