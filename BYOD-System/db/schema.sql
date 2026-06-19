@@ -68,6 +68,8 @@ CREATE TABLE devices (
                      ON DELETE RESTRICT,
     status           VARCHAR(20) DEFAULT 'ACTIVE'
                      CHECK (status IN ('ACTIVE', 'INACTIVE')),
+    current_location VARCHAR(10) DEFAULT 'UNKNOWN'
+                     CHECK (current_location IN ('IN', 'OUT', 'UNKNOWN')),
     created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
