@@ -62,8 +62,8 @@
 
                 <VBox spacing="6">
                     <Label text="Academic Year" style="-fx-font-size: 13px; -fx-text-fill: #444444;"/>
-                    <TextField fx:id="txtAcademicYear" maxWidth="Infinity"
-                               style="-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px; -fx-pref-height: 40px; -fx-padding: 0 12;"/>
+                    <ComboBox fx:id="cmbAcademicYear" maxWidth="Infinity"
+                              style="-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px; -fx-pref-height: 40px;"/>
                 </VBox>
 
                 <VBox spacing="6">
