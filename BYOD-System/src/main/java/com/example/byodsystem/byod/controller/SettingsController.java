@@ -40,6 +40,7 @@ public class SettingsController implements Initializable {
     @FXML private TextField txtInstitutionName;
     @FXML private ComboBox<String> cmbAcademicYear;
     @FXML private TextField txtCorrectionWindow;
+    @FXML private TextField txtStartOfDayTime;
     @FXML private TextField txtEndOfDayTime;
     @FXML private Button btnSave;
 
@@ -78,7 +79,7 @@ public class SettingsController implements Initializable {
     }
 
     private void loadSettings() {
-        String sql = "SELECT setting_id, institution_name, academic_year, correction_window_min, end_of_day_time FROM settings LIMIT 1";
+        String sql = "SELECT setting_id, institution_name, academic_year, correction_window_min, start_of_day_time, end_of_day_time FROM settings LIMIT 1";
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -92,6 +93,8 @@ public class SettingsController implements Initializable {
                 cmbAcademicYear.setValue(storedAcademicYear);
 
                 txtCorrectionWindow.setText(String.valueOf(rs.getInt("correction_window_min")));
+                Time sod = rs.getTime("start_of_day_time");
+                if (sod != null) txtStartOfDayTime.setText(sod.toString().substring(0, 5));
                 Time eod = rs.getTime("end_of_day_time");
                 if (eod != null) txtEndOfDayTime.setText(eod.toString().substring(0, 5));
             } else {
@@ -165,6 +168,7 @@ public class SettingsController implements Initializable {
         String institution = txtInstitutionName.getText().trim();
         String academicYear = cmbAcademicYear.getValue();
         String correctionStr = txtCorrectionWindow.getText().trim();
+        String startOfDay = txtStartOfDayTime.getText().trim();
         String endOfDay = txtEndOfDayTime.getText().trim();
 
         if (institution.isBlank()) {
@@ -187,6 +191,19 @@ public class SettingsController implements Initializable {
             AlertHelper.showNegative(owner, "Validation", "End of day time must be in HH:MM format (24-hour).");
             return;
         }
+        if (!startOfDay.isBlank() && !startOfDay.matches("^([01]\\d|2[0-3]):[0-5]\\d$")) {
+            AlertHelper.showNegative(owner, "Validation", "Start of day time must be in HH:MM format (24-hour).");
+            return;
+        }
+        if (!startOfDay.isBlank() && !endOfDay.isBlank()) {
+            Time parsedSod = Time.valueOf(startOfDay + ":00");
+            Time parsedEod = Time.valueOf(endOfDay + ":00");
+            if (!parsedSod.before(parsedEod)) {
+                AlertHelper.showNegative(owner, "Validation", "Start of day time must be earlier than end of day time.");
+                return;
+            }
+        }
+        Time sodTime = startOfDay.isBlank() ? null : Time.valueOf(startOfDay + ":00");
         Time eodTime = endOfDay.isBlank() ? null : Time.valueOf(endOfDay + ":00");
 
         Integer originalStart = parseStartYear(originalAcademicYear);
@@ -200,28 +217,30 @@ public class SettingsController implements Initializable {
                 conn.setAutoCommit(false);
                 try {
                     if (settingId < 0) {
-                        String insertSql = "INSERT INTO settings (institution_name, academic_year, correction_window_min, end_of_day_time, updated_by, updated_at) " +
-                                "VALUES (?, ?, ?, ?, ?, NOW() AT TIME ZONE 'Asia/Manila') RETURNING setting_id";
+                        String insertSql = "INSERT INTO settings (institution_name, academic_year, correction_window_min, start_of_day_time, end_of_day_time, updated_by, updated_at) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, NOW() AT TIME ZONE 'Asia/Manila') RETURNING setting_id";
                         try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
                             ps.setString(1, institution);
                             ps.setString(2, academicYear);
                             ps.setInt(3, correctionMinutes);
-                            if (eodTime != null) ps.setTime(4, eodTime); else ps.setNull(4, Types.TIME);
-                            ps.setInt(5, currentUserId);
+                            if (sodTime != null) ps.setTime(4, sodTime); else ps.setNull(4, Types.TIME);
+                            if (eodTime != null) ps.setTime(5, eodTime); else ps.setNull(5, Types.TIME);
+                            ps.setInt(6, currentUserId);
                             ResultSet rs = ps.executeQuery();
                             if (rs.next()) settingId = rs.getInt(1);
                         }
                     } else {
                         String updateSql = "UPDATE settings SET institution_name = ?, academic_year = ?, " +
-                                "correction_window_min = ?, end_of_day_time = ?, updated_by = ?, " +
+                                "correction_window_min = ?, start_of_day_time = ?, end_of_day_time = ?, updated_by = ?, " +
                                 "updated_at = NOW() AT TIME ZONE 'Asia/Manila' WHERE setting_id = ?";
                         try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
                             ps.setString(1, institution);
                             ps.setString(2, academicYear);
                             ps.setInt(3, correctionMinutes);
-                            if (eodTime != null) ps.setTime(4, eodTime); else ps.setNull(4, Types.TIME);
-                            ps.setInt(5, currentUserId);
-                            ps.setInt(6, settingId);
+                            if (sodTime != null) ps.setTime(4, sodTime); else ps.setNull(4, Types.TIME);
+                            if (eodTime != null) ps.setTime(5, eodTime); else ps.setNull(5, Types.TIME);
+                            ps.setInt(6, currentUserId);
+                            ps.setInt(7, settingId);
                             ps.executeUpdate();
                         }
                     }
