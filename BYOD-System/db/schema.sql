@@ -225,6 +225,7 @@ CREATE TABLE settings (
     institution_name      VARCHAR(150) NOT NULL,
     academic_year         VARCHAR(20) NOT NULL,
     correction_window_min INT NOT NULL DEFAULT 15,
+    start_of_day_time     TIME NOT NULL DEFAULT '07:00:00',
     end_of_day_time       TIME NOT NULL DEFAULT '20:00:00',
     updated_by            INT REFERENCES users(user_id)
                           ON DELETE SET NULL,
