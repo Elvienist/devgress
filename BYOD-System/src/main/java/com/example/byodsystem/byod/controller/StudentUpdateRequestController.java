@@ -43,7 +43,7 @@ public class StudentUpdateRequestController {
     @FXML private Button btnFilterApproved;
     @FXML private Button btnFilterRejected;
 
-    private String studentRefId; // This holds the String student_code
+    private String studentRefId;
     private String currentFilter = null;
     private Map<String, String> fieldToColumn;
     private Map<String, String> columnToLabel;
@@ -72,7 +72,7 @@ public class StudentUpdateRequestController {
         }
 
         cbField.setItems(FXCollections.observableArrayList(fieldToColumn.keySet()));
-        cbYearLevelOptions.setItems(FXCollections.observableArrayList("1st Year", "2nd Year", "3rd Year", "4th Year"));
+        cbYearLevelOptions.setItems(FXCollections.observableArrayList("1st Year", "2nd Year", "3rd Year", "4th Year", "Irregular"));
 
         if (taReason != null) {
             taReason.setTextFormatter(new TextFormatter<String>(change -> {
@@ -154,6 +154,29 @@ public class StudentUpdateRequestController {
         }
     }
 
+    private boolean hasPendingRequestForField(String dbColumnName) {
+        if (studentRefId == null || dbColumnName == null) return false;
+
+        String sql = "SELECT 1 FROM profile_update_requests r " +
+                "JOIN students s ON r.student_id = s.student_id " +
+                "WHERE s.student_code = ? AND r.field_name = ? AND r.status = 'PENDING' " +
+                "LIMIT 1";
+
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, studentRefId);
+            ps.setString(2, dbColumnName);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     @FXML
     public void handleSubmit() {
         lblFormError.setText("");
@@ -176,22 +199,35 @@ public class StudentUpdateRequestController {
             lblFormError.setText("New value cannot be empty.");
             return;
         }
+
+        String currentValue = tfCurrentValue.getText() != null ? tfCurrentValue.getText().trim() : "";
+
+        if (newValue.equalsIgnoreCase(currentValue)) {
+            lblFormError.setStyle("-fx-text-fill: #B91C1C; -fx-font-weight: bold;");
+            lblFormError.setText("New value matches your current profile records.");
+            return;
+        }
+
         if (reason.isEmpty()) {
             lblFormError.setText("Please provide a reason for the update request.");
             return;
         }
 
         String dbColumnName = fieldToColumn.get(selectedField);
-        String currentValue = tfCurrentValue.getText();
 
-        // Fixed: Added subquery to map your String studentRefId to the required INT student_id
+        if (hasPendingRequestForField(dbColumnName)) {
+            lblFormError.setStyle("-fx-text-fill: #B91C1C; -fx-font-weight: bold;");
+            lblFormError.setText("You already have a pending request for " + selectedField + ". Please wait for it to be resolved before submitting another.");
+            return;
+        }
+
         String sql = "INSERT INTO profile_update_requests (student_id, field_name, current_value, requested_value, reason, status, submitted_at) " +
                 "VALUES ((SELECT student_id FROM students WHERE student_code = ?), ?, ?, ?, ?, 'PENDING', NOW() AT TIME ZONE 'Asia/Manila')";
 
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, studentRefId); // Binds tracking code string safely
+            ps.setString(1, studentRefId);
             ps.setString(2, dbColumnName);
             ps.setString(3, currentValue);
             ps.setString(4, newValue);
@@ -261,7 +297,6 @@ public class StudentUpdateRequestController {
 
         if (studentRefId == null || studentRefId.trim().isEmpty()) return;
 
-        // Fixed: Joined profile_update_requests with students on student_id to validate via string student_code text column
         String sql;
         if (currentFilter != null) {
             sql = "SELECT r.field_name, r.current_value, r.requested_value, r.reason, r.status, r.admin_response, r.submitted_at " +

@@ -129,8 +129,8 @@ public class BaseController {
         } else if ("OFFICER".equals(role)) {
             btnSidebarGateScreen.setVisible(true);
             btnSidebarGateScreen.setManaged(true);
-            btnSidebarActivityLog.setVisible(false);
-            btnSidebarActivityLog.setManaged(false);
+            btnSidebarActivityLog.setVisible(true);
+            btnSidebarActivityLog.setManaged(true);
             btnSidebarStudentsDevices.setVisible(true);
             btnSidebarStudentsDevices.setManaged(true);
 
@@ -249,7 +249,22 @@ public class BaseController {
     @FXML
     public void handleNavigateToStudentsDevices() {
         updateActiveButtonStyle(btnSidebarStudentsDevices);
-        loadSubView("/com/example/byodsystem/byod/fxml/studentsdevices.fxml");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/byodsystem/byod/fxml/studentsdevices.fxml"));
+            Parent view = loader.load();
+
+            StudentsDevicesController controller = loader.getController();
+            String role = UserSession.getInstance().getRole();
+            controller.setUserRole(role);
+
+            if (contentArea != null) {
+                contentArea.getChildren().clear();
+                contentArea.getChildren().add(view);
+            }
+        } catch (IOException e) {
+            System.err.println("Fatal: Could not transition Students & Devices panel.");
+            e.printStackTrace();
+        }
     }
 
     @FXML

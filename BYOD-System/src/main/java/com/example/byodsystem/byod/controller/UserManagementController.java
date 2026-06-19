@@ -424,6 +424,11 @@ public class UserManagementController implements Initializable {
                 lblEditRefError.setVisible(false);
             }
         }
+        if ("INACTIVE".equals(selectedEditStatus) && targetedRowForAction.getUserId() == currentUserId) {
+            showOverlayPopup("Action Blocked", "You cannot deactivate your own account while logged in.");
+            return;
+        }
+
         boolean changed = !fullName.equals(originalEditFullName)
                 || !role.equals(originalEditRole)
                 || !selectedEditStatus.equals(originalEditStatus)
@@ -466,34 +471,39 @@ public class UserManagementController implements Initializable {
     private void toggleUserStatus(UserManagementController.UserRow row) {
         String nextStatus = "ACTIVE".equals(row.getStatus()) ? "INACTIVE" : "ACTIVE";
 
+        if ("INACTIVE".equals(nextStatus) && row.getUserId() == currentUserId) {
+            showOverlayPopup("Action Blocked", "You cannot deactivate your own account while logged in.");
+            return;
+        }
+
         Window owner = tblUsers.getScene().getWindow();
         AlertHelper.showConfirm(owner, "Change Account Status",
                 "Change status of '" + row.getUsername() + "' to " + nextStatus + "?", () -> {
-            try (Connection conn = DBConnection.connect();
-                 PreparedStatement ps = conn.prepareStatement("UPDATE users SET status=? WHERE user_id=?")) {
-                ps.setString(1, nextStatus);
-                ps.setInt(2, row.getUserId());
-                ps.executeUpdate();
+                    try (Connection conn = DBConnection.connect();
+                         PreparedStatement ps = conn.prepareStatement("UPDATE users SET status=? WHERE user_id=?")) {
+                        ps.setString(1, nextStatus);
+                        ps.setInt(2, row.getUserId());
+                        ps.executeUpdate();
 
-                if ("STUDENT".equals(row.getRole())) {
-                    String syncSql = "UPDATE students SET status = ? " +
-                            "WHERE student_code = (" +
-                            "SELECT student_ref_id FROM users WHERE user_id = ?)";
-                    try (PreparedStatement syncPst = conn.prepareStatement(syncSql)) {
-                        syncPst.setString(1, nextStatus);
-                        syncPst.setInt(2, row.getUserId());
-                        syncPst.executeUpdate();
+                        if ("STUDENT".equals(row.getRole())) {
+                            String syncSql = "UPDATE students SET status = ? " +
+                                    "WHERE student_code = (" +
+                                    "SELECT student_ref_id FROM users WHERE user_id = ?)";
+                            try (PreparedStatement syncPst = conn.prepareStatement(syncSql)) {
+                                syncPst.setString(1, nextStatus);
+                                syncPst.setInt(2, row.getUserId());
+                                syncPst.executeUpdate();
+                            }
+                        }
+
+                        AuditLogger.log(conn, currentUserId, "ACTIVE".equals(nextStatus) ? "RECORD_REACTIVATED" : "RECORD_DEACTIVATED",
+                                "User", row.getUserId(), "{\"username\":\"" + row.getUsername() + "\"}");
+                        showOverlayPopup("Success", "Account status updated to " + nextStatus + ".");
+                        loadUsers();
+                    } catch (SQLException e) {
+                        showOverlayPopup("Database Error", "Error updating account status.");
                     }
-                }
-
-                AuditLogger.log(conn, currentUserId, "ACTIVE".equals(nextStatus) ? "RECORD_REACTIVATED" : "RECORD_DEACTIVATED",
-                        "User", row.getUserId(), "{\"username\":\"" + row.getUsername() + "\"}");
-                showOverlayPopup("Success", "Account status updated to " + nextStatus + ".");
-                loadUsers();
-            } catch (SQLException e) {
-                showOverlayPopup("Database Error", "Error updating account status.");
-            }
-        });
+                });
     }
 
 
@@ -542,7 +552,8 @@ public class UserManagementController implements Initializable {
         StackPane root = getRootStack();
         if (root == null) return;
 
-        boolean isError = title.toLowerCase().contains("error") || title.toLowerCase().contains("fail");
+        boolean isError = title.toLowerCase().contains("error") || title.toLowerCase().contains("fail")
+                || title.toLowerCase().contains("blocked") || title.toLowerCase().contains("denied");
         boolean isWarning = title.toLowerCase().contains("validation");
 
         String iconColor = isError ? "#DC2626" : isWarning ? "#D97706" : "#2E7D32";

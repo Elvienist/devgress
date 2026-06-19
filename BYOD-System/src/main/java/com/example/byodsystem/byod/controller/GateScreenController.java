@@ -2,6 +2,8 @@ package com.example.byodsystem.byod.controller;
 
 import com.example.byodsystem.byod.database.DBConnection;
 import com.example.byodsystem.byod.service.UserSession;
+import javafx.animation.FadeTransition;
+import javafx.animation.ScaleTransition;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,6 +16,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
+import javafx.util.Duration;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -73,6 +76,8 @@ public class GateScreenController {
     @FXML private Label lblConfirmWarning;
     @FXML private Button btnConfirmAction;
     @FXML private Region profileDividerLine2;
+
+    @FXML private StackPane paneAckModal;
 
     private boolean isIngressMode = true;
 
@@ -240,17 +245,13 @@ public class GateScreenController {
 
         if (isIngressMode) {
             modalSelectContainer.setStyle("-fx-background-color: #7A0000, #FFFFFF; -fx-background-insets: 0, 4 0 0 0; -fx-background-radius: 12; -fx-padding: 0;");
-
             lblModalBadge.setText("INGRESS");
             lblModalBadge.setStyle("-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-background-radius: 12; -fx-padding: 4 14; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-font-size: 11px;");
-
             btnReviewSelection.setStyle("-fx-background-color: #7A0000; -fx-background-radius: 8; -fx-cursor: hand; -fx-text-fill: white; -fx-padding: 0 24; -fx-font-weight: bold;");
         } else {
             modalSelectContainer.setStyle("-fx-background-color: #E6A100, #FFFFFF; -fx-background-insets: 0, 4 0 0 0; -fx-background-radius: 12; -fx-padding: 0;");
-
             lblModalBadge.setText("EGRESS");
             lblModalBadge.setStyle("-fx-background-color: #E6A100; -fx-text-fill: #FFFFFF; -fx-background-radius: 12; -fx-padding: 4 14; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-font-size: 11px;");
-
             btnReviewSelection.setStyle("-fx-background-color: #E6A100; -fx-background-radius: 8; -fx-cursor: hand; -fx-text-fill: white; -fx-padding: 0 24; -fx-font-weight: bold;");
         }
 
@@ -266,19 +267,25 @@ public class GateScreenController {
 
         String sql;
         if (isIngressMode) {
-            sql = "SELECT d.device_id, d.serial_number, d.brand, d.model, d.device_type FROM devices d " +
+            // Eligible for ingress: device isn't currently marked as already inside.
+            // current_location is kept accurate by ActivityLogController whenever a
+            // log is voided/un-voided, so we trust it directly instead of re-deriving
+            // in/out state from raw device_logs (which would have to remember to
+            // exclude VOIDED rows every time).
+            sql = "SELECT d.device_id, d.serial_number, d.brand, d.model, d.device_type, " +
+                    "COALESCE(d.current_location, 'UNKNOWN') AS current_location " +
+                    "FROM devices d " +
                     "WHERE d.owner_id = ? AND d.status = 'ACTIVE' " +
-                    "AND NOT EXISTS (" +
-                    "  SELECT 1 FROM device_logs dl_in WHERE dl_in.device_id = d.device_id AND dl_in.direction = 'IN' " +
-                    "  AND NOT EXISTS (SELECT 1 FROM device_logs dl_out WHERE dl_out.device_id = dl_in.device_id AND dl_out.direction = 'OUT' AND dl_out.log_time > dl_in.log_time)" +
-                    ") ORDER BY d.device_id ASC";
+                    "AND COALESCE(d.current_location, 'UNKNOWN') != 'IN' " +
+                    "ORDER BY d.device_id ASC";
         } else {
-            sql = "SELECT d.device_id, d.serial_number, d.brand, d.model, d.device_type FROM devices d " +
+            // Eligible for egress: device must currently be marked inside.
+            sql = "SELECT d.device_id, d.serial_number, d.brand, d.model, d.device_type, " +
+                    "COALESCE(d.current_location, 'UNKNOWN') AS current_location " +
+                    "FROM devices d " +
                     "WHERE d.owner_id = ? AND d.status = 'ACTIVE' " +
-                    "AND EXISTS (" +
-                    "  SELECT 1 FROM device_logs dl_in WHERE dl_in.device_id = d.device_id AND dl_in.direction = 'IN' " +
-                    "  AND NOT EXISTS (SELECT 1 FROM device_logs dl_out WHERE dl_out.device_id = dl_in.device_id AND dl_out.direction = 'OUT' AND dl_out.log_time > dl_in.log_time)" +
-                    ") ORDER BY d.device_id ASC";
+                    "AND COALESCE(d.current_location, 'UNKNOWN') = 'IN' " +
+                    "ORDER BY d.device_id ASC";
         }
 
         int eligibleCount = 0;
@@ -292,7 +299,8 @@ public class GateScreenController {
                     String brand = rs.getString("brand");
                     String model = rs.getString("model");
                     String type = rs.getString("device_type");
-                    paneDeviceCheckList.getChildren().add(buildDeviceRow(deviceId, serial, brand, model, type));
+                    String location = rs.getString("current_location");
+                    paneDeviceCheckList.getChildren().add(buildDeviceRow(deviceId, serial, brand, model, type, location));
                     eligibleCount++;
                 }
             }
@@ -311,7 +319,7 @@ public class GateScreenController {
         updateSelectionCount();
     }
 
-    private HBox buildDeviceRow(int deviceId, String serial, String brand, String model, String type) {
+    private HBox buildDeviceRow(int deviceId, String serial, String brand, String model, String type, String location) {
         HBox row = new HBox(16);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-background-color: #FFFFFF; -fx-background-radius: 10; -fx-border-color: #E2E8F0; -fx-border-radius: 10; -fx-border-width: 1; -fx-cursor: hand; -fx-padding: 14;");
@@ -335,13 +343,11 @@ public class GateScreenController {
         VBox info = new VBox(2);
         Label lblTitle = new Label(brand + " " + model);
         lblTitle.setStyle("-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: 600; -fx-text-fill: #1E293B; -fx-font-size: 14px;");
-        Label lblSerial = new Label(type.substring(0,1).toUpperCase() + type.substring(1).toLowerCase());
-        lblSerial.setStyle("-fx-font-family: 'Inter'; -fx-text-fill: #64748B; -fx-font-size: 12px;");
-
+        Label lblType = new Label(type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase());
+        lblType.setStyle("-fx-font-family: 'Inter'; -fx-text-fill: #64748B; -fx-font-size: 12px;");
         Label lblSerialNumberString = new Label("S/N: " + serial);
         lblSerialNumberString.setStyle("-fx-font-family: 'JetBrains Mono', 'Courier New'; -fx-font-size: 11px; -fx-text-fill: #94A3B8;");
-
-        info.getChildren().addAll(lblTitle, lblSerial, lblSerialNumberString);
+        info.getChildren().addAll(lblTitle, lblType, lblSerialNumberString);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -353,15 +359,26 @@ public class GateScreenController {
 
         String deviceLabel = brand + " " + model;
 
-        HBox badgeContainer = new HBox(12);
+        HBox badgeContainer = new HBox(10);
         badgeContainer.setAlignment(Pos.CENTER_LEFT);
 
-        Label lblStatusBadge = new Label(isIngressMode ? "Outside Campus" : "Inside Campus");
-        lblStatusBadge.setStyle(isIngressMode
-                ? "-fx-background-color: #DCFCE7; -fx-text-fill: #15803D; -fx-background-radius: 12; -fx-padding: 4 12; -fx-font-weight: bold; -fx-font-size: 11px;"
-                : "-fx-background-color: #DBEAFE; -fx-text-fill: #1E40AF; -fx-background-radius: 12; -fx-padding: 4 12; -fx-font-weight: bold; -fx-font-size: 11px;");
+        String locationText;
+        String locationStyle;
+        if ("IN".equals(location)) {
+            locationText = "📍 Inside Campus";
+            locationStyle = "-fx-background-color: #DBEAFE; -fx-text-fill: #1E40AF; -fx-background-radius: 12; -fx-padding: 4 12; -fx-font-weight: bold; -fx-font-size: 11px;";
+        } else if ("OUT".equals(location)) {
+            locationText = "📍 Outside Campus";
+            locationStyle = "-fx-background-color: #DCFCE7; -fx-text-fill: #15803D; -fx-background-radius: 12; -fx-padding: 4 12; -fx-font-weight: bold; -fx-font-size: 11px;";
+        } else {
+            locationText = "📍 Location Unknown";
+            locationStyle = "-fx-background-color: #F3F4F6; -fx-text-fill: #6B7280; -fx-background-radius: 12; -fx-padding: 4 12; -fx-font-weight: bold; -fx-font-size: 11px;";
+        }
 
-        badgeContainer.getChildren().addAll(lblStatusBadge, customCheck);
+        Label lblLocationBadge = new Label(locationText);
+        lblLocationBadge.setStyle(locationStyle);
+
+        badgeContainer.getChildren().addAll(lblLocationBadge, customCheck);
 
         row.setOnMouseClicked(e -> {
             if (selectedDevices.containsKey(deviceId)) {
@@ -408,19 +425,15 @@ public class GateScreenController {
 
         if (isIngressMode) {
             modalConfirmContainer.setStyle("-fx-background-color: #7A0000, #FFFFFF; -fx-background-insets: 0, 4 0 0 0; -fx-background-radius: 12; -fx-padding: 0;");
-
             lblConfirmBadge.setText("INGRESS");
             lblConfirmBadge.setStyle("-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-background-radius: 12; -fx-padding: 4 14; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-font-size: 11px;");
-
             lblConfirmFor.setText("CONFIRM INGRESS FOR:");
             btnConfirmAction.setText("CONFIRM INGRESS");
             btnConfirmAction.setStyle("-fx-background-color: #7A0000; -fx-background-radius: 8; -fx-cursor: hand; -fx-text-fill: white; -fx-padding: 0 24; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;");
         } else {
             modalConfirmContainer.setStyle("-fx-background-color: #E6A100, #FFFFFF; -fx-background-insets: 0, 4 0 0 0; -fx-background-radius: 12; -fx-padding: 0;");
-
             lblConfirmBadge.setText("EGRESS");
             lblConfirmBadge.setStyle("-fx-background-color: #E6A100; -fx-text-fill: #FFFFFF; -fx-background-radius: 12; -fx-padding: 4 14; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-font-size: 11px;");
-
             lblConfirmFor.setText("CONFIRM EGRESS FOR:");
             btnConfirmAction.setText("CONFIRM EGRESS");
             btnConfirmAction.setStyle("-fx-background-color: #E6A100; -fx-background-radius: 8; -fx-cursor: hand; -fx-text-fill: white; -fx-padding: 0 24; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;");
@@ -429,7 +442,8 @@ public class GateScreenController {
         paneConfirmDeviceList.getChildren().clear();
         String activeBranding = isIngressMode ? "#7A0000" : "#E6A100";
 
-        for (String label : selectedDevices.values()) {
+        for (Map.Entry<Integer, String> entry : selectedDevices.entrySet()) {
+            String label = entry.getValue();
             HBox row = new HBox(12);
             row.setAlignment(Pos.CENTER_LEFT);
             row.setStyle("-fx-background-color: #FFFFFF; -fx-background-radius: 8; -fx-border-color: #E2E8F0; -fx-border-width: 1; -fx-padding: 12 16;");
@@ -451,9 +465,8 @@ public class GateScreenController {
 
             Label lblDev = new Label(mainTitle);
             lblDev.setStyle("-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: 600; -fx-text-fill: #1E293B; -fx-font-size: 13px;");
-
             nameContainer.getChildren().add(lblDev);
-            if(!subSerial.isEmpty()){
+            if (!subSerial.isEmpty()) {
                 Label lblSerStr = new Label(subSerial);
                 lblSerStr.setStyle("-fx-font-family: 'JetBrains Mono', 'Courier New'; -fx-font-size: 11px; -fx-text-fill: #64748B;");
                 nameContainer.getChildren().add(lblSerStr);
@@ -462,12 +475,15 @@ public class GateScreenController {
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            Label lblDir = new Label(isIngressMode ? "→ IN" : "← OUT");
-            lblDir.setStyle(isIngressMode
-                    ? "-fx-background-color: #DCFCE7; -fx-text-fill: #15803D; -fx-padding: 4 10; -fx-background-radius: 6; -fx-font-size: 11px; -fx-font-weight: bold;"
-                    : "-fx-background-color: #FEE2E2; -fx-text-fill: #9F1239; -fx-padding: 4 10; -fx-background-radius: 6; -fx-font-size: 11px; -fx-font-weight: bold;");
+            String newLocationText = isIngressMode ? "→ Inside Campus" : "← Outside Campus";
+            String newLocationStyle = isIngressMode
+                    ? "-fx-background-color: #DBEAFE; -fx-text-fill: #1E40AF; -fx-padding: 4 10; -fx-background-radius: 6; -fx-font-size: 11px; -fx-font-weight: bold;"
+                    : "-fx-background-color: #DCFCE7; -fx-text-fill: #15803D; -fx-padding: 4 10; -fx-background-radius: 6; -fx-font-size: 11px; -fx-font-weight: bold;";
 
-            row.getChildren().addAll(iconBox, nameContainer, spacer, lblDir);
+            Label lblNewLoc = new Label(newLocationText);
+            lblNewLoc.setStyle(newLocationStyle);
+
+            row.getChildren().addAll(iconBox, nameContainer, spacer, lblNewLoc);
             paneConfirmDeviceList.getChildren().add(row);
         }
 
@@ -494,23 +510,49 @@ public class GateScreenController {
         UserSession session = UserSession.getInstance();
         int operatorId = session.getUserId();
         String direction = isIngressMode ? "IN" : "OUT";
+        String newLocation = isIngressMode ? "IN" : "OUT";
         UUID batchId = UUID.randomUUID();
 
-        String sql = "INSERT INTO device_logs (device_id, operator_id, direction, log_time, status, batch_id) " +
-                "VALUES (?, ?, ?, NOW() AT TIME ZONE 'Asia/Manila', 'NORMAL', ?)";
+        List<Integer> confirmedDeviceIds = new ArrayList<>(selectedDevices.keySet());
+        int deviceCount = confirmedDeviceIds.size();
+        String actionLabel = isIngressMode ? "Ingress" : "Egress";
+        String studentSnapshot = currentStudentName;
 
-        try (Connection conn = DBConnection.connect();
-             PreparedStatement pst = conn.prepareStatement(sql)) {
-            for (Integer deviceId : selectedDevices.keySet()) {
-                pst.setInt(1, deviceId);
-                pst.setInt(2, operatorId);
-                pst.setString(3, direction);
-                pst.setObject(4, batchId);
-                pst.addBatch();
+        String insertLogSql = "INSERT INTO device_logs (device_id, operator_id, direction, log_time, status, batch_id) " +
+                "VALUES (?, ?, ?, NOW() AT TIME ZONE 'Asia/Manila', 'NORMAL', ?)";
+        String updateLocationSql = "UPDATE devices SET current_location = ? WHERE device_id = ?";
+
+        try (Connection conn = DBConnection.connect()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement pstLog = conn.prepareStatement(insertLogSql);
+                     PreparedStatement pstLoc = conn.prepareStatement(updateLocationSql)) {
+                    for (Integer deviceId : confirmedDeviceIds) {
+                        pstLog.setInt(1, deviceId);
+                        pstLog.setInt(2, operatorId);
+                        pstLog.setString(3, direction);
+                        pstLog.setObject(4, batchId);
+                        pstLog.addBatch();
+
+                        pstLoc.setString(1, newLocation);
+                        pstLoc.setInt(2, deviceId);
+                        pstLoc.addBatch();
+                    }
+                    pstLog.executeBatch();
+                    pstLoc.executeBatch();
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                e.printStackTrace();
+                showAckPopup(false, "Transaction Failed",
+                        "Could not save the gate action. Please try again.");
+                return;
             }
-            pst.executeBatch();
         } catch (SQLException e) {
             e.printStackTrace();
+            showAckPopup(false, "Connection Error",
+                    "Database connection failed. Please check your connection.");
             return;
         }
 
@@ -519,6 +561,10 @@ public class GateScreenController {
         handleCloseModal();
         clearSearch();
         loadRecentBatches();
+
+        showAckPopup(true,
+                actionLabel + " Logged",
+                deviceCount + (deviceCount == 1 ? " device" : " devices") + " for " + studentSnapshot + " successfully recorded.");
     }
 
     private void insertAuditLog(int operatorId, UUID batchId, String direction) {
@@ -544,12 +590,119 @@ public class GateScreenController {
         selectedDevices.clear();
     }
 
+    private void showAckPopup(boolean success, String title, String message) {
+        if (paneAckModal == null) {
+            System.err.println("Error: paneAckModal is null. Ensure fx:id='paneAckModal' is configured correctly in gatescreen.fxml");
+            return;
+        }
+
+        paneAckModal.getChildren().clear();
+
+        StackPane overlay = new StackPane();
+        overlay.setStyle("-fx-background-color: rgba(0,0,0,0.35);");
+        overlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        VBox card = new VBox(20);
+        card.setAlignment(Pos.CENTER);
+        card.setMaxWidth(340);
+        card.setMaxHeight(Region.USE_PREF_SIZE);
+        card.setMinHeight(Region.USE_PREF_SIZE);
+        card.setPadding(new Insets(36, 32, 32, 32));
+        card.setStyle("-fx-background-color: #FFFFFF; -fx-background-radius: 16; " +
+                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.18), 24, 0, 0, 6);");
+
+        StackPane iconCircle = new StackPane();
+        iconCircle.setMaxSize(64, 64);
+        iconCircle.setMinSize(64, 64);
+
+        if (success) {
+            iconCircle.setStyle("-fx-background-color: #DCFCE7; -fx-background-radius: 50; " +
+                    "-fx-border-color: #BBF7D0; -fx-border-radius: 50; -fx-border-width: 3;");
+            SVGPath checkIcon = new SVGPath();
+            checkIcon.setContent("M5 13l4 4L19 7");
+            checkIcon.setStyle("-fx-stroke: #16A34A; -fx-stroke-width: 2.5; -fx-fill: transparent; " +
+                    "-fx-stroke-linecap: round; -fx-stroke-linejoin: round; -fx-scale-x: 1.3; -fx-scale-y: 1.3;");
+            iconCircle.getChildren().add(checkIcon);
+        } else {
+            iconCircle.setStyle("-fx-background-color: #FEE2E2; -fx-background-radius: 50; " +
+                    "-fx-border-color: #FECACA; -fx-border-radius: 50; -fx-border-width: 3;");
+            SVGPath xIcon = new SVGPath();
+            xIcon.setContent("M6 18L18 6M6 6l12 12");
+            xIcon.setStyle("-fx-stroke: #DC2626; -fx-stroke-width: 2.5; -fx-fill: transparent; " +
+                    "-fx-stroke-linecap: round; -fx-scale-x: 1.1; -fx-scale-y: 1.1;");
+            iconCircle.getChildren().add(xIcon);
+        }
+
+        Label lblTitle = new Label(title);
+        lblTitle.setStyle("-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; " +
+                "-fx-text-fill: #111827; -fx-font-size: 18px;");
+
+        Label lblMessage = new Label(message);
+        lblMessage.setStyle("-fx-font-family: 'Inter', 'Segoe UI'; -fx-text-fill: #6B7280; " +
+                "-fx-font-size: 13px; -fx-text-alignment: center;");
+        lblMessage.setWrapText(true);
+        lblMessage.setMaxWidth(260);
+        lblMessage.setAlignment(Pos.CENTER);
+
+        String btnColor = success ? "#16A34A" : "#DC2626";
+        Button btnClose = new Button("Close");
+        btnClose.setMaxWidth(Double.MAX_VALUE);
+        btnClose.setPrefHeight(42);
+        btnClose.setStyle("-fx-background-color: " + btnColor + "; -fx-background-radius: 8; " +
+                "-fx-text-fill: #FFFFFF; -fx-font-family: 'Inter', 'Segoe UI'; " +
+                "-fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;");
+        btnClose.setOnMouseEntered(e -> btnClose.setOpacity(0.88));
+        btnClose.setOnMouseExited(e -> btnClose.setOpacity(1.0));
+        btnClose.setOnAction(e -> hideAckPopup());
+
+        card.getChildren().addAll(iconCircle, lblTitle, lblMessage, btnClose);
+
+        overlay.getChildren().add(card);
+        StackPane.setAlignment(card, Pos.CENTER);
+        paneAckModal.getChildren().add(overlay);
+
+        paneAckModal.setVisible(true);
+        paneAckModal.setManaged(true);
+        paneAckModal.setOpacity(0);
+
+        card.setScaleX(0.85);
+        card.setScaleY(0.85);
+
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(180), paneAckModal);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+
+        ScaleTransition scaleIn = new ScaleTransition(Duration.millis(200), card);
+        scaleIn.setFromX(0.85);
+        scaleIn.setFromY(0.85);
+        scaleIn.setToX(1.0);
+        scaleIn.setToY(1.0);
+
+        fadeIn.play();
+        scaleIn.play();
+    }
+
+    private void hideAckPopup() {
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(150), paneAckModal);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+        fadeOut.setOnFinished(e -> {
+            paneAckModal.setVisible(false);
+            paneAckModal.setManaged(false);
+            paneAckModal.getChildren().clear();
+        });
+        fadeOut.play();
+    }
+
     private void loadRecentBatches() {
         paneBatchList.getChildren().clear();
 
         String sql = "SELECT dl.batch_id, dl.direction, s.student_code, s.full_name, " +
                 "MAX(dl.log_time) AS batch_time, COUNT(*) AS device_count, " +
-                "STRING_AGG(d.brand || ' ' || d.model, ', ') AS device_names " +
+                "STRING_AGG(d.brand || ' ' || d.model, ', ') AS device_names, " +
+                "CASE WHEN BOOL_OR(dl.status = 'VOIDED') THEN 'VOIDED' " +
+                "     WHEN BOOL_OR(dl.status = 'AMENDED') THEN 'AMENDED' " +
+                "     ELSE 'NORMAL' END AS batch_status " +
                 "FROM device_logs dl " +
                 "JOIN devices d ON d.device_id = dl.device_id " +
                 "JOIN students s ON s.student_id = d.owner_id " +
@@ -569,6 +722,7 @@ public class GateScreenController {
                 b.direction = rs.getString("direction");
                 b.deviceCount = rs.getInt("device_count");
                 b.deviceNames = rs.getString("device_names");
+                b.status = rs.getString("batch_status");
                 Timestamp ts = rs.getTimestamp("batch_time");
                 b.time = ts != null ? ts.toInstant()
                                       .atZone(java.time.ZoneId.of("Asia/Manila"))
@@ -598,6 +752,9 @@ public class GateScreenController {
         VBox card = new VBox(6);
         card.setStyle("-fx-background-color: #FFFFFF; -fx-background-radius: 10; -fx-border-color: #E5E7EB; -fx-border-radius: 10; -fx-border-width: 1; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.01), 6, 0, 0, 1);");
         card.setPadding(new Insets(14, 16, 14, 16));
+        if ("VOIDED".equals(b.status)) {
+            card.setOpacity(0.6);
+        }
 
         HBox header = new HBox(8);
         header.setAlignment(Pos.CENTER_LEFT);
@@ -613,6 +770,14 @@ public class GateScreenController {
                 : "-fx-background-color: #FEF3C7; -fx-text-fill: #92400E; -fx-padding: 3 8; -fx-background-radius: 6; -fx-font-size: 10px; -fx-font-weight: 700;");
 
         header.getChildren().addAll(lblName, spacer, lblDir);
+
+        if ("VOIDED".equals(b.status) || "AMENDED".equals(b.status)) {
+            Label lblStatus = new Label(b.status);
+            lblStatus.setStyle("VOIDED".equals(b.status)
+                    ? "-fx-background-color: #FEE2E2; -fx-text-fill: #B91C1C; -fx-padding: 3 8; -fx-background-radius: 6; -fx-font-size: 10px; -fx-font-weight: 700;"
+                    : "-fx-background-color: #FEF9C3; -fx-text-fill: #854D0E; -fx-padding: 3 8; -fx-background-radius: 6; -fx-font-size: 10px; -fx-font-weight: 700;");
+            header.getChildren().add(lblStatus);
+        }
 
         Label lblMeta = new Label(b.studentCode + "  •  " + b.deviceCount + " Asset Module(s)  •  " + b.time);
         lblMeta.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px; -fx-font-weight: 500;");
@@ -631,6 +796,7 @@ public class GateScreenController {
         String direction;
         int deviceCount;
         String deviceNames;
+        String status;
         String time;
     }
 }

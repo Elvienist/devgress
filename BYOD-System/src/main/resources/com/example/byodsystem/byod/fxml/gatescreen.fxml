@@ -127,7 +127,7 @@
                         </ScrollPane>
                     </StackPane>
                 </VBox>
-                <VBox maxWidth="280.0" minWidth="280.0" prefWidth="280.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 12; -fx-border-width: 1; -fx-padding: 20;">
+                <VBox maxWidth="360.0" minWidth="360.0" prefWidth="360.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 12; -fx-border-width: 1; -fx-padding: 20;">
                     <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 16 0;">
                         <HBox alignment="CENTER_LEFT" spacing="8.0">
                             <SVGPath content="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="#1E293B" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeWidth="1.5" fill="TRANSPARENT" />
@@ -323,4 +323,6 @@
             </HBox>
         </VBox>
     </StackPane>
+
+    <StackPane fx:id="paneAckModal" managed="false" visible="false" />
 </StackPane>

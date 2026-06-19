@@ -129,12 +129,6 @@
                                     </children>
                                 </HBox>
 
-                                <TextField fx:id="searchField" onAction="#handleSearch" prefHeight="48.0"
-                                           promptText="Search students, devices, or logs..."
-                                           style="-fx-background-color: #FFFFFF; -fx-border-color: #E5E7EB; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 0 16 0 16; -fx-text-fill: #1F2937;">
-                                    <font><Font size="14.0" /></font>
-                                </TextField>
-
                                 <HBox spacing="16.0">
                                     <children>
                                         <VBox prefHeight="120.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-radius: 12;" HBox.hgrow="ALWAYS">

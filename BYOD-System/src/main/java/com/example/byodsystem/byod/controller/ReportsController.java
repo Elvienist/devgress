@@ -194,7 +194,7 @@ public class ReportsController implements Initializable {
     private void loadReports() {
         ObservableList<ReportRow> list = FXCollections.observableArrayList();
         String sql = "SELECT report_id, report_title, report_type, date_start, date_end, total_records, " +
-                "TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI') AS ts " +
+                "TO_CHAR(created_at, 'YYYY-MM-DD HH12:MI AM') AS ts " +
                 "FROM reports ORDER BY created_at DESC";
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -251,9 +251,15 @@ public class ReportsController implements Initializable {
         if (failed) return;
 
         int totalRecords = countRecords(type, start, end);
+
+        if (totalRecords == 0) {
+            toggleErrorLabel(lblDateError, "⚠ No Data Found: There are no " + type + " records within the selected date range.", true);
+            return;
+        }
+
         String title = type + " - " + start.format(DateTimeFormatter.ofPattern("MMM yyyy"));
         String insertSql = "INSERT INTO reports (report_title, report_type, generated_by, date_start, date_end, total_records, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, NOW()) RETURNING report_id";
+                "VALUES (?, ?, ?, ?, ?, ?, NOW() AT TIME ZONE 'Asia/Manila') RETURNING report_id";
 
         try (Connection conn = DBConnection.connect();
              PreparedStatement ps = conn.prepareStatement(insertSql)) {

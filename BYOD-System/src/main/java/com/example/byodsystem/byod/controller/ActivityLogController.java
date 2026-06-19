@@ -302,6 +302,7 @@ public class ActivityLogController {
         lblInspDirection.setText(dir);
         lblInspStatus.setText(status != null ? status : "—");
         lblInspBatchId.setText(batchId != null ? batchId : "—");
+
         lblInspStudentName.setText(fullName);
         lblInspStudentCode.setText(stuCode);
         lblInspCourse.setText(course);
@@ -368,6 +369,7 @@ public class ActivityLogController {
 
         String snapshotSql =
                 "SELECT dl.log_id, dl.log_time, dl.direction, dl.status, dl.batch_id, " +
+                        "       dl.device_id, " +
                         "       d.serial_number, d.brand, d.model, " +
                         "       s.full_name, s.student_code " +
                         "FROM device_logs dl " +
@@ -376,19 +378,24 @@ public class ActivityLogController {
                         "WHERE dl.log_id = ?";
 
         String previousDataJson = null;
+        String originalDirection = null;
+        int    targetDeviceId    = -1;
+
         try (Connection conn = DBConnection.connect();
              PreparedStatement pst = conn.prepareStatement(snapshotSql)) {
             pst.setInt(1, selectedLogId);
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
-                    previousDataJson = String.format(
+                    originalDirection = rs.getString("direction");
+                    targetDeviceId    = rs.getInt("device_id");
+                    previousDataJson  = String.format(
                             "{\"log_id\":%d,\"log_time\":\"%s\",\"direction\":\"%s\"," +
                                     "\"status\":\"%s\",\"batch_id\":\"%s\"," +
                                     "\"serial_number\":\"%s\",\"brand\":\"%s\",\"model\":\"%s\"," +
                                     "\"full_name\":\"%s\",\"student_code\":\"%s\"}",
                             rs.getInt("log_id"),
                             rs.getTimestamp("log_time"),
-                            rs.getString("direction"),
+                            originalDirection,
                             rs.getString("status"),
                             rs.getString("batch_id"),
                             rs.getString("serial_number"),
@@ -415,6 +422,16 @@ public class ActivityLogController {
                     pst.setString(1, newStatus);
                     pst.setInt(2, selectedLogId);
                     pst.executeUpdate();
+                }
+
+                if ("VOIDED".equals(newStatus) && originalDirection != null && targetDeviceId > 0) {
+                    String reversedLocation = "IN".equals(originalDirection) ? "OUT" : "IN";
+                    try (PreparedStatement pst = conn.prepareStatement(
+                            "UPDATE devices SET current_location = ? WHERE device_id = ?")) {
+                        pst.setString(1, reversedLocation);
+                        pst.setInt(2, targetDeviceId);
+                        pst.executeUpdate();
+                    }
                 }
 
                 try (PreparedStatement pst = conn.prepareStatement(
@@ -458,7 +475,7 @@ public class ActivityLogController {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            AlertHelper.showNegative(lblAmendError.getScene().getWindow(), "Error", "Database connnection failed. ");
+            AlertHelper.showNegative(lblAmendError.getScene().getWindow(), "Error", "Database connection failed. ");
             return;
         }
 

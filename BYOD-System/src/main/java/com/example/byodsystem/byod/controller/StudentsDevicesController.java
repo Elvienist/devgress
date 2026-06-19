@@ -76,17 +76,22 @@ public class StudentsDevicesController {
     @FXML private TableColumn<Student, Void> colStudentActions;
 
     @FXML private TableView<Device> tblDevices;
-    @FXML private TableColumn<Device, String> colDeviceSerial, colDeviceBrand, colDeviceModel, colDeviceType, colDeviceOwner, colDeviceState;
+    @FXML private TableColumn<Device, String> colDeviceSerial, colDeviceBrand, colDeviceModel, colDeviceType, colDeviceOwner, colDeviceState, colDeviceLocation;
     @FXML private TableColumn<Device, Void> colDeviceActions;
 
     @FXML private Button btnStudentFilterActive, btnStudentFilterInactive;
     @FXML private Button btnDeviceFilterActive, btnDeviceFilterInactive;
+    @FXML private Button btnDeviceFilterInside, btnDeviceFilterOutside;
 
     @FXML private VBox paneMassAddModal;
     @FXML private VBox paneMassAddTimerModal;
     @FXML private Label lblSelectedFile;
     @FXML private Label lblCountdown;
     @FXML private Button btnConfirmMassAdd;
+
+    @FXML private Button btnAddStudent;
+    @FXML private Button btnAddDevice;
+    @FXML private Button btnMassAdd;
 
     private File selectedCsvFile = null;
     private Timeline massAddTimeline;
@@ -105,12 +110,10 @@ public class StudentsDevicesController {
 
     private String currentStudentStatusFilter = "ACTIVE";
     private String currentDeviceStatusFilter = "ACTIVE";
+    private String currentDeviceLocationFilter = "ALL";
 
     private String currentUserRole = "ADMIN";
 
-    // ─── Root StackPane reference for overlay popup ───────────────────────────
-    // The FXML root must be a StackPane (or we grab it at runtime).
-    // We resolve it lazily on first use via getRootStack().
     private StackPane rootStackPane = null;
 
     public void setUserRole(String role) {
@@ -137,6 +140,15 @@ public class StudentsDevicesController {
             public Student fromString(String string) { return null; }
         });
 
+        UserSession session = UserSession.getInstance();
+        String role = session.getRole() != null ? session.getRole().toUpperCase() : "";
+
+        if ("OFFICER".equals(role)) {
+            if (btnAddStudent != null) { btnAddStudent.setVisible(false); btnAddStudent.setManaged(false); }
+            if (btnAddDevice  != null) { btnAddDevice.setVisible(false);  btnAddDevice.setManaged(false);  }
+            if (btnMassAdd    != null) { btnMassAdd.setVisible(false);    btnMassAdd.setManaged(false);    }
+        }
+
         configureTableColumns();
         loadStudentsFromDatabase();
         loadDevicesFromDatabase();
@@ -145,18 +157,8 @@ public class StudentsDevicesController {
         updateFilterButtonStyles();
     }
 
-    // =========================================================================
-    // OVERLAY POPUP
-    // =========================================================================
-
-    /**
-     * Lazily walks up the scene graph to find the root StackPane.
-     * The FXML root VBox is inside a StackPane in the main layout.
-     */
     private StackPane getRootStack() {
         if (rootStackPane != null) return rootStackPane;
-        // paneStudentsView -> StackPane (inner) -> VBox (root)
-        // Walk up until we hit a StackPane
         javafx.scene.Node node = paneStudentsView;
         while (node != null) {
             if (node instanceof StackPane) {
@@ -168,14 +170,6 @@ public class StudentsDevicesController {
         return rootStackPane;
     }
 
-    /**
-     * Shows a compact overlay popup with a dark blurry background.
-     * Matches the style in the reference image: rounded rectangle, green check icon,
-     * bold title, subtitle, and a Close button.
-     *
-     * @param title    Bold heading text  (e.g. "Success")
-     * @param subtitle Smaller body text  (e.g. "Student added successfully.")
-     */
     private void showOverlayPopup(String title, String subtitle) {
         StackPane root = getRootStack();
         if (root == null) return;
@@ -255,23 +249,10 @@ public class StudentsDevicesController {
         auto.play();
     }
 
-    // =========================================================================
-    // CONFIRMATION POPUP (Delete)
-    // =========================================================================
-
-    /**
-     * Shows a confirmation overlay popup styled like showOverlayPopup but with
-     * a red warning icon and Cancel / Confirm Delete buttons.
-     *
-     * @param title      Bold heading (e.g. "Delete Student?")
-     * @param subtitle   Body text  (e.g. "This action cannot be undone.")
-     * @param onConfirm  Runnable executed when the user clicks "Confirm Delete"
-     */
     private void showConfirmationPopup(String title, String subtitle, Runnable onConfirm) {
         StackPane root = getRootStack();
         if (root == null) return;
 
-        // ── Blur / dim overlay ──────────────────────────────────────────────
         Region dimLayer = new Region();
         dimLayer.setStyle("-fx-background-color: rgba(0,0,0,0.45);");
         dimLayer.prefWidthProperty().bind(root.widthProperty());
@@ -283,7 +264,6 @@ public class StudentsDevicesController {
             }
         });
 
-        // ── Red circle warning icon (SVG) ────────────────────────────────────
         SVGPath warnIcon = new SVGPath();
         warnIcon.setContent(
                 "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 " +
@@ -298,7 +278,6 @@ public class StudentsDevicesController {
         iconCircle.setMinSize(56, 56);
         iconCircle.setMaxSize(56, 56);
 
-        // ── Text ─────────────────────────────────────────────────────────────
         Label lblTitle = new Label(title);
         lblTitle.setStyle("-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: #1E293B;");
         lblTitle.setAlignment(Pos.CENTER);
@@ -309,7 +288,6 @@ public class StudentsDevicesController {
         lblSubtitle.setWrapText(true);
         lblSubtitle.setMaxWidth(240);
 
-        // ── Buttons ────────────────────────────────────────────────────────────
         Button btnCancel = new Button("Cancel");
         btnCancel.setStyle(
                 "-fx-background-color: #F1F5F9; " +
@@ -337,7 +315,6 @@ public class StudentsDevicesController {
         HBox btnRow = new HBox(12, btnCancel, btnConfirm);
         btnRow.setAlignment(Pos.CENTER);
 
-        // ── Card VBox ─────────────────────────────────────────────────────────
         VBox card = new VBox(14, iconCircle, lblTitle, lblSubtitle, btnRow);
         card.setAlignment(Pos.CENTER);
         card.setStyle(
@@ -349,7 +326,6 @@ public class StudentsDevicesController {
         card.setMaxWidth(320);
         card.setMaxHeight(Region.USE_PREF_SIZE);
 
-        // ── Overlay wrapper ────────────────────────────────────────────────────
         StackPane overlay = new StackPane(dimLayer, card);
         overlay.setId("__confirm__");
         overlay.setAlignment(Pos.CENTER);
@@ -371,22 +347,7 @@ public class StudentsDevicesController {
         });
     }
 
-    // =========================================================================
-    // AUTO-CREATE USER WHEN ADDING A STUDENT
-    // =========================================================================
-
-    /**
-     * Inserts a new row into the users table for the given student.
-     * username        = student_code
-     * password_hash   = BCrypt Hash of "NEW" + student_code
-     * role            = STUDENT
-     * student_ref_id  = student_code  (VARCHAR FK to students.student_code)
-     * full_name       = student's full name
-     *
-     * Silently skips if a user with the same username already exists.
-     */
     private void createUserForStudent(Connection conn, String studentCode, String fullName) throws SQLException {
-        // Skip if username already taken
         String checkSql = "SELECT COUNT(*) FROM users WHERE username = ?";
         try (PreparedStatement chk = conn.prepareStatement(checkSql)) {
             chk.setString(1, studentCode);
@@ -409,10 +370,6 @@ public class StudentsDevicesController {
             pst.executeUpdate();
         }
     }
-
-    // =========================================================================
-    // TAB NAVIGATION
-    // =========================================================================
 
     private void setupOwnerLiveSearch() {
         txtSearchDeviceOwner.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -468,10 +425,6 @@ public class StudentsDevicesController {
         paneMassAddTimerModal.setVisible(false);
     }
 
-    // =========================================================================
-    // TABLE COLUMN CONFIGURATION
-    // =========================================================================
-
     private void configureTableColumns() {
         colStudentCode.setCellValueFactory(new PropertyValueFactory<>("studentCode"));
         colStudentName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
@@ -486,10 +439,37 @@ public class StudentsDevicesController {
         colDeviceType.setCellValueFactory(new PropertyValueFactory<>("deviceType"));
         colDeviceOwner.setCellValueFactory(new PropertyValueFactory<>("ownerName"));
         colDeviceState.setCellValueFactory(new PropertyValueFactory<>("status"));
+        colDeviceLocation.setCellValueFactory(new PropertyValueFactory<>("currentLocation"));
 
         setupPillCellFactories();
         setupActionButtonsCellFactories();
         configureProfileLogColumns();
+        centerAllColumnHeaders();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void centerAllColumnHeaders() {
+        javafx.application.Platform.runLater(() -> {
+            TableColumn<?, ?>[] cols = new TableColumn<?, ?>[] {
+                    colStudentCode, colStudentName, colStudentCourse, colStudentYear,
+                    colStudentDevicesCount, colStudentStatus, colStudentActions,
+                    colDeviceSerial, colDeviceBrand, colDeviceModel, colDeviceType,
+                    colDeviceOwner, colDeviceState, colDeviceLocation, colDeviceActions,
+                    colSLogDevice, colSLogTimeIn, colSLogTimeOut, colSLogStatus, colSLogDetails,
+                    colDLogTimeIn, colDLogTimeOut, colDLogStatus, colDLogDetails
+            };
+            for (TableColumn<?, ?> col : cols) {
+                if (col == null) continue;
+                javafx.scene.Node header = col.getStyleableNode();
+                if (header == null) continue;
+                header.lookupAll(".label").forEach(node -> {
+                    if (node instanceof Label lbl) {
+                        lbl.setAlignment(Pos.CENTER);
+                        lbl.setMaxWidth(Double.MAX_VALUE);
+                    }
+                });
+            }
+        });
     }
 
     private void setupPillCellFactories() {
@@ -532,6 +512,34 @@ public class StudentsDevicesController {
                 }
             }
         });
+
+        colDeviceLocation.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    String label;
+                    String style;
+                    if ("IN".equalsIgnoreCase(item)) {
+                        label = "INSIDE";
+                        style = "-fx-background-color: #DCFCE7; -fx-text-fill: #15803D; -fx-padding: 6 12; -fx-background-radius: 50; -fx-font-weight: bold; -fx-font-size: 12px;";
+                    } else if ("OUT".equalsIgnoreCase(item)) {
+                        label = "OUTSIDE";
+                        style = "-fx-background-color: #DBEAFE; -fx-text-fill: #1E40AF; -fx-padding: 6 12; -fx-background-radius: 50; -fx-font-weight: bold; -fx-font-size: 12px;";
+                    } else {
+                        label = "UNKNOWN";
+                        style = "-fx-background-color: #F1F5F9; -fx-text-fill: #64748B; -fx-padding: 6 12; -fx-background-radius: 50; -fx-font-weight: bold; -fx-font-size: 12px;";
+                    }
+                    Label lbl = new Label(label);
+                    lbl.setAlignment(Pos.CENTER);
+                    lbl.setPrefWidth(86);
+                    lbl.setStyle(style);
+                    setGraphic(new StackPane(lbl));
+                }
+            }
+        });
     }
 
     private boolean isOfficer() {
@@ -557,43 +565,17 @@ public class StudentsDevicesController {
         return false;
     }
 
-    private boolean studentHasDevices(int studentId) {
-        String sql = "SELECT COUNT(*) FROM devices WHERE owner_id = ?";
-        try (Connection conn = DBConnection.connect();
-             PreparedStatement pst = conn.prepareStatement(sql)) {
-            pst.setInt(1, studentId);
-            try (ResultSet rs = pst.executeQuery()) {
-                if (rs.next()) return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return false;
-    }
-
-    // =========================================================================
-    // ACTION BUTTONS IN TABLE ROWS
-    // =========================================================================
-
     private void setupActionButtonsCellFactories() {
 
-        // ── STUDENT TABLE ─────────────────────────────────────────────────────
         colStudentActions.setCellFactory(param -> new TableCell<>() {
-            private final Button btnView   = new Button("👁 View");
-            private final Button btnEdit   = new Button("📝 Edit");
-            private final Button btnDelete = new Button("🗑 Delete");
-            private final Label  lblInlineError = new Label();
-            private final HBox   buttons   = new HBox(8, btnView, btnEdit, btnDelete);
-            private final VBox   container = new VBox(4, buttons, lblInlineError);
+            private final Button btnView = new Button("👁 View");
+            private final Button btnEdit = new Button("📝 Edit");
+            private final HBox   buttons = new HBox(8, btnView, btnEdit);
             {
-                container.setAlignment(Pos.CENTER);
                 buttons.setAlignment(Pos.CENTER);
-                lblInlineError.setStyle("-fx-text-fill: #EF4444; -fx-font-size: 11px; -fx-font-weight: bold;");
-                lblInlineError.setVisible(false);
-                lblInlineError.setManaged(false);
-                lblInlineError.setWrapText(true);
 
                 btnView.setStyle("-fx-background-color: #F1F5F9; -fx-cursor: hand; -fx-text-fill: #475569; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 12; -fx-border-color: #E2E8F0; -fx-border-radius: 6;");
                 btnEdit.setStyle("-fx-background-color: #FEF3C7; -fx-cursor: hand; -fx-text-fill: #D97706; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 12; -fx-border-color: #FCD34D; -fx-border-radius: 6;");
-                btnDelete.setStyle("-fx-background-color: #FEE2E2; -fx-cursor: hand; -fx-text-fill: #EF4444; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 12; -fx-border-color: #FCA5A5; -fx-border-radius: 6;");
 
                 btnView.setOnAction(e -> {
                     Student selected = getTableView().getItems().get(getIndex());
@@ -612,31 +594,6 @@ public class StudentsDevicesController {
                     paneStudentFormModal.setVisible(true);
                     paneStudentFormModal.toFront();
                 });
-
-                btnDelete.setOnAction(e -> {
-                    Student selected = getTableView().getItems().get(getIndex());
-                    lblInlineError.setVisible(false);
-                    lblInlineError.setManaged(false);
-                    if (studentHasDevices(selected.getStudentId())) {
-                        lblInlineError.setText("Cannot delete: student still has registered devices.");
-                        lblInlineError.setVisible(true);
-                        lblInlineError.setManaged(true);
-                        return;
-                    }
-                    showConfirmationPopup(
-                            "Delete Student?",
-                            "Are you sure you want to delete \"" + selected.getFullName() + "\"?\nThis action cannot be undone.",
-                            () -> {
-                                try (Connection conn = DBConnection.connect();
-                                     PreparedStatement pst = conn.prepareStatement("DELETE FROM students WHERE student_id = ?")) {
-                                    pst.setInt(1, selected.getStudentId());
-                                    pst.executeUpdate();
-                                    loadStudentsFromDatabase();
-                                    showOverlayPopup("Deleted", "Student record has been\nsuccessfully deleted.");
-                                } catch (SQLException ex) { ex.printStackTrace(); }
-                            }
-                    );
-                });
             }
 
             @Override
@@ -644,40 +601,25 @@ public class StudentsDevicesController {
                 super.updateItem(item, empty);
                 if (empty) {
                     setGraphic(null);
+                    return;
+                }
+                if (isOfficer()) {
+                    setGraphic(null);
                 } else {
-                    lblInlineError.setVisible(false);
-                    lblInlineError.setManaged(false);
-                    if (isOfficer()) {
-                        btnEdit.setVisible(false);   btnEdit.setManaged(false);
-                        btnDelete.setVisible(false); btnDelete.setManaged(false);
-                    } else {
-                        btnEdit.setVisible(true);   btnEdit.setManaged(true);
-                        btnDelete.setVisible(true); btnDelete.setManaged(true);
-                    }
-                    setGraphic(container);
+                    setGraphic(buttons);
                 }
             }
         });
 
-        // ── DEVICE TABLE ─────────────────────────────────────────────────────
         colDeviceActions.setCellFactory(param -> new TableCell<>() {
-            private final Button btnView   = new Button("👁 View");
-            private final Button btnEdit   = new Button("📝 Edit");
-            private final Button btnDelete = new Button("🗑 Delete");
-            private final Label  lblInlineError = new Label();
-            private final HBox   buttons   = new HBox(8, btnView, btnEdit, btnDelete);
-            private final VBox   container = new VBox(4, buttons, lblInlineError);
+            private final Button btnView = new Button("👁 View");
+            private final Button btnEdit = new Button("📝 Edit");
+            private final HBox   buttons = new HBox(8, btnView, btnEdit);
             {
-                container.setAlignment(Pos.CENTER);
                 buttons.setAlignment(Pos.CENTER);
-                lblInlineError.setStyle("-fx-text-fill: #EF4444; -fx-font-size: 11px; -fx-font-weight: bold;");
-                lblInlineError.setVisible(false);
-                lblInlineError.setManaged(false);
-                lblInlineError.setWrapText(true);
 
                 btnView.setStyle("-fx-background-color: #F1F5F9; -fx-cursor: hand; -fx-text-fill: #475569; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 12; -fx-border-color: #E2E8F0; -fx-border-radius: 6;");
                 btnEdit.setStyle("-fx-background-color: #FEF3C7; -fx-cursor: hand; -fx-text-fill: #D97706; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 12; -fx-border-color: #FCD34D; -fx-border-radius: 6;");
-                btnDelete.setStyle("-fx-background-color: #FEE2E2; -fx-cursor: hand; -fx-text-fill: #EF4444; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 12; -fx-border-color: #FCA5A5; -fx-border-radius: 6;");
 
                 btnView.setOnAction(e -> {
                     Device selected = getTableView().getItems().get(getIndex());
@@ -703,31 +645,6 @@ public class StudentsDevicesController {
                     paneDeviceFormModal.setVisible(true);
                     paneDeviceFormModal.toFront();
                 });
-
-                btnDelete.setOnAction(e -> {
-                    Device selected = getTableView().getItems().get(getIndex());
-                    lblInlineError.setVisible(false);
-                    lblInlineError.setManaged(false);
-                    if (deviceHasOpenLog(selected.getDeviceId())) {
-                        lblInlineError.setText("Cannot delete: device has an open check-in log.");
-                        lblInlineError.setVisible(true);
-                        lblInlineError.setManaged(true);
-                        return;
-                    }
-                    showConfirmationPopup(
-                            "Delete Device?",
-                            "Are you sure you want to delete device \"" + selected.getSerialNumber() + "\"?\nThis action cannot be undone.",
-                            () -> {
-                                try (Connection conn = DBConnection.connect();
-                                     PreparedStatement pst = conn.prepareStatement("DELETE FROM devices WHERE device_id = ?")) {
-                                    pst.setInt(1, selected.getDeviceId());
-                                    pst.executeUpdate();
-                                    loadDevicesFromDatabase();
-                                    showOverlayPopup("Deleted", "Device record has been\nsuccessfully deleted.");
-                                } catch (SQLException ex) { ex.printStackTrace(); }
-                            }
-                    );
-                });
             }
 
             @Override
@@ -735,25 +652,16 @@ public class StudentsDevicesController {
                 super.updateItem(item, empty);
                 if (empty) {
                     setGraphic(null);
+                    return;
+                }
+                if (isOfficer()) {
+                    setGraphic(null);
                 } else {
-                    lblInlineError.setVisible(false);
-                    lblInlineError.setManaged(false);
-                    if (isOfficer()) {
-                        btnEdit.setVisible(false);   btnEdit.setManaged(false);
-                        btnDelete.setVisible(false); btnDelete.setManaged(false);
-                    } else {
-                        btnEdit.setVisible(true);   btnEdit.setManaged(true);
-                        btnDelete.setVisible(true); btnDelete.setManaged(true);
-                    }
-                    setGraphic(container);
+                    setGraphic(buttons);
                 }
             }
         });
     }
-
-    // =========================================================================
-    // SEARCH & FILTERS
-    // =========================================================================
 
     private void setupSearchAndFilters() {
         txtSearchStudent.textProperty().addListener((obs, oldVal, newVal) -> applyStudentFilter());
@@ -780,6 +688,9 @@ public class StudentsDevicesController {
             boolean matchesStatus = device.getStatus().equalsIgnoreCase(currentDeviceStatusFilter) ||
                     ("ACTIVE".equalsIgnoreCase(currentDeviceStatusFilter) && "INSIDE".equalsIgnoreCase(device.getStatus()));
             if (!matchesStatus) return false;
+            boolean matchesLocation = "ALL".equalsIgnoreCase(currentDeviceLocationFilter) ||
+                    (device.getCurrentLocation() != null && device.getCurrentLocation().equalsIgnoreCase(currentDeviceLocationFilter));
+            if (!matchesLocation) return false;
             String search = txtSearchDevice.getText();
             if (search == null || search.trim().isEmpty()) return true;
             String lower = search.toLowerCase();
@@ -814,6 +725,18 @@ public class StudentsDevicesController {
         updateFilterButtonStyles();
     }
 
+    @FXML public void handleDeviceFilterInside() {
+        currentDeviceLocationFilter = "IN".equalsIgnoreCase(currentDeviceLocationFilter) ? "ALL" : "IN";
+        applyDeviceFilter();
+        updateFilterButtonStyles();
+    }
+
+    @FXML public void handleDeviceFilterOutside() {
+        currentDeviceLocationFilter = "OUT".equalsIgnoreCase(currentDeviceLocationFilter) ? "ALL" : "OUT";
+        applyDeviceFilter();
+        updateFilterButtonStyles();
+    }
+
     private void updateFilterButtonStyles() {
         if ("ACTIVE".equalsIgnoreCase(currentStudentStatusFilter)) {
             btnStudentFilterActive.setStyle("-fx-background-color: #E6F4EA; -fx-text-fill: #137333; -fx-border-color: #A3E635; -fx-background-radius: 8; -fx-border-radius: 8; -fx-font-weight: bold; -fx-cursor: hand;");
@@ -829,11 +752,17 @@ public class StudentsDevicesController {
             btnDeviceFilterActive.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: #475569; -fx-border-color: #E2E8F0; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
             btnDeviceFilterInactive.setStyle("-fx-background-color: #FCE8E6; -fx-text-fill: #C5221F; -fx-border-color: #FCA5A5; -fx-background-radius: 8; -fx-border-radius: 8; -fx-font-weight: bold; -fx-cursor: hand;");
         }
+        if ("IN".equalsIgnoreCase(currentDeviceLocationFilter)) {
+            btnDeviceFilterInside.setStyle("-fx-background-color: #E6F4EA; -fx-text-fill: #137333; -fx-border-color: #A3E635; -fx-background-radius: 8; -fx-border-radius: 8; -fx-font-weight: bold; -fx-cursor: hand;");
+            btnDeviceFilterOutside.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: #475569; -fx-border-color: #E2E8F0; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
+        } else if ("OUT".equalsIgnoreCase(currentDeviceLocationFilter)) {
+            btnDeviceFilterInside.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: #475569; -fx-border-color: #E2E8F0; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
+            btnDeviceFilterOutside.setStyle("-fx-background-color: #DBEAFE; -fx-text-fill: #1E40AF; -fx-border-color: #93C5FD; -fx-background-radius: 8; -fx-border-radius: 8; -fx-font-weight: bold; -fx-cursor: hand;");
+        } else {
+            btnDeviceFilterInside.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: #475569; -fx-border-color: #E2E8F0; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
+            btnDeviceFilterOutside.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: #475569; -fx-border-color: #E2E8F0; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
+        }
     }
-
-    // =========================================================================
-    // DATABASE LOADERS
-    // =========================================================================
 
     private void loadStudentsFromDatabase() {
         studentMasterList.clear();
@@ -877,15 +806,12 @@ public class StudentsDevicesController {
                         rs.getString("status")
                 );
                 d.setOwnerName(rs.getString("owner_name"));
+                d.setCurrentLocation(rs.getString("current_location"));
                 deviceMasterList.add(d);
             }
             applyDeviceFilter();
         } catch (SQLException e) { e.printStackTrace(); }
     }
-
-    // =========================================================================
-    // MASS STUDENT REGISTRY
-    // =========================================================================
 
     @FXML
     public void handleOpenMassAddForm() {
@@ -965,7 +891,6 @@ public class StudentsDevicesController {
             while ((line = br.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
 
-                // Skip header logic if file contains headers
                 if (isFirstLine && line.toLowerCase().contains("code")) {
                     isFirstLine = false;
                     continue;
@@ -973,7 +898,7 @@ public class StudentsDevicesController {
                 isFirstLine = false;
 
                 String[] data = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-                if (data.length < 4) continue; // Minimum required fields
+                if (data.length < 4) continue;
 
                 String code = data[0].replace("\"", "").trim();
                 String name = data[1].replace("\"", "").trim();
@@ -981,7 +906,6 @@ public class StudentsDevicesController {
                 String year = data[3].replace("\"", "").trim();
                 String contact = data.length >= 5 ? data[4].replace("\"", "").trim() : "";
 
-                // Check for duplicates
                 try (PreparedStatement checkPst = conn.prepareStatement(checkSql)) {
                     checkPst.setString(1, code);
                     try (ResultSet rs = checkPst.executeQuery()) {
@@ -992,7 +916,6 @@ public class StudentsDevicesController {
                     }
                 }
 
-                // Insert Student
                 try (PreparedStatement pst = conn.prepareStatement(insertSql)) {
                     pst.setString(1, code);
                     pst.setString(2, name);
@@ -1002,7 +925,6 @@ public class StudentsDevicesController {
                     pst.executeUpdate();
                 }
 
-                // Auto-create User account
                 createUserForStudent(conn, code, name);
                 successCount++;
             }
@@ -1015,9 +937,6 @@ public class StudentsDevicesController {
             showOverlayPopup("Error", "Failed to process the CSV file.");
         }
     }
-    // =========================================================================
-    // SAVE STUDENT  (add → also creates user account)
-    // =========================================================================
 
     @FXML
     public void handleSaveStudent() {
@@ -1038,7 +957,6 @@ public class StudentsDevicesController {
 
         try (Connection conn = DBConnection.connect()) {
 
-            // Duplicate student_code check
             String checkSql = currentlySelectedStudent == null
                     ? "SELECT COUNT(*) FROM students WHERE student_code = ?"
                     : "SELECT COUNT(*) FROM students WHERE student_code = ? AND student_id != ?";
@@ -1057,7 +975,6 @@ public class StudentsDevicesController {
             int targetStudentId = -1;
 
             if (isAdding) {
-                // ── INSERT student ────────────────────────────────────────────
                 String sql = "INSERT INTO students (student_code, full_name, course, year_level, contact_number) " +
                         "VALUES (?, ?, ?, ?, ?) RETURNING student_id";
                 try (PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -1071,11 +988,9 @@ public class StudentsDevicesController {
                     }
                 }
 
-                // ── Auto-create user account ──────────────────────────────────
                 createUserForStudent(conn, code, name);
 
             } else {
-                // ── UPDATE student ────────────────────────────────────────────
                 targetStudentId = currentlySelectedStudent.getStudentId();
                 String sql = "UPDATE students SET student_code=?, full_name=?, course=?, year_level=?, contact_number=? " +
                         "WHERE student_id=?";
@@ -1093,7 +1008,6 @@ public class StudentsDevicesController {
             loadStudentsFromDatabase();
             handleCloseModal();
 
-            // Navigate to the student's profile
             final int finalTargetId = targetStudentId;
             for (Student s : studentMasterList) {
                 if (s.getStudentId() == finalTargetId) {
@@ -1102,7 +1016,6 @@ public class StudentsDevicesController {
                 }
             }
 
-            // Show appropriate popup
             if (isAdding) {
                 showOverlayPopup("Success", "New student and user account\nhave been successfully added.");
             } else {
@@ -1111,10 +1024,6 @@ public class StudentsDevicesController {
 
         } catch (SQLException e) { e.printStackTrace(); }
     }
-
-    // =========================================================================
-    // TOGGLE STUDENT STATUS
-    // =========================================================================
 
     @FXML
     public void handleToggleStudentStatus() {
@@ -1129,21 +1038,18 @@ public class StudentsDevicesController {
         String userSql    = "UPDATE users SET status = ? WHERE student_ref_id = ?";
 
         try (Connection conn = DBConnection.connect()) {
-            // Update student
             try (PreparedStatement pst = conn.prepareStatement(studentSql)) {
                 pst.setString(1, targetStatus);
                 pst.setInt(2, currentlySelectedStudent.getStudentId());
                 pst.executeUpdate();
             }
 
-            // Sync user account
             try (PreparedStatement pst = conn.prepareStatement(userSql)) {
                 pst.setString(1, targetStatus);
                 pst.setString(2, currentlySelectedStudent.getStudentCode());
                 pst.executeUpdate();
             }
 
-            // Audit log
             AuditLogger.log(conn,
                     UserSession.getInstance().getUserId(),
                     actionType,
@@ -1158,10 +1064,6 @@ public class StudentsDevicesController {
             showOverlayPopup("Success", "Student status updated to " + targetStatus + ".");
         } catch (SQLException e) { e.printStackTrace(); }
     }
-
-    // =========================================================================
-    // SAVE DEVICE
-    // =========================================================================
 
     @FXML
     public void handleSaveDevice() {
@@ -1183,7 +1085,6 @@ public class StudentsDevicesController {
 
         try (Connection conn = DBConnection.connect()) {
 
-            // Duplicate serial check
             String checkSql = currentlySelectedDevice == null
                     ? "SELECT COUNT(*) FROM devices WHERE serial_number = ?"
                     : "SELECT COUNT(*) FROM devices WHERE serial_number = ? AND device_id != ?";
@@ -1248,10 +1149,6 @@ public class StudentsDevicesController {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    // =========================================================================
-    // TOGGLE DEVICE STATUS
-    // =========================================================================
-
     @FXML
     public void handleToggleDeviceStatus() {
         if (currentlySelectedDevice == null) return;
@@ -1270,10 +1167,6 @@ public class StudentsDevicesController {
             handleCloseModal();
         } catch (SQLException e) { e.printStackTrace(); }
     }
-
-    // =========================================================================
-    // INLINE ERROR HELPERS
-    // =========================================================================
 
     private void showInlineError(Label errorLabel, String message) {
         if (errorLabel != null) {
@@ -1304,10 +1197,6 @@ public class StudentsDevicesController {
         txtSerialNumber.clear(); cmbDeviceType.setValue(null);
         txtBrand.clear(); txtModel.clear(); cmbDeviceOwner.setValue(null);
     }
-
-    // =========================================================================
-    // PROFILE VIEWS
-    // =========================================================================
 
     private void handleViewStudentProfile(Student student) {
         currentProfileStudent = student;
@@ -1423,10 +1312,6 @@ public class StudentsDevicesController {
         }
     }
 
-    // =========================================================================
-    // ACTIVITY LOG LOADERS
-    // =========================================================================
-
     private void loadStudentActivityLog(int studentId) {
         ObservableList<ActivityLog> logs = FXCollections.observableArrayList();
         int totalEntries = 0, totalExits = 0;
@@ -1535,10 +1420,6 @@ public class StudentsDevicesController {
             paneUnclosedLogBanner.setManaged(false);
         }
     }
-
-    // =========================================================================
-    // PROFILE LOG TABLE COLUMNS
-    // =========================================================================
 
     private void configureProfileLogColumns() {
         colSLogDevice.setCellValueFactory(new PropertyValueFactory<>("deviceLabel"));

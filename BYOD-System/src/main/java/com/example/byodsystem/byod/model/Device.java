@@ -10,6 +10,7 @@ public class Device {
     private String status;
 
     private String ownerName;
+    private String currentLocation;
 
 
     public Device(int deviceId, String serialNumber, String brand, String model, String deviceType, int ownerId, String status) {
@@ -46,4 +47,7 @@ public class Device {
 
     public String getOwnerName() { return ownerName; }
     public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
+
+    public String getCurrentLocation() { return currentLocation; }
+    public void setCurrentLocation(String currentLocation) { this.currentLocation = currentLocation; }
 }

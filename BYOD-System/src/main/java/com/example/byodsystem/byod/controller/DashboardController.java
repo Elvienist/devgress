@@ -18,21 +18,15 @@ import java.util.List;
 
 public class DashboardController {
 
-    // ── Top-bar ──────────────────────────────────────────────────────────────
     @FXML private Label dateLabel;
     @FXML private Label adminNameLabel;
     @FXML private Label adminRoleLabel;
     @FXML private Label adminInitialLabel;
     @FXML private Label welcomeLabel;
 
-    // ── Search ───────────────────────────────────────────────────────────────
-    @FXML private TextField searchField;
-
-    // ── Pending banner ───────────────────────────────────────────────────────
     @FXML private HBox    pendingBanner;
     @FXML private Label   pendingCountLabel;
 
-    // ── Stat cards ───────────────────────────────────────────────────────────
     @FXML private Label totalStudentsLabel;
     @FXML private Label totalDevicesLabel;
     @FXML private Label devicesInsideLabel;
@@ -45,10 +39,8 @@ public class DashboardController {
     @FXML private Label entriesTodayTrendLabel;
     @FXML private Label exitsTodayTrendLabel;
 
-    // ── Charts ───────────────────────────────────────────────────────────────
     @FXML private BarChart<String, Number> entryPatternChart;
 
-    // ── Device breakdown (now includes phones) ────────────────────────────────
     @FXML private ProgressBar laptopsBar;
     @FXML private ProgressBar tabletsBar;
     @FXML private ProgressBar phonesBar;
@@ -64,7 +56,6 @@ public class DashboardController {
     @FXML private Label phonesPctLabel;
     @FXML private Label othersPctLabel;
 
-    // ── Review overlay ───────────────────────────────────────────────────────
     @FXML private StackPane reviewOverlay;
     @FXML private Label     overlayTitleLabel;
     @FXML private Label     overlayCounterLabel;
@@ -77,23 +68,18 @@ public class DashboardController {
     @FXML private TextField rejectReasonField;
     @FXML private Button    overlayRejectBtn;
 
-    // ── Session state ─────────────────────────────────────────────────────────
     private int    currentUserId       = 1;
     private String currentUserFullName = "Administrator";
     private String currentUserRole     = "Admin";
 
-    // ── Overlay queue state ───────────────────────────────────────────────────
-    /** Rows fetched from DB; processed one-at-a-time through the overlay. */
     private final List<PendingRequest> pendingQueue = new ArrayList<>();
     private int queueIndex = 0;
 
-    /** Lightweight struct for one pending request. */
     private record PendingRequest(int requestId, int studentId,
                                   String fieldName, String currentValue,
                                   String requestedValue, String reason,
                                   String studentName) {}
 
-    // ─────────────────────────────────────────────────────────────────────────
     @FXML
     public void initialize() {
         dateLabel.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")));
@@ -110,7 +96,6 @@ public class DashboardController {
         this.currentUserRole     = role;
     }
 
-    // ── Async dashboard load ─────────────────────────────────────────────────
     private void loadDashboardAsync() {
         Thread t = new Thread(() -> {
             try (Connection conn = DBConnection.connect()) {
@@ -127,7 +112,6 @@ public class DashboardController {
         t.start();
     }
 
-    // ── Stats ────────────────────────────────────────────────────────────────
     private void readStats(Connection conn) throws SQLException {
         String sql = """
             SELECT
@@ -205,7 +189,6 @@ public class DashboardController {
         return String.format("%+.0f%%", pct);
     }
 
-    // ── Pending count (banner) ────────────────────────────────────────────────
     private void readPendingRequests(Connection conn) throws SQLException {
         String sql = "SELECT COUNT(*) AS cnt FROM profile_update_requests WHERE status = 'PENDING'";
         try (PreparedStatement ps = conn.prepareStatement(sql);
@@ -228,7 +211,6 @@ public class DashboardController {
         }
     }
 
-    // ── Entry pattern chart ───────────────────────────────────────────────────
     private void readEntryPattern(Connection conn) throws SQLException {
         String sql = """
             SELECT EXTRACT(HOUR FROM log_time)::INT AS hour, COUNT(*) AS cnt
@@ -262,7 +244,6 @@ public class DashboardController {
         return (h - 12) + " PM";
     }
 
-    // ── Device breakdown (Laptops / Tablets / Phones / Others) ───────────────
     private void readDeviceBreakdown(Connection conn) throws SQLException {
         String sql = "SELECT device_type, COUNT(*) AS cnt FROM devices WHERE status = 'ACTIVE' GROUP BY device_type";
         long laptops = 0, tablets = 0, phones = 0, others = 0;
@@ -306,19 +287,12 @@ public class DashboardController {
         });
     }
 
-    // ── Banner actions ────────────────────────────────────────────────────────
     @FXML
     public void handleDismissBanner() {
         pendingBanner.setVisible(false);
         pendingBanner.setManaged(false);
     }
 
-    // ── Review overlay — open ────────────────────────────────────────────────
-    /**
-     * Called by "Review Now" button.
-     * Fetches all PENDING requests into a queue, then shows the first one
-     * in the custom overlay panel — no new window or Alert.
-     */
     @FXML
     public void handleReviewRequests() {
         Thread t = new Thread(() -> {
@@ -371,7 +345,6 @@ public class DashboardController {
         t.start();
     }
 
-    /** Populate overlay fields and make it visible. */
     private void showOverlayItem() {
         if (queueIndex >= pendingQueue.size()) {
             closeOverlay();
@@ -389,7 +362,6 @@ public class DashboardController {
         overlayRequestedLabel.setText(r.requestedValue());
         overlayReasonArea.setText(r.reason());
 
-        // Reset reject-reason input
         rejectReasonBox.setVisible(false);
         rejectReasonBox.setManaged(false);
         rejectReasonField.clear();
@@ -404,28 +376,19 @@ public class DashboardController {
         reviewOverlay.setManaged(false);
     }
 
-    // ── Overlay button handlers ───────────────────────────────────────────────
-
-    /** Skip this request without changing it. */
     @FXML
     public void handleOverlaySkip() {
         queueIndex++;
         showOverlayItem();
     }
 
-    /**
-     * First click → reveal rejection-reason input.
-     * Second click (button now says "Confirm Reject") → submit rejection.
-     */
     @FXML
     public void handleOverlayReject() {
         if (!rejectReasonBox.isVisible()) {
-            // First click: show the reason field
             rejectReasonBox.setVisible(true);
             rejectReasonBox.setManaged(true);
             overlayRejectBtn.setText("Confirm Reject");
         } else {
-            // Second click: submit
             String reason = rejectReasonField.getText().trim();
             if (reason.isBlank()) reason = "No reason provided.";
             submitDecision(false, reason);
@@ -442,7 +405,6 @@ public class DashboardController {
         closeOverlay();
     }
 
-    /** Write decision to DB then advance queue. */
     private void submitDecision(boolean approved, String adminResponse) {
         PendingRequest r = pendingQueue.get(queueIndex);
 
@@ -463,7 +425,6 @@ public class DashboardController {
         t.start();
     }
 
-    // ── DB write ──────────────────────────────────────────────────────────────
     private void updateRequest(Connection conn, int requestId, int studentId,
                                String fieldName, String requestedValue,
                                boolean approved, String adminResponse) throws SQLException {
@@ -516,7 +477,6 @@ public class DashboardController {
         }
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
     private static String sanitizeColumnName(String fieldName) {
         return switch (fieldName.toLowerCase()) {
             case "full_name"      -> "full_name";
@@ -537,7 +497,6 @@ public class DashboardController {
         };
     }
 
-    /** Re-read pending count after overlay is closed to update the banner. */
     private void refreshPendingBanner() {
         Thread t = new Thread(() -> {
             try (Connection conn = DBConnection.connect()) {
@@ -551,53 +510,4 @@ public class DashboardController {
         t.start();
     }
 
-    // ── Search ────────────────────────────────────────────────────────────────
-    @FXML
-    public void handleSearch() {
-        String query = searchField != null ? searchField.getText().trim() : "";
-        if (query.isEmpty()) return;
-
-        Thread t = new Thread(() -> {
-            try (Connection conn = DBConnection.connect()) {
-                if (conn == null) return;
-                String like = "%" + query + "%";
-                String sql = """
-                    SELECT 'Student' AS type, student_code AS identifier, full_name AS label
-                    FROM   students
-                    WHERE  (full_name ILIKE ? OR student_code ILIKE ?) AND status = 'ACTIVE'
-                    UNION ALL
-                    SELECT 'Device', serial_number, brand || ' ' || model
-                    FROM   devices
-                    WHERE  (serial_number ILIKE ? OR brand ILIKE ? OR model ILIKE ?) AND status = 'ACTIVE'
-                    LIMIT 50
-                    """;
-
-                StringBuilder sb = new StringBuilder();
-                try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                    ps.setString(1, like); ps.setString(2, like);
-                    ps.setString(3, like); ps.setString(4, like); ps.setString(5, like);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            sb.append("[").append(rs.getString("type")).append("] ")
-                                    .append(rs.getString("identifier")).append(" — ")
-                                    .append(rs.getString("label")).append("\n");
-                        }
-                    }
-                }
-
-                String output = sb.length() > 0 ? sb.toString() : "No results found.";
-                Platform.runLater(() -> {
-                    Alert info = new Alert(Alert.AlertType.INFORMATION);
-                    info.setTitle("Search Results");
-                    info.setHeaderText("Results for: " + query);
-                    info.setContentText(output.length() > 2000 ? output.substring(0, 2000) + "\n…" : output);
-                    info.show();
-                });
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
-        t.setDaemon(true);
-        t.start();
-    }
 }
