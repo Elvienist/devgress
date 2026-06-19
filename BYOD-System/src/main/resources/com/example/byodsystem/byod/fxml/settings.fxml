@@ -75,11 +75,20 @@
                 </VBox>
 
                 <VBox spacing="6">
-                    <Label text="End of Day Reminder Time" style="-fx-font-size: 13px; -fx-text-fill: #444444;"/>
+                    <Label text="Start of Day Time" style="-fx-font-size: 13px; -fx-text-fill: #444444;"/>
+                    <TextField fx:id="txtStartOfDayTime" maxWidth="Infinity"
+                               style="-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px; -fx-pref-height: 40px; -fx-padding: 0 12;"
+                               promptText="HH:MM"/>
+                    <Label text="Earliest time the Gate Screen can be accessed (24-hour format)"
+                           style="-fx-font-size: 11px; -fx-text-fill: #888888;"/>
+                </VBox>
+
+                <VBox spacing="6">
+                    <Label text="End of Day Time" style="-fx-font-size: 13px; -fx-text-fill: #444444;"/>
                     <TextField fx:id="txtEndOfDayTime" maxWidth="Infinity"
                                style="-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 13px; -fx-pref-height: 40px; -fx-padding: 0 12;"
                                promptText="HH:MM"/>
-                    <Label text="Time when the system triggers end of day unclosed log checks"
+                    <Label text="Time when the system triggers end of day unclosed log checks and blocks Gate Screen access"
                            style="-fx-font-size: 11px; -fx-text-fill: #888888;"/>
                 </VBox>
 
