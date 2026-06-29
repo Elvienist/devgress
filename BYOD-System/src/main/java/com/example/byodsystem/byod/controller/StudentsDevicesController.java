@@ -40,7 +40,7 @@ public class StudentsDevicesController {
     @FXML private VBox paneDeviceProfileView;
     @FXML private VBox paneUnclosedLogBanner;
 
-    @FXML private Label lblProfileStudentCode, lblProfileStudentName, lblProfileStudentCourse, lblProfileStudentYear, lblProfileStudentContact, lblProfileStudentStatus;
+    @FXML private Label lblProfileStudentCode, lblProfileStudentName, lblProfileStudentSection, lblProfileStudentEmail, lblProfileStudentStatus;
     @FXML private Label lblTotalEntries, lblTotalExits, lblLastSeen;
     @FXML private Button btnToggleStudentLog;
     @FXML private TableView<ActivityLog> tblStudentActivityLog;
@@ -52,8 +52,7 @@ public class StudentsDevicesController {
     @FXML private TableColumn<ActivityLog, String> colDLogTimeIn, colDLogTimeOut, colDLogStatus;
     @FXML private TableColumn<ActivityLog, ActivityLog> colDLogDetails;
 
-    @FXML private TextField txtStudentCode, txtStudentName, txtCourse, txtContactNumber;
-    @FXML private ComboBox<String> cmbYearLevel;
+    @FXML private TextField txtStudentCode, txtStudentName, txtSection, txtEmail;
     @FXML private TextField txtSerialNumber, txtBrand, txtModel;
     @FXML private ComboBox<String> cmbDeviceType;
     @FXML private ComboBox<Student> cmbDeviceOwner;
@@ -62,8 +61,8 @@ public class StudentsDevicesController {
 
     @FXML private Label lblErrorStudentCode;
     @FXML private Label lblErrorStudentName;
-    @FXML private Label lblErrorCourse;
-    @FXML private Label lblErrorYearLevel;
+    @FXML private Label lblErrorSection;
+    @FXML private Label lblErrorEmail;
 
     @FXML private Label lblErrorSerialNumber;
     @FXML private Label lblErrorDeviceType;
@@ -72,7 +71,7 @@ public class StudentsDevicesController {
     @FXML private Label lblErrorDeviceOwner;
 
     @FXML private TableView<Student> tblStudents;
-    @FXML private TableColumn<Student, String> colStudentCode, colStudentName, colStudentCourse, colStudentYear, colStudentDevicesCount, colStudentStatus;
+    @FXML private TableColumn<Student, String> colStudentCode, colStudentName, colStudentSection, colStudentDevicesCount, colStudentStatus;
     @FXML private TableColumn<Student, Void> colStudentActions;
 
     @FXML private TableView<Device> tblDevices;
@@ -123,8 +122,7 @@ public class StudentsDevicesController {
 
     @FXML
     public void initialize() {
-        cmbYearLevel.setItems(FXCollections.observableArrayList("1st Year", "2nd Year", "3rd Year", "4th Year", "Irregular"));
-        cmbDeviceType.setItems(FXCollections.observableArrayList("LAPTOP", "TABLET", "PHONE", "OTHER"));
+        cmbDeviceType.setItems(FXCollections.observableArrayList("LAPTOP", "TABLET", "OTHER"));
 
         filteredStudents = new FilteredList<>(studentMasterList, p -> true);
         filteredDevices = new FilteredList<>(deviceMasterList, p -> true);
@@ -428,8 +426,7 @@ public class StudentsDevicesController {
     private void configureTableColumns() {
         colStudentCode.setCellValueFactory(new PropertyValueFactory<>("studentCode"));
         colStudentName.setCellValueFactory(new PropertyValueFactory<>("fullName"));
-        colStudentCourse.setCellValueFactory(new PropertyValueFactory<>("course"));
-        colStudentYear.setCellValueFactory(new PropertyValueFactory<>("yearLevel"));
+        colStudentSection.setCellValueFactory(new PropertyValueFactory<>("course")); // "course" property holds the section value
         colStudentDevicesCount.setCellValueFactory(new PropertyValueFactory<>("devicesCount"));
         colStudentStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
@@ -451,7 +448,7 @@ public class StudentsDevicesController {
     private void centerAllColumnHeaders() {
         javafx.application.Platform.runLater(() -> {
             TableColumn<?, ?>[] cols = new TableColumn<?, ?>[] {
-                    colStudentCode, colStudentName, colStudentCourse, colStudentYear,
+                    colStudentCode, colStudentName, colStudentSection,
                     colStudentDevicesCount, colStudentStatus, colStudentActions,
                     colDeviceSerial, colDeviceBrand, colDeviceModel, colDeviceType,
                     colDeviceOwner, colDeviceState, colDeviceLocation, colDeviceActions,
@@ -588,9 +585,8 @@ public class StudentsDevicesController {
                     clearStudentInlineErrors();
                     txtStudentCode.setText(currentlySelectedStudent.getStudentCode());
                     txtStudentName.setText(currentlySelectedStudent.getFullName());
-                    txtCourse.setText(currentlySelectedStudent.getCourse());
-                    cmbYearLevel.setValue(currentlySelectedStudent.getYearLevel());
-                    txtContactNumber.setText(currentlySelectedStudent.getContactNumber());
+                    txtSection.setText(currentlySelectedStudent.getCourse()); // getCourse() returns section
+                    txtEmail.setText(currentlySelectedStudent.getContactNumber()); // getContactNumber() returns email
                     paneStudentFormModal.setVisible(true);
                     paneStudentFormModal.toFront();
                 });
@@ -766,7 +762,8 @@ public class StudentsDevicesController {
 
     private void loadStudentsFromDatabase() {
         studentMasterList.clear();
-        String sql = "SELECT s.*, (SELECT COUNT(*) FROM devices d WHERE d.owner_id = s.student_id) as dev_count " +
+        String sql = "SELECT s.student_id, s.student_code, s.full_name, s.section, s.email, s.status, " +
+                "(SELECT COUNT(*) FROM devices d WHERE d.owner_id = s.student_id) as dev_count " +
                 "FROM students s ORDER BY s.student_code ASC";
         try (Connection conn = DBConnection.connect();
              PreparedStatement pst = conn.prepareStatement(sql);
@@ -776,9 +773,9 @@ public class StudentsDevicesController {
                         rs.getInt("student_id"),
                         rs.getString("student_code"),
                         rs.getString("full_name"),
-                        rs.getString("course"),
-                        rs.getString("year_level"),
-                        rs.getString("contact_number"),
+                        rs.getString("section"),   // maps to course/section field
+                        null,                      // year_level removed
+                        rs.getString("email"),     // email replaces contact_number
                         rs.getString("status")
                 );
                 s.setDevicesCount(rs.getInt("dev_count"));
@@ -878,8 +875,8 @@ public class StudentsDevicesController {
         int successCount = 0;
         int skipCount = 0;
 
-        String insertSql = "INSERT INTO students (student_code, full_name, course, year_level, contact_number) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        String insertSql = "INSERT INTO students (student_code, full_name, section, email) " +
+                "VALUES (?, ?, ?, ?)";
         String checkSql = "SELECT COUNT(*) FROM students WHERE student_code = ?";
 
         try (Connection conn = DBConnection.connect();
@@ -898,13 +895,12 @@ public class StudentsDevicesController {
                 isFirstLine = false;
 
                 String[] data = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-                if (data.length < 4) continue;
+                if (data.length < 3) continue;
 
-                String code = data[0].replace("\"", "").trim();
-                String name = data[1].replace("\"", "").trim();
-                String course = data[2].replace("\"", "").trim();
-                String year = data[3].replace("\"", "").trim();
-                String contact = data.length >= 5 ? data[4].replace("\"", "").trim() : "";
+                String code    = data[0].replace("\"", "").trim();
+                String name    = data[1].replace("\"", "").trim();
+                String section = data[2].replace("\"", "").trim();
+                String email   = data.length >= 4 ? data[3].replace("\"", "").trim() : "";
 
                 try (PreparedStatement checkPst = conn.prepareStatement(checkSql)) {
                     checkPst.setString(1, code);
@@ -919,9 +915,8 @@ public class StudentsDevicesController {
                 try (PreparedStatement pst = conn.prepareStatement(insertSql)) {
                     pst.setString(1, code);
                     pst.setString(2, name);
-                    pst.setString(3, course);
-                    pst.setString(4, year);
-                    pst.setString(5, contact);
+                    pst.setString(3, section);
+                    pst.setString(4, email);
                     pst.executeUpdate();
                 }
 
@@ -944,15 +939,14 @@ public class StudentsDevicesController {
 
         String code    = txtStudentCode.getText()    == null ? "" : txtStudentCode.getText().trim();
         String name    = txtStudentName.getText()    == null ? "" : txtStudentName.getText().trim();
-        String course  = txtCourse.getText()         == null ? "" : txtCourse.getText().trim();
-        String year    = cmbYearLevel.getValue();
-        String contact = txtContactNumber.getText()  == null ? "" : txtContactNumber.getText().trim();
+        String section = txtSection.getText() == null ? "" : txtSection.getText().trim();
+        String email   = txtEmail.getText()   == null ? "" : txtEmail.getText().trim();
 
         boolean hasError = false;
-        if (code.isEmpty())   { showInlineError(lblErrorStudentCode, "Student Code is required.");     hasError = true; }
-        if (name.isEmpty())   { showInlineError(lblErrorStudentName, "Full Name is required.");        hasError = true; }
-        if (course.isEmpty()) { showInlineError(lblErrorCourse,      "Course field is required.");     hasError = true; }
-        if (year == null)     { showInlineError(lblErrorYearLevel,   "Please select a year level.");   hasError = true; }
+        if (code.isEmpty())    { showInlineError(lblErrorStudentCode, "Student Code is required.");   hasError = true; }
+        if (name.isEmpty())    { showInlineError(lblErrorStudentName, "Full Name is required.");      hasError = true; }
+        if (section.isEmpty()) { showInlineError(lblErrorSection,     "Section is required.");        hasError = true; }
+        if (email.isEmpty())   { showInlineError(lblErrorEmail,       "Email is required.");          hasError = true; }
         if (hasError) return;
 
         try (Connection conn = DBConnection.connect()) {
@@ -975,14 +969,13 @@ public class StudentsDevicesController {
             int targetStudentId = -1;
 
             if (isAdding) {
-                String sql = "INSERT INTO students (student_code, full_name, course, year_level, contact_number) " +
-                        "VALUES (?, ?, ?, ?, ?) RETURNING student_id";
+                String sql = "INSERT INTO students (student_code, full_name, section, email) " +
+                        "VALUES (?, ?, ?, ?) RETURNING student_id";
                 try (PreparedStatement pst = conn.prepareStatement(sql)) {
                     pst.setString(1, code);
                     pst.setString(2, name);
-                    pst.setString(3, course);
-                    pst.setString(4, year);
-                    pst.setString(5, contact);
+                    pst.setString(3, section);
+                    pst.setString(4, email);
                     try (ResultSet rs = pst.executeQuery()) {
                         if (rs.next()) targetStudentId = rs.getInt(1);
                     }
@@ -992,15 +985,14 @@ public class StudentsDevicesController {
 
             } else {
                 targetStudentId = currentlySelectedStudent.getStudentId();
-                String sql = "UPDATE students SET student_code=?, full_name=?, course=?, year_level=?, contact_number=? " +
+                String sql = "UPDATE students SET student_code=?, full_name=?, section=?, email=? " +
                         "WHERE student_id=?";
                 try (PreparedStatement pst = conn.prepareStatement(sql)) {
                     pst.setString(1, code);
                     pst.setString(2, name);
-                    pst.setString(3, course);
-                    pst.setString(4, year);
-                    pst.setString(5, contact);
-                    pst.setInt(6, targetStudentId);
+                    pst.setString(3, section);
+                    pst.setString(4, email);
+                    pst.setInt(5, targetStudentId);
                     pst.executeUpdate();
                 }
             }
@@ -1177,7 +1169,7 @@ public class StudentsDevicesController {
     }
 
     private void clearStudentInlineErrors() {
-        for (Label lbl : new Label[]{lblErrorStudentCode, lblErrorStudentName, lblErrorCourse, lblErrorYearLevel}) {
+        for (Label lbl : new Label[]{lblErrorStudentCode, lblErrorStudentName, lblErrorSection, lblErrorEmail}) {
             if (lbl != null) { lbl.setVisible(false); lbl.setManaged(false); }
         }
     }
@@ -1189,8 +1181,8 @@ public class StudentsDevicesController {
     }
 
     private void clearStudentFields() {
-        txtStudentCode.clear(); txtStudentName.clear(); txtCourse.clear();
-        cmbYearLevel.setValue(null); txtContactNumber.clear();
+        txtStudentCode.clear(); txtStudentName.clear(); txtSection.clear();
+        txtEmail.clear();
     }
 
     private void clearDeviceFields() {
@@ -1203,9 +1195,8 @@ public class StudentsDevicesController {
 
         lblProfileStudentCode.setText(student.getStudentCode());
         lblProfileStudentName.setText(student.getFullName());
-        lblProfileStudentCourse.setText(student.getCourse());
-        lblProfileStudentYear.setText(student.getYearLevel());
-        lblProfileStudentContact.setText(
+        lblProfileStudentSection.setText(student.getCourse());
+        lblProfileStudentEmail.setText(
                 student.getContactNumber() == null || student.getContactNumber().isEmpty() ? "—" : student.getContactNumber());
 
         if ("ACTIVE".equalsIgnoreCase(student.getStatus())) {
@@ -1249,9 +1240,8 @@ public class StudentsDevicesController {
         clearStudentInlineErrors();
         txtStudentCode.setText(currentlySelectedStudent.getStudentCode());
         txtStudentName.setText(currentlySelectedStudent.getFullName());
-        txtCourse.setText(currentlySelectedStudent.getCourse());
-        cmbYearLevel.setValue(currentlySelectedStudent.getYearLevel());
-        txtContactNumber.setText(currentlySelectedStudent.getContactNumber());
+        txtSection.setText(currentlySelectedStudent.getCourse()); // section
+        txtEmail.setText(currentlySelectedStudent.getContactNumber()); // email
         paneStudentFormModal.setVisible(true);
         paneStudentFormModal.toFront();
     }

@@ -23,29 +23,14 @@ import java.sql.SQLException;
 
 public class LoginController {
 
-    @FXML
-    private TextField usernameField;
-
-    @FXML
-    private PasswordField passwordField;
-
-    @FXML
-    private TextField passwordTextField;
-
-    @FXML
-    private Button togglePasswordBtn;
-
-    @FXML
-    private Button loginButton;
-
-    @FXML
-    private HBox dbStatusBanner;
-
-    @FXML
-    private Label dbStatusLabel;
-
-    @FXML
-    private Label errorLabel;
+    @FXML private TextField     usernameField;
+    @FXML private PasswordField passwordField;
+    @FXML private TextField     passwordTextField;
+    @FXML private Button        togglePasswordBtn;
+    @FXML private Button        loginButton;
+    @FXML private HBox          dbStatusBanner;
+    @FXML private Label         dbStatusLabel;
+    @FXML private Label         errorLabel;
 
     private boolean isPasswordVisible = false;
 
@@ -62,12 +47,9 @@ public class LoginController {
                         "-fx-background-color: #EBF7EE; " +
                                 "-fx-background-radius: 8; " +
                                 "-fx-border-color: #D3ECD9; " +
-                                "-fx-border-radius: 8;"
-                );
+                                "-fx-border-radius: 8;");
                 dbStatusLabel.setStyle("-fx-text-fill: #059669;");
-                if (loginButton != null) {
-                    loginButton.setDisable(false);
-                }
+                if (loginButton != null) loginButton.setDisable(false);
             } else {
                 setDatabaseFailedStatus();
             }
@@ -76,6 +58,8 @@ public class LoginController {
         }
     }
 
+    // ─── DB status ────────────────────────────────────────────────────────────
+
     private void setDatabaseFailedStatus() {
         dbStatusLabel.setText("Database Connection Failed");
         dbStatusLabel.setStyle("-fx-text-fill: #C62828;");
@@ -83,12 +67,11 @@ public class LoginController {
                 "-fx-background-color: #FFEBEE; " +
                         "-fx-background-radius: 8; " +
                         "-fx-border-color: #FFCDD2; " +
-                        "-fx-border-radius: 8;"
-        );
-        if (loginButton != null) {
-            loginButton.setDisable(true);
-        }
+                        "-fx-border-radius: 8;");
+        if (loginButton != null) loginButton.setDisable(true);
     }
+
+    // ─── Inline error ─────────────────────────────────────────────────────────
 
     private void showInlineError(String message) {
         errorLabel.setText(message);
@@ -102,60 +85,57 @@ public class LoginController {
         errorLabel.setManaged(false);
     }
 
+    // ─── Password toggle ──────────────────────────────────────────────────────
+
     @FXML
     public void togglePasswordVisibility() {
         if (isPasswordVisible) {
             passwordField.setVisible(true);
             passwordField.setManaged(true);
-
             passwordTextField.setVisible(false);
             passwordTextField.setManaged(false);
-
             togglePasswordBtn.setText("👁");
             passwordField.requestFocus();
         } else {
             passwordTextField.setVisible(true);
             passwordTextField.setManaged(true);
-
             passwordField.setVisible(false);
             passwordField.setManaged(false);
-
             togglePasswordBtn.setText("🙈");
             passwordTextField.requestFocus();
         }
-
         isPasswordVisible = !isPasswordVisible;
-
         passwordField.selectEnd();
         passwordTextField.selectEnd();
     }
+
+    // ─── Login ────────────────────────────────────────────────────────────────
 
     @FXML
     public void handleLogin() {
         clearInlineError();
 
         String username = usernameField.getText() == null ? "" : usernameField.getText().trim();
-        String password = passwordField.getText() == null ? "" : passwordField.getText().trim();
+
+        String password = passwordField.getText() == null ? "" : passwordField.getText();
 
         if (username.isEmpty() && password.isEmpty()) {
             showInlineError("Please completely fill out all fields.");
             usernameField.requestFocus();
             return;
         }
-
         if (username.isEmpty()) {
             showInlineError("Username cannot be empty.");
             usernameField.requestFocus();
             return;
         }
-
         if (password.isEmpty()) {
             showInlineError("Password cannot be empty.");
             passwordField.requestFocus();
             return;
         }
 
-        String sql = "SELECT user_id, password_hash, role, first_login, student_ref_id, status FROM users WHERE username = ?";
+        String sql = "SELECT user_id, password_hash, role, first_login, status FROM users WHERE username = ?";
 
         try (Connection conn = DBConnection.connect();
              PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -164,13 +144,11 @@ public class LoginController {
 
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
-                    int userId             = rs.getInt("user_id");
-                    String hashedPassword  = rs.getString("password_hash");
-                    String userStatus      = rs.getString("status");
-                    String role            = rs.getString("role");
+                    int     userId         = rs.getInt("user_id");
+                    String  hashedPassword = rs.getString("password_hash");
+                    String  userStatus     = rs.getString("status");
+                    String  role           = rs.getString("role");
                     boolean isFirstLogin   = rs.getBoolean("first_login");
-                    // FIX: student_ref_id is now VARCHAR(20), not an integer
-                    String studentRefId    = rs.getString("student_ref_id");
 
                     if ("INACTIVE".equalsIgnoreCase(userStatus)) {
                         showInlineError("This account has been deactivated.");
@@ -190,17 +168,13 @@ public class LoginController {
                     session.setUsername(username);
                     session.setRole(role);
                     session.setFirstLogin(isFirstLogin);
-                    session.setStudentRefId(studentRefId);
 
-                    logAuditEvent(userId, "LOGIN", "USER", userId, "{\"message\": \"User logged in successfully.\"}");
-
+                    logAuditEvent(userId, "LOGIN", "USER", userId,
+                            "{\"message\": \"User logged in successfully.\"}");
                     updateLastLoginTimestamp(userId);
 
                     if (isFirstLogin) {
-                        Window owner = usernameField.getScene().getWindow();
-                        AlertHelper.showPositive(owner, "Security Setup",
-                                "You are using a temporary password. You must update your password before gaining access to the main application dashboard features.");
-                        navigateToChangePassword();
+                        navigateToDashboard();
                     } else {
                         navigateToDashboard();
                     }
@@ -213,9 +187,12 @@ public class LoginController {
         } catch (Exception e) {
             e.printStackTrace();
             Window owner = usernameField.getScene().getWindow();
-            AlertHelper.showNegative(owner, "Database Error", "An error occurred while connecting to system services.");
+            AlertHelper.showNegative(owner, "Database Error",
+                    "An error occurred while connecting to system services.");
         }
     }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private void updateLastLoginTimestamp(int userId) {
         String sql = "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = ?";
@@ -228,63 +205,44 @@ public class LoginController {
         }
     }
 
-    private void logAuditEvent(int operatorId, String actionType, String targetType, Integer targetId, String jsonDetails) {
-        String sql = "INSERT INTO audit_log (operator_id, action_type, target_type, target_id, details, performed_at) VALUES (?, ?, ?, ?, ?::jsonb, NOW() AT TIME ZONE 'Asia/Manila')";
+    private void logAuditEvent(int operatorId, String actionType,
+                               String targetType, Integer targetId, String jsonDetails) {
+        String sql = "INSERT INTO audit_log " +
+                "(operator_id, action_type, target_type, target_id, details, performed_at) " +
+                "VALUES (?, ?, ?, ?, ?::jsonb, NOW() AT TIME ZONE 'Asia/Manila')";
         try (Connection conn = DBConnection.connect();
              PreparedStatement pst = conn.prepareStatement(sql)) {
-
             pst.setInt(1, operatorId);
             pst.setString(2, actionType);
-
-            if (targetType != null) {
-                pst.setString(3, targetType);
-            } else {
-                pst.setNull(3, java.sql.Types.VARCHAR);
-            }
-
-            if (targetId != null) {
-                pst.setInt(4, targetId);
-            } else {
-                pst.setNull(4, java.sql.Types.INTEGER);
-            }
-
-            if (jsonDetails != null) {
-                pst.setString(5, jsonDetails);
-            } else {
-                pst.setNull(5, java.sql.Types.OTHER);
-            }
-
+            if (targetType != null) pst.setString(3, targetType);
+            else                    pst.setNull(3, java.sql.Types.VARCHAR);
+            if (targetId != null)   pst.setInt(4, targetId);
+            else                    pst.setNull(4, java.sql.Types.INTEGER);
+            if (jsonDetails != null) pst.setString(5, jsonDetails);
+            else                     pst.setNull(5, java.sql.Types.OTHER);
             pst.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Audit Log Failed: " + e.getMessage());
         }
     }
 
-    private void navigateToChangePassword() {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/com/example/byodsystem/byod/fxml/changepassword.fxml"));
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(root));
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            Window owner = usernameField.getScene().getWindow();
-            AlertHelper.showNegative(owner, "Navigation Error", "Could not load the password change utility view.");
-        }
-    }
+    // ─── Navigation ───────────────────────────────────────────────────────────
 
     private void navigateToDashboard() {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/com/example/byodsystem/byod/fxml/base.fxml"));
+            Parent root = FXMLLoader.load(
+                    getClass().getResource("/com/example/byodsystem/byod/fxml/base.fxml"));
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(new Scene(root));
         } catch (Exception e) {
             e.printStackTrace();
-
             Window owner = usernameField.getScene().getWindow();
-            AlertHelper.showNegative(owner, "Navigation Error", "Could not load the application dashboard component");
+            AlertHelper.showNegative(owner, "Navigation Error",
+                    "Could not load the application dashboard component.");
         }
     }
+
+    // ─── Quick demo presets ───────────────────────────────────────────────────
 
     @FXML
     public void fillAdmin() {
@@ -300,10 +258,4 @@ public class LoginController {
         passwordField.setText("officer123");
     }
 
-    @FXML
-    public void fillStudent() {
-        clearInlineError();
-        usernameField.setText("2024-00001");
-        passwordField.setText("nathanbading123");
-    }
 }

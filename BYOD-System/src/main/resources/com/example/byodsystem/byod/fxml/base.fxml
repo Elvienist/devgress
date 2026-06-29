@@ -67,7 +67,7 @@
                                 </Label>
                             </graphic>
                         </Button>
-                        <Button fx:id="btnSidebarStudentsDevices" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToStudentsDevices" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Students &amp; Devices">
+                        <Button fx:id="btnSidebarStudentsDevices" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToStudentsDevices" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Students &amp;&#13;Devices">
                             <font>
                                 <Font size="14.0" />
                             </font>
@@ -85,6 +85,18 @@
                             </font>
                             <graphic>
                                 <Label text="💻" textFill="#4B5563">
+                                    <font>
+                                        <Font size="16.0" />
+                                    </font>
+                                </Label>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="btnSidebarOfficerRequests" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToOfficerRequests" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Gate Requests">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                            <graphic>
+                                <Label text="✅" textFill="#4B5563">
                                     <font>
                                         <Font size="16.0" />
                                     </font>
@@ -115,18 +127,6 @@
                                 </Label>
                             </graphic>
                         </Button>
-                        <Button fx:id="btnSidebarRequests" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToProfileRequests" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Profile Requests">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                            <graphic>
-                                <Label text="📝" textFill="#4B5563">
-                                    <font>
-                                        <Font size="16.0" />
-                                    </font>
-                                </Label>
-                            </graphic>
-                        </Button>
                         <Button fx:id="btnSidebarReports" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToReports" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Reports">
                             <font>
                                 <Font size="14.0" />
@@ -145,30 +145,6 @@
                             </font>
                             <graphic>
                                 <Label text="🛡" textFill="#4B5563">
-                                    <font>
-                                        <Font size="16.0" />
-                                    </font>
-                                </Label>
-                            </graphic>
-                        </Button>
-                        <Button fx:id="btnSidebarProfile" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToProfile" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Profile">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                            <graphic>
-                                <Label text="👤" textFill="#4B5563">
-                                    <font>
-                                        <Font size="16.0" />
-                                    </font>
-                                </Label>
-                            </graphic>
-                        </Button>
-                        <Button fx:id="btnSidebarDeviceLog" alignment="BASELINE_LEFT" graphicTextGap="16.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNavigateToDeviceLog" prefHeight="44.0" style="-fx-background-color: transparent; -fx-text-fill: #4B5563; -fx-padding: 0 0 0 16; -fx-cursor: hand;" text="Device Log">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                            <graphic>
-                                <Label text="⚡" textFill="#4B5563">
                                     <font>
                                         <Font size="16.0" />
                                     </font>

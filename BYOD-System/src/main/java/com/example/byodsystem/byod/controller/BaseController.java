@@ -39,17 +39,14 @@ public class BaseController {
 
     @FXML private Button btnSidebarDashboard;
     @FXML private Button btnSidebarUserManagement;
-    @FXML private Button btnSidebarRequests;
     @FXML private Button btnSidebarReports;
     @FXML private Button btnSidebarAuditLog;
     @FXML private Button btnSidebarSettings;
 
     @FXML private Button btnSidebarGateScreen;
+    @FXML private Button btnSidebarOfficerRequests;
     @FXML private Button btnSidebarActivityLog;
     @FXML private Button btnSidebarStudentsDevices;
-
-    @FXML private Button btnSidebarProfile;
-    @FXML private Button btnSidebarDeviceLog;
 
     @FXML private Button btnSidebarChangePassword;
     @FXML private Button btnSidebarLogout;
@@ -86,8 +83,6 @@ public class BaseController {
         btnSidebarDashboard.setManaged(false);
         btnSidebarUserManagement.setVisible(false);
         btnSidebarUserManagement.setManaged(false);
-        btnSidebarRequests.setVisible(false);
-        btnSidebarRequests.setManaged(false);
         btnSidebarReports.setVisible(false);
         btnSidebarReports.setManaged(false);
         btnSidebarAuditLog.setVisible(false);
@@ -97,15 +92,12 @@ public class BaseController {
 
         btnSidebarGateScreen.setVisible(false);
         btnSidebarGateScreen.setManaged(false);
+        btnSidebarOfficerRequests.setVisible(false);
+        btnSidebarOfficerRequests.setManaged(false);
         btnSidebarActivityLog.setVisible(false);
         btnSidebarActivityLog.setManaged(false);
         btnSidebarStudentsDevices.setVisible(false);
         btnSidebarStudentsDevices.setManaged(false);
-
-        btnSidebarProfile.setVisible(false);
-        btnSidebarProfile.setManaged(false);
-        btnSidebarDeviceLog.setVisible(false);
-        btnSidebarDeviceLog.setManaged(false);
 
         setupHoverAnimations();
 
@@ -114,8 +106,6 @@ public class BaseController {
             btnSidebarDashboard.setManaged(true);
             btnSidebarUserManagement.setVisible(true);
             btnSidebarUserManagement.setManaged(true);
-            btnSidebarRequests.setVisible(true);
-            btnSidebarRequests.setManaged(true);
             btnSidebarReports.setVisible(true);
             btnSidebarReports.setManaged(true);
             btnSidebarAuditLog.setVisible(true);
@@ -125,6 +115,8 @@ public class BaseController {
 
             btnSidebarGateScreen.setVisible(true);
             btnSidebarGateScreen.setManaged(true);
+            btnSidebarOfficerRequests.setVisible(true);
+            btnSidebarOfficerRequests.setManaged(true);
             btnSidebarActivityLog.setVisible(true);
             btnSidebarActivityLog.setManaged(true);
             btnSidebarStudentsDevices.setVisible(true);
@@ -132,39 +124,20 @@ public class BaseController {
 
             handleNavigateToDashboard();
         } else if ("OFFICER".equals(role)) {
-            btnSidebarGateScreen.setVisible(true);
-            btnSidebarGateScreen.setManaged(true);
-            btnSidebarActivityLog.setVisible(true);
-            btnSidebarActivityLog.setManaged(true);
-            btnSidebarStudentsDevices.setVisible(true);
-            btnSidebarStudentsDevices.setManaged(true);
+            btnSidebarOfficerRequests.setVisible(true);
+            btnSidebarOfficerRequests.setManaged(true);
 
-            // Auto-navigate: check hours; if closed show popup instead of loading gate screen
-            if (isWithinOperatingHours()) {
-                updateActiveButtonStyle(btnSidebarGateScreen);
-                collapseSidebar();
-                loadSubView("/com/example/byodsystem/byod/fxml/gatescreen.fxml");
-            } else {
-                updateActiveButtonStyle(btnSidebarActivityLog);
-                loadSubView("/com/example/byodsystem/byod/fxml/activity.fxml");
-                Platform.runLater(this::showClosedHoursPopup);
-            }
-        } else if ("STUDENT".equals(role)) {
-            btnSidebarProfile.setVisible(true);
-            btnSidebarProfile.setManaged(true);
-            btnSidebarDeviceLog.setVisible(true);
-            btnSidebarDeviceLog.setManaged(true);
-
-            handleNavigateToProfile();
+            updateActiveButtonStyle(btnSidebarOfficerRequests);
+            loadSubView("/com/example/byodsystem/byod/fxml/officergaterequest.fxml");
         }
     }
 
     private void setupHoverAnimations() {
         Button[] buttons = {
-                btnSidebarDashboard, btnSidebarUserManagement, btnSidebarRequests,
+                btnSidebarDashboard, btnSidebarUserManagement,
                 btnSidebarReports, btnSidebarAuditLog, btnSidebarSettings,
-                btnSidebarGateScreen, btnSidebarActivityLog, btnSidebarStudentsDevices,
-                btnSidebarProfile, btnSidebarDeviceLog,
+                btnSidebarGateScreen, btnSidebarOfficerRequests,
+                btnSidebarActivityLog, btnSidebarStudentsDevices,
                 btnSidebarChangePassword, btnSidebarLogout
         };
 
@@ -193,10 +166,10 @@ public class BaseController {
     private void updateActiveButtonStyle(Button activeTemplateButton) {
         currentActiveButton = activeTemplateButton;
         Button[] buttons = {
-                btnSidebarDashboard, btnSidebarUserManagement, btnSidebarRequests,
+                btnSidebarDashboard, btnSidebarUserManagement,
                 btnSidebarReports, btnSidebarAuditLog, btnSidebarSettings,
-                btnSidebarGateScreen, btnSidebarActivityLog, btnSidebarStudentsDevices,
-                btnSidebarProfile, btnSidebarDeviceLog,
+                btnSidebarGateScreen, btnSidebarOfficerRequests,
+                btnSidebarActivityLog, btnSidebarStudentsDevices,
                 btnSidebarChangePassword, btnSidebarLogout
         };
 
@@ -258,134 +231,10 @@ public class BaseController {
         loadSubView("/com/example/byodsystem/byod/fxml/gatescreen.fxml");
     }
 
-    /**
-     * Returns true if the current Manila time is between start_of_day_time and end_of_day_time
-     * from the settings table. If no hours are configured, access is always allowed.
-     */
-    private boolean isWithinOperatingHours() {
-        String sql = "SELECT start_of_day_time, end_of_day_time FROM settings LIMIT 1";
-        try (Connection conn = DBConnection.connect();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                Time startTime = rs.getTime("start_of_day_time");
-                Time endTime   = rs.getTime("end_of_day_time");
-                if (startTime == null || endTime == null) return true; // not configured — allow
-                LocalTime now   = LocalTime.now(ZoneId.of("Asia/Manila"));
-                LocalTime start = startTime.toLocalTime();
-                LocalTime end   = endTime.toLocalTime();
-                return !now.isBefore(start) && now.isBefore(end);
-            }
-        } catch (SQLException e) {
-            System.err.println("Could not read operating hours from settings.");
-            e.printStackTrace();
-        }
-        return true; // fail-open: allow access if DB is unreachable
-    }
-
-    private void showClosedHoursPopup() {
-        // Fetch friendly hour strings for the message
-        String startStr = "—", endStr = "—";
-        String sql = "SELECT start_of_day_time, end_of_day_time FROM settings LIMIT 1";
-        try (Connection conn = DBConnection.connect();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                Time s = rs.getTime("start_of_day_time");
-                Time e = rs.getTime("end_of_day_time");
-                if (s != null) startStr = s.toLocalTime().toString().substring(0, 5);
-                if (e != null) endStr   = e.toLocalTime().toString().substring(0, 5);
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-
-        StackPane overlay = new StackPane();
-        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.55);");
-        overlay.setAlignment(Pos.CENTER);
-        overlay.setOnMouseClicked(javafx.event.Event::consume);
-        overlay.prefWidthProperty().bind(mainContainer.getScene().widthProperty());
-        overlay.prefHeightProperty().bind(mainContainer.getScene().heightProperty());
-
-        // Icon circle — red clock style to signal restricted access
-        StackPane iconCircle = new StackPane();
-        iconCircle.setMinSize(64, 64);
-        iconCircle.setMaxSize(64, 64);
-        iconCircle.setStyle("-fx-background-color: #FEE2E2; -fx-background-radius: 32;");
-        Label iconLabel = new Label("🕐");
-        iconLabel.setStyle("-fx-font-size: 28px;");
-        iconCircle.getChildren().add(iconLabel);
-
-        Label lblTitle = new Label("Gate Screen Unavailable");
-        lblTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111111; -fx-font-family: 'Segoe UI', Inter, sans-serif;");
-        lblTitle.setWrapText(true);
-        lblTitle.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
-
-        Label lblSub = new Label(
-                "The Gate Screen is only accessible during operating hours.\n\n" +
-                        "Operating Hours:  " + startStr + " – " + endStr + "\n\n" +
-                        "Please try again during the allowed time window."
-        );
-        lblSub.setStyle("-fx-font-size: 13px; -fx-text-fill: #6B7280; -fx-font-family: 'Segoe UI', Inter, sans-serif;");
-        lblSub.setWrapText(true);
-        lblSub.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
-        lblSub.setMaxWidth(340);
-
-        Button btnClose = new Button("Got it");
-        btnClose.setPrefWidth(140);
-        btnClose.setPrefHeight(40);
-        btnClose.setStyle(
-                "-fx-background-color: #7A0000; " +
-                        "-fx-text-fill: #FFFFFF; " +
-                        "-fx-background-radius: 8; " +
-                        "-fx-border-radius: 8; " +
-                        "-fx-font-size: 13px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-cursor: hand; " +
-                        "-fx-font-family: 'Segoe UI', Inter, sans-serif;"
-        );
-
-        HBox btnRow = new HBox(btnClose);
-        btnRow.setAlignment(Pos.CENTER);
-
-        VBox dialog = new VBox(16, iconCircle, lblTitle, lblSub, btnRow);
-        dialog.setAlignment(Pos.CENTER);
-        dialog.setStyle(
-                "-fx-background-color: #FFFFFF; " +
-                        "-fx-background-radius: 20; " +
-                        "-fx-padding: 36 48 36 48; " +
-                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 15, 0, 0, 4);"
-        );
-        dialog.setMaxWidth(400);
-        dialog.setMinWidth(380);
-        dialog.setPrefHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
-        dialog.setMaxHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
-
-        overlay.getChildren().add(dialog);
-        StackPane.setAlignment(dialog, Pos.CENTER);
-
-        GaussianBlur blur = new GaussianBlur(6);
-        Parent currentRoot = mainContainer.getScene().getRoot();
-        if (currentRoot instanceof StackPane && "windowRootWrapper".equals(currentRoot.getId())) {
-            StackPane wrapper = (StackPane) currentRoot;
-            if (!wrapper.getChildren().isEmpty()) wrapper.getChildren().get(0).setEffect(blur);
-            wrapper.getChildren().add(overlay);
-        } else {
-            currentRoot.setEffect(blur);
-            StackPane windowRootWrapper = new StackPane();
-            windowRootWrapper.setId("windowRootWrapper");
-            mainContainer.getScene().setRoot(windowRootWrapper);
-            windowRootWrapper.getChildren().addAll(currentRoot, overlay);
-        }
-
-        btnClose.setOnAction(e -> {
-            Parent activeRoot = mainContainer.getScene().getRoot();
-            if (activeRoot instanceof StackPane) {
-                StackPane wrapper = (StackPane) activeRoot;
-                wrapper.getChildren().remove(overlay);
-                if (!wrapper.getChildren().isEmpty()) wrapper.getChildren().get(0).setEffect(null);
-            }
-        });
+    @FXML
+    public void handleNavigateToOfficerRequests() {
+        updateActiveButtonStyle(btnSidebarOfficerRequests);
+        loadSubView("/com/example/byodsystem/byod/fxml/officergaterequest.fxml");
     }
 
     @FXML
@@ -413,18 +262,6 @@ public class BaseController {
             System.err.println("Fatal: Could not transition Students & Devices panel.");
             e.printStackTrace();
         }
-    }
-
-    @FXML
-    public void handleNavigateToProfile() {
-        updateActiveButtonStyle(btnSidebarProfile);
-        loadSubView("/com/example/byodsystem/byod/fxml/studentprofile.fxml");
-    }
-
-    @FXML
-    public void handleNavigateToDeviceLog() {
-        updateActiveButtonStyle(btnSidebarDeviceLog);
-        loadSubView("/com/example/byodsystem/byod/fxml/studentdevicelog.fxml");
     }
 
     @FXML
@@ -509,34 +346,6 @@ public class BaseController {
             e.printStackTrace();
         }
     }
-
-    @FXML
-    public void handleNavigateToProfileRequests() {
-        updateActiveButtonStyle(btnSidebarRequests);
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/byodsystem/byod/fxml/studentprofilerequest.fxml"));
-            Parent view = loader.load();
-
-            StudentProfileRequestController controller = loader.getController();
-            UserSession session = UserSession.getInstance();
-
-            int userId = session.getUserId();
-            boolean isFirstLogin = session.isFirstLogin();
-            String studentRefId = (session.getStudentRefId() != null) ? session.getStudentRefId() : null;
-
-            controller.initializeSession(userId, isFirstLogin, studentRefId);
-
-            if (contentArea != null) {
-                contentArea.getChildren().clear();
-                contentArea.getChildren().add(view);
-            }
-        } catch (IOException e) {
-            System.err.println("Fatal: Could not transition profile request panel.");
-            e.printStackTrace();
-        }
-    }
-
-    @FXML public void handleNavigateToStudentProfile() { handleNavigateToProfile(); }
 
     @FXML
     public void handleLogout() {
@@ -647,6 +456,134 @@ public class BaseController {
             if (sidebarContainer != null) sidebarContainer.setEffect(null);
             if (contentArea != null) contentArea.setEffect(null);
             performLogout();
+        });
+    }
+
+    /**
+     * Returns true if the current Manila time is between start_of_day_time and end_of_day_time
+     * from the settings table. If no hours are configured, access is always allowed.
+     */
+    private boolean isWithinOperatingHours() {
+        String sql = "SELECT start_of_day_time, end_of_day_time FROM settings LIMIT 1";
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                Time startTime = rs.getTime("start_of_day_time");
+                Time endTime   = rs.getTime("end_of_day_time");
+                if (startTime == null || endTime == null) return true;
+                LocalTime now   = LocalTime.now(ZoneId.of("Asia/Manila"));
+                LocalTime start = startTime.toLocalTime();
+                LocalTime end   = endTime.toLocalTime();
+                return !now.isBefore(start) && now.isBefore(end);
+            }
+        } catch (SQLException e) {
+            System.err.println("Could not read operating hours from settings.");
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    private void showClosedHoursPopup() {
+        String startStr = "—", endStr = "—";
+        String sql = "SELECT start_of_day_time, end_of_day_time FROM settings LIMIT 1";
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                Time s = rs.getTime("start_of_day_time");
+                Time e = rs.getTime("end_of_day_time");
+                if (s != null) startStr = s.toLocalTime().toString().substring(0, 5);
+                if (e != null) endStr   = e.toLocalTime().toString().substring(0, 5);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        StackPane overlay = new StackPane();
+        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.55);");
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setOnMouseClicked(javafx.event.Event::consume);
+        overlay.prefWidthProperty().bind(mainContainer.getScene().widthProperty());
+        overlay.prefHeightProperty().bind(mainContainer.getScene().heightProperty());
+
+        StackPane iconCircle = new StackPane();
+        iconCircle.setMinSize(64, 64);
+        iconCircle.setMaxSize(64, 64);
+        iconCircle.setStyle("-fx-background-color: #FEE2E2; -fx-background-radius: 32;");
+        Label iconLabel = new Label("🕐");
+        iconLabel.setStyle("-fx-font-size: 28px;");
+        iconCircle.getChildren().add(iconLabel);
+
+        Label lblTitle = new Label("Gate Screen Unavailable");
+        lblTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111111; -fx-font-family: 'Segoe UI', Inter, sans-serif;");
+        lblTitle.setWrapText(true);
+        lblTitle.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+        Label lblSub = new Label(
+                "The Gate Screen is only accessible during operating hours.\n\n" +
+                        "Operating Hours:  " + startStr + " – " + endStr + "\n\n" +
+                        "Please try again during the allowed time window."
+        );
+        lblSub.setStyle("-fx-font-size: 13px; -fx-text-fill: #6B7280; -fx-font-family: 'Segoe UI', Inter, sans-serif;");
+        lblSub.setWrapText(true);
+        lblSub.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        lblSub.setMaxWidth(340);
+
+        Button btnClose = new Button("Got it");
+        btnClose.setPrefWidth(140);
+        btnClose.setPrefHeight(40);
+        btnClose.setStyle(
+                "-fx-background-color: #7A0000; " +
+                        "-fx-text-fill: #FFFFFF; " +
+                        "-fx-background-radius: 8; " +
+                        "-fx-border-radius: 8; " +
+                        "-fx-font-size: 13px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-cursor: hand; " +
+                        "-fx-font-family: 'Segoe UI', Inter, sans-serif;"
+        );
+
+        HBox btnRow = new HBox(btnClose);
+        btnRow.setAlignment(Pos.CENTER);
+
+        VBox dialog = new VBox(16, iconCircle, lblTitle, lblSub, btnRow);
+        dialog.setAlignment(Pos.CENTER);
+        dialog.setStyle(
+                "-fx-background-color: #FFFFFF; " +
+                        "-fx-background-radius: 20; " +
+                        "-fx-padding: 36 48 36 48; " +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 15, 0, 0, 4);"
+        );
+        dialog.setMaxWidth(400);
+        dialog.setMinWidth(380);
+        dialog.setPrefHeight(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+        dialog.setMaxHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+
+        overlay.getChildren().add(dialog);
+        StackPane.setAlignment(dialog, Pos.CENTER);
+
+        GaussianBlur blur = new GaussianBlur(6);
+        Parent currentRoot = mainContainer.getScene().getRoot();
+        if (currentRoot instanceof StackPane && "windowRootWrapper".equals(currentRoot.getId())) {
+            StackPane wrapper = (StackPane) currentRoot;
+            if (!wrapper.getChildren().isEmpty()) wrapper.getChildren().get(0).setEffect(blur);
+            wrapper.getChildren().add(overlay);
+        } else {
+            currentRoot.setEffect(blur);
+            StackPane windowRootWrapper = new StackPane();
+            windowRootWrapper.setId("windowRootWrapper");
+            mainContainer.getScene().setRoot(windowRootWrapper);
+            windowRootWrapper.getChildren().addAll(currentRoot, overlay);
+        }
+
+        btnClose.setOnAction(e -> {
+            Parent activeRoot = mainContainer.getScene().getRoot();
+            if (activeRoot instanceof StackPane) {
+                StackPane wrapper = (StackPane) activeRoot;
+                wrapper.getChildren().remove(overlay);
+                if (!wrapper.getChildren().isEmpty()) wrapper.getChildren().get(0).setEffect(null);
+            }
         });
     }
 

@@ -6,15 +6,11 @@ import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 public class DashboardController {
 
@@ -23,9 +19,6 @@ public class DashboardController {
     @FXML private Label adminRoleLabel;
     @FXML private Label adminInitialLabel;
     @FXML private Label welcomeLabel;
-
-    @FXML private HBox    pendingBanner;
-    @FXML private Label   pendingCountLabel;
 
     @FXML private Label totalStudentsLabel;
     @FXML private Label totalDevicesLabel;
@@ -56,29 +49,9 @@ public class DashboardController {
     @FXML private Label phonesPctLabel;
     @FXML private Label othersPctLabel;
 
-    @FXML private StackPane reviewOverlay;
-    @FXML private Label     overlayTitleLabel;
-    @FXML private Label     overlayCounterLabel;
-    @FXML private Label     overlayStudentNameLabel;
-    @FXML private TextField overlayFieldLabel;
-    @FXML private TextField overlayCurrentLabel;
-    @FXML private TextField overlayRequestedLabel;
-    @FXML private TextArea  overlayReasonArea;
-    @FXML private VBox      rejectReasonBox;
-    @FXML private TextField rejectReasonField;
-    @FXML private Button    overlayRejectBtn;
-
     private int    currentUserId       = 1;
     private String currentUserFullName = "Administrator";
     private String currentUserRole     = "Admin";
-
-    private final List<PendingRequest> pendingQueue = new ArrayList<>();
-    private int queueIndex = 0;
-
-    private record PendingRequest(int requestId, int studentId,
-                                  String fieldName, String currentValue,
-                                  String requestedValue, String reason,
-                                  String studentName) {}
 
     @FXML
     public void initialize() {
@@ -101,7 +74,6 @@ public class DashboardController {
             try (Connection conn = DBConnection.connect()) {
                 if (conn == null) return;
                 readStats(conn);
-                readPendingRequests(conn);
                 readEntryPattern(conn);
                 readDeviceBreakdown(conn);
             } catch (SQLException e) {
@@ -189,28 +161,6 @@ public class DashboardController {
         return String.format("%+.0f%%", pct);
     }
 
-    private void readPendingRequests(Connection conn) throws SQLException {
-        String sql = "SELECT COUNT(*) AS cnt FROM profile_update_requests WHERE status = 'PENDING'";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                int cnt = rs.getInt("cnt");
-                Platform.runLater(() -> {
-                    if (cnt == 0) {
-                        pendingBanner.setVisible(false);
-                        pendingBanner.setManaged(false);
-                    } else {
-                        pendingBanner.setVisible(true);
-                        pendingBanner.setManaged(true);
-                        pendingCountLabel.setText(
-                                "You have " + cnt + " pending student profile update request"
-                                        + (cnt == 1 ? "" : "s"));
-                    }
-                });
-            }
-        }
-    }
-
     private void readEntryPattern(Connection conn) throws SQLException {
         String sql = """
             SELECT EXTRACT(HOUR FROM log_time)::INT AS hour, COUNT(*) AS cnt
@@ -287,227 +237,22 @@ public class DashboardController {
         });
     }
 
-    @FXML
-    public void handleDismissBanner() {
-        pendingBanner.setVisible(false);
-        pendingBanner.setManaged(false);
-    }
-
-    @FXML
-    public void handleReviewRequests() {
-        Thread t = new Thread(() -> {
-            try (Connection conn = DBConnection.connect()) {
-                if (conn == null) return;
-
-                List<PendingRequest> rows = new ArrayList<>();
-                String sql = """
-                    SELECT pur.request_id, pur.field_name, pur.current_value,
-                           pur.requested_value, pur.reason,
-                           s.full_name AS student_name, s.student_id
-                    FROM   profile_update_requests pur
-                    JOIN   students s ON s.student_id = pur.student_id
-                    WHERE  pur.status = 'PENDING'
-                    ORDER  BY pur.submitted_at ASC
-                    """;
-
-                try (PreparedStatement ps = conn.prepareStatement(sql);
-                     ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        rows.add(new PendingRequest(
-                                rs.getInt("request_id"),
-                                rs.getInt("student_id"),
-                                rs.getString("field_name"),
-                                rs.getString("current_value"),
-                                rs.getString("requested_value"),
-                                rs.getString("reason"),
-                                rs.getString("student_name")
-                        ));
-                    }
-                }
-
-                Platform.runLater(() -> {
-                    if (rows.isEmpty()) {
-                        pendingBanner.setVisible(false);
-                        pendingBanner.setManaged(false);
-                        return;
-                    }
-                    pendingQueue.clear();
-                    pendingQueue.addAll(rows);
-                    queueIndex = 0;
-                    showOverlayItem();
-                });
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
-        t.setDaemon(true);
-        t.start();
-    }
-
-    private void showOverlayItem() {
-        if (queueIndex >= pendingQueue.size()) {
-            closeOverlay();
-            refreshPendingBanner();
-            return;
-        }
-
-        PendingRequest r = pendingQueue.get(queueIndex);
-        int total = pendingQueue.size();
-
-        overlayCounterLabel.setText((queueIndex + 1) + " of " + total);
-        overlayStudentNameLabel.setText(r.studentName());
-        overlayFieldLabel.setText(prettyFieldName(r.fieldName()));
-        overlayCurrentLabel.setText(r.currentValue() != null ? r.currentValue() : "—");
-        overlayRequestedLabel.setText(r.requestedValue());
-        overlayReasonArea.setText(r.reason());
-
-        rejectReasonBox.setVisible(false);
-        rejectReasonBox.setManaged(false);
-        rejectReasonField.clear();
-        overlayRejectBtn.setText("Reject");
-
-        reviewOverlay.setVisible(true);
-        reviewOverlay.setManaged(true);
-    }
-
-    private void closeOverlay() {
-        reviewOverlay.setVisible(false);
-        reviewOverlay.setManaged(false);
-    }
-
-    @FXML
-    public void handleOverlaySkip() {
-        queueIndex++;
-        showOverlayItem();
-    }
-
-    @FXML
-    public void handleOverlayReject() {
-        if (!rejectReasonBox.isVisible()) {
-            rejectReasonBox.setVisible(true);
-            rejectReasonBox.setManaged(true);
-            overlayRejectBtn.setText("Confirm Reject");
-        } else {
-            String reason = rejectReasonField.getText().trim();
-            if (reason.isBlank()) reason = "No reason provided.";
-            submitDecision(false, reason);
-        }
-    }
-
-    @FXML
-    public void handleOverlayApprove() {
-        submitDecision(true, null);
-    }
-
-    @FXML
-    public void handleOverlayClose() {
-        closeOverlay();
-    }
-
-    private void submitDecision(boolean approved, String adminResponse) {
-        PendingRequest r = pendingQueue.get(queueIndex);
-
-        Thread t = new Thread(() -> {
-            try (Connection conn = DBConnection.connect()) {
-                if (conn == null) return;
-                updateRequest(conn, r.requestId(), r.studentId(),
-                        r.fieldName(), r.requestedValue(), approved, adminResponse);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            Platform.runLater(() -> {
-                queueIndex++;
-                showOverlayItem();
-            });
-        });
-        t.setDaemon(true);
-        t.start();
-    }
-
-    private void updateRequest(Connection conn, int requestId, int studentId,
-                               String fieldName, String requestedValue,
-                               boolean approved, String adminResponse) throws SQLException {
-        conn.setAutoCommit(false);
-        try {
-            try (PreparedStatement ps = conn.prepareStatement("""
-                    UPDATE profile_update_requests
-                    SET status = ?, admin_response = ?,
-                        resolved_at = CURRENT_TIMESTAMP, resolved_by = ?
-                    WHERE request_id = ?
-                    """)) {
-                ps.setString(1, approved ? "APPROVED" : "REJECTED");
-                ps.setString(2, adminResponse);
-                ps.setInt(3, currentUserId);
-                ps.setInt(4, requestId);
-                ps.executeUpdate();
-            }
-
-            if (approved) {
-                String col = sanitizeColumnName(fieldName);
-                if (col != null) {
-                    try (PreparedStatement ps = conn.prepareStatement(
-                            "UPDATE students SET " + col + " = ?, updated_at = CURRENT_TIMESTAMP WHERE student_id = ?")) {
-                        ps.setString(1, requestedValue);
-                        ps.setInt(2, studentId);
-                        ps.executeUpdate();
-                    }
-                }
-            }
-
-            try (PreparedStatement ps = conn.prepareStatement("""
-                    INSERT INTO audit_log (operator_id, action_type, target_type, target_id, details, performed_at)
-                    VALUES (?, ?, 'profile_update_requests', ?, ?::jsonb, NOW() AT TIME ZONE 'Asia/Manila')
-                    """)) {
-                ps.setInt(1, currentUserId);
-                ps.setString(2, approved ? "REQUEST_APPROVED" : "REQUEST_REJECTED");
-                ps.setInt(3, requestId);
-                ps.setString(4, String.format(
-                        "{\"field\":\"%s\",\"request_id\":%d,\"student_id\":%d}",
-                        fieldName, requestId, studentId));
-                ps.executeUpdate();
-            }
-
-            conn.commit();
-        } catch (SQLException e) {
-            conn.rollback();
-            throw e;
-        } finally {
-            conn.setAutoCommit(true);
-        }
-    }
-
     private static String sanitizeColumnName(String fieldName) {
         return switch (fieldName.toLowerCase()) {
-            case "full_name"      -> "full_name";
-            case "course"         -> "course";
-            case "year_level"     -> "year_level";
-            case "contact_number" -> "contact_number";
-            default               -> null;
+            case "full_name" -> "full_name";
+            case "section"   -> "section";
+            case "email"     -> "email";
+            default          -> null;
         };
     }
 
     private static String prettyFieldName(String fieldName) {
         return switch (fieldName.toLowerCase()) {
-            case "full_name"      -> "Full Name";
-            case "course"         -> "Course / Program";
-            case "year_level"     -> "Year Level";
-            case "contact_number" -> "Contact Number";
-            default               -> fieldName;
+            case "full_name" -> "Full Name";
+            case "section"   -> "Section";
+            case "email"     -> "Email";
+            default          -> fieldName;
         };
-    }
-
-    private void refreshPendingBanner() {
-        Thread t = new Thread(() -> {
-            try (Connection conn = DBConnection.connect()) {
-                if (conn == null) return;
-                readPendingRequests(conn);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
-        t.setDaemon(true);
-        t.start();
     }
 
 }

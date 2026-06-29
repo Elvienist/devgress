@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<StackPane xmlns="http://javafx.com/javafx/17"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.example.byodsystem.byod.controller.OfficerGateRequestController"
+           style="-fx-background-color: #F8F9FA;">
+
+    <!-- ══════════════════════════════════════════════════════
+         MAIN CONTENT  (visible during operating hours)
+         Layout: full-width HBox → [left: requests] [right: summary sidebar]
+         ══════════════════════════════════════════════════════ -->
+    <VBox fx:id="paneMainContent" spacing="0" style="-fx-background-color: #F8F9FA;"
+          StackPane.alignment="TOP_CENTER">
+        <padding>
+            <Insets top="24" right="28" bottom="24" left="28"/>
+        </padding>
+
+        <!-- ── Page header ── -->
+        <HBox alignment="CENTER_LEFT" spacing="14">
+            <!-- Icon -->
+            <StackPane minWidth="44" maxWidth="44" minHeight="44" maxHeight="44"
+                       style="-fx-background-color: #FDF6E3; -fx-background-radius: 12;">
+                <Label text="🚪" style="-fx-font-size: 20px;"/>
+            </StackPane>
+
+            <!-- Title block -->
+            <VBox spacing="2" HBox.hgrow="ALWAYS">
+                <Label text="Gate Requests" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0F172A;">
+                    <font><Font name="System Bold" size="20.0"/></font>
+                </Label>
+                <Label fx:id="lblDate" text="—"
+                       style="-fx-font-size: 12px; -fx-text-fill: #64748B;"/>
+            </VBox>
+
+            <!-- Pending badge -->
+            <Label fx:id="lblPendingBadge" text="0 Pending"
+                   style="-fx-background-color: #FEF3C7; -fx-text-fill: #92400E;
+                          -fx-background-radius: 20; -fx-padding: 4 12;
+                          -fx-font-size: 11px; -fx-font-weight: bold;"
+                   visible="false" managed="false"/>
+        </HBox>
+
+        <Region minHeight="16"/>
+
+        <!-- ── Body: request list (left) + summary sidebar (right) ── -->
+        <HBox spacing="20" VBox.vgrow="ALWAYS">
+
+            <!-- ─────────────────── LEFT PANEL ─────────────────── -->
+            <VBox spacing="0" HBox.hgrow="ALWAYS">
+
+                <!-- ── Search bar ── -->
+                <HBox spacing="10" alignment="CENTER_LEFT"
+                      style="-fx-background-color: #FFFFFF; -fx-background-radius: 12;
+                             -fx-border-color: #E2E8F0; -fx-border-radius: 12; -fx-border-width: 1;">
+                    <padding><Insets top="9" right="14" bottom="9" left="14"/></padding>
+                    <Label text="🔍" style="-fx-font-size: 13px; -fx-text-fill: #94A3B8;"/>
+                    <TextField fx:id="txtSearch" promptText="Search by student ID, device serial, or device details..."
+                               style="-fx-background-color: transparent; -fx-border-color: transparent;
+                                      -fx-font-size: 12px; -fx-text-fill: #1E293B;"
+                               HBox.hgrow="ALWAYS"/>
+                </HBox>
+
+                <Region minHeight="12"/>
+
+                <!-- ── Filter bar (two rows, categorised) ── -->
+                <VBox spacing="6"
+                      style="-fx-background-color: #FFFFFF; -fx-background-radius: 14;
+                             -fx-border-color: #E2E8F0; -fx-border-radius: 14; -fx-border-width: 1;">
+                    <padding><Insets top="12" right="14" bottom="12" left="14"/></padding>
+
+                    <!-- Row 1: Status filters -->
+                    <HBox spacing="6" alignment="CENTER_LEFT">
+                        <Label text="STATUS"
+                               style="-fx-font-size: 9px; -fx-font-weight: 700;
+                                      -fx-text-fill: #94A3B8; -fx-min-width: 62;"/>
+                        <Button fx:id="btnTabPending"  mnemonicParsing="false" text="⏳  Pending"/>
+                        <Button fx:id="btnTabApproved" mnemonicParsing="false" text="✅  Approved"/>
+                        <Button fx:id="btnTabRejected" mnemonicParsing="false" text="❌  Rejected"/>
+                        <Button fx:id="btnTabAll"      mnemonicParsing="false" text="📋  All"/>
+                    </HBox>
+
+                    <!-- Thin separator between rows -->
+                    <Region minHeight="1" maxHeight="1" style="-fx-background-color: #F1F5F9;"/>
+
+                    <!-- Row 2: Direction filters (buttons added by controller) -->
+                    <HBox fx:id="paneFilterTabs" spacing="6" alignment="CENTER_LEFT">
+                        <Label text="DIRECTION"
+                               style="-fx-font-size: 9px; -fx-font-weight: 700;
+                                      -fx-text-fill: #94A3B8; -fx-min-width: 62;"/>
+                        <!-- btnTabIn and btnTabOut injected by setupFilterTabs() -->
+                    </HBox>
+
+                    <!-- Row 3: Overdue filter — own row, only visible while Ingress (IN) is the active direction -->
+                    <HBox fx:id="paneOverdueRow" spacing="6" alignment="CENTER_LEFT"
+                          visible="false" managed="false">
+                        <Label text="OVERDUE"
+                               style="-fx-font-size: 9px; -fx-font-weight: 700;
+                                      -fx-text-fill: #94A3B8; -fx-min-width: 62;"/>
+                        <!-- btnTabOverdue injected by setupFilterTabs() -->
+                    </HBox>
+
+                    <!-- Row 4: Late-egress filter — only visible while Egress (OUT) is the active direction -->
+                    <HBox fx:id="paneLateEgressRow" spacing="6" alignment="CENTER_LEFT"
+                          visible="false" managed="false">
+                        <Label text="LATE"
+                               style="-fx-font-size: 9px; -fx-font-weight: 700;
+                                      -fx-text-fill: #94A3B8; -fx-min-width: 62;"/>
+                        <!-- btnTabLateEgress injected by setupFilterTabs() -->
+                    </HBox>
+                </VBox>
+
+                <Region minHeight="12"/>
+
+                <!-- Empty-state placeholder -->
+                <VBox fx:id="paneEmpty" alignment="CENTER" spacing="10"
+                      visible="false" managed="false" minHeight="220">
+                    <StackPane minWidth="64" maxWidth="64" minHeight="64" maxHeight="64"
+                               style="-fx-background-color: #F1F5F9; -fx-background-radius: 32;"
+                               VBox.vgrow="NEVER">
+                        <StackPane.margin><Insets bottom="2"/></StackPane.margin>
+                        <Label text="📋" style="-fx-font-size: 28px;"/>
+                    </StackPane>
+                    <Label fx:id="lblEmptyTitle" text="No gate requests"
+                           style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #475569;"/>
+                    <Label fx:id="lblEmptySub" text="Gate requests will appear here."
+                           style="-fx-font-size: 12px; -fx-text-fill: #94A3B8;" wrapText="true"
+                           maxWidth="340"/>
+                </VBox>
+
+                <!-- Request cards -->
+                <ScrollPane fx:id="scrollRequests" fitToWidth="true"
+                            style="-fx-background: transparent; -fx-background-color: transparent;
+                                   -fx-border-color: transparent;"
+                            VBox.vgrow="ALWAYS">
+                    <VBox fx:id="paneRequestList" spacing="0">
+                        <padding><Insets top="2" bottom="12"/></padding>
+                    </VBox>
+                </ScrollPane>
+            </VBox>
+
+            <!-- ─────────────────── RIGHT SIDEBAR ─────────────────── -->
+            <VBox fx:id="paneSidebar" spacing="14" minWidth="230" maxWidth="230">
+
+                <!-- Live clock card -->
+                <VBox spacing="4" alignment="CENTER"
+                      style="-fx-background-color: #7A0000; -fx-background-radius: 14;
+                             -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 8, 0, 0, 2);">
+                    <padding><Insets top="18" right="16" bottom="18" left="16"/></padding>
+                    <Label text="🕐  CURRENT TIME"
+                           style="-fx-font-size: 10px; -fx-font-weight: 700;
+                                  -fx-text-fill: rgba(255,255,255,0.65);"/>
+                    <Label fx:id="lblLiveClock" text="--:-- --"
+                           style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF;"/>
+                    <Label fx:id="lblLiveDate" text="—"
+                           style="-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.70);"/>
+                </VBox>
+
+                <!-- Today's gate summary card -->
+                <VBox spacing="0"
+                      style="-fx-background-color: #FFFFFF; -fx-background-radius: 14;
+                             -fx-border-color: #E2E8F0; -fx-border-radius: 14; -fx-border-width: 1;
+                             -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 6, 0, 0, 2);">
+                    <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
+
+                    <Label text="TODAY'S ACTIVITY"
+                           style="-fx-font-size: 10px; -fx-font-weight: 700;
+                                  -fx-text-fill: #94A3B8;"/>
+                    <Region minHeight="10"/>
+
+                    <!-- IN count -->
+                    <HBox spacing="10" alignment="CENTER_LEFT"
+                          style="-fx-background-color: #F0FDF4; -fx-background-radius: 10; -fx-padding: 10 12;">
+                        <Label text="↓" style="-fx-font-size: 18px; -fx-text-fill: #15803D; -fx-font-weight: bold;"/>
+                        <VBox spacing="1" HBox.hgrow="ALWAYS">
+                            <Label text="INGRESS (IN)"
+                                   style="-fx-font-size: 9px; -fx-font-weight: 700; -fx-text-fill: #15803D;"/>
+                            <Label fx:id="lblStatIn" text="0 approved"
+                                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"/>
+                        </VBox>
+                    </HBox>
+
+                    <Region minHeight="8"/>
+
+                    <!-- OUT count -->
+                    <HBox spacing="10" alignment="CENTER_LEFT"
+                          style="-fx-background-color: #FEF3C7; -fx-background-radius: 10; -fx-padding: 10 12;">
+                        <Label text="↑" style="-fx-font-size: 18px; -fx-text-fill: #92400E; -fx-font-weight: bold;"/>
+                        <VBox spacing="1" HBox.hgrow="ALWAYS">
+                            <Label text="EGRESS (OUT)"
+                                   style="-fx-font-size: 9px; -fx-font-weight: 700; -fx-text-fill: #92400E;"/>
+                            <Label fx:id="lblStatOut" text="0 approved"
+                                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"/>
+                        </VBox>
+                    </HBox>
+
+                    <Region minHeight="8"/>
+
+                    <!-- Pending count -->
+                    <HBox spacing="10" alignment="CENTER_LEFT"
+                          style="-fx-background-color: #FFF7ED; -fx-background-radius: 10; -fx-padding: 10 12;">
+                        <Label text="⏳" style="-fx-font-size: 16px;"/>
+                        <VBox spacing="1" HBox.hgrow="ALWAYS">
+                            <Label text="PENDING"
+                                   style="-fx-font-size: 9px; -fx-font-weight: 700; -fx-text-fill: #C2410C;"/>
+                            <Label fx:id="lblStatPending" text="0 waiting"
+                                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"/>
+                        </VBox>
+                    </HBox>
+
+                    <Region minHeight="8"/>
+
+                    <!-- Rejected count -->
+                    <HBox spacing="10" alignment="CENTER_LEFT"
+                          style="-fx-background-color: #FEF2F2; -fx-background-radius: 10; -fx-padding: 10 12;">
+                        <Label text="❌" style="-fx-font-size: 14px;"/>
+                        <VBox spacing="1" HBox.hgrow="ALWAYS">
+                            <Label text="REJECTED"
+                                   style="-fx-font-size: 9px; -fx-font-weight: 700; -fx-text-fill: #991B1B;"/>
+                            <Label fx:id="lblStatRejected" text="0 today"
+                                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0F172A;"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- Guard tip card -->
+                <VBox spacing="6"
+                      style="-fx-background-color: #EFF6FF; -fx-background-radius: 14;
+                             -fx-border-color: #BFDBFE; -fx-border-radius: 14; -fx-border-width: 1;">
+                    <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
+                    <Label text="💡  QUICK GUIDE"
+                           style="-fx-font-size: 10px; -fx-font-weight: 700; -fx-text-fill: #1D4ED8;"/>
+                    <Label text="• Tap a card to see details"
+                           style="-fx-font-size: 11px; -fx-text-fill: #1E40AF;" wrapText="true"/>
+                    <Label text="• PENDING → review and approve or reject"
+                           style="-fx-font-size: 11px; -fx-text-fill: #1E40AF;" wrapText="true"/>
+                    <Label text="• ↓ IN = student bringing device inside"
+                           style="-fx-font-size: 11px; -fx-text-fill: #1E40AF;" wrapText="true"/>
+                    <Label text="• ↑ OUT = student taking device outside"
+                           style="-fx-font-size: 11px; -fx-text-fill: #1E40AF;" wrapText="true"/>
+                    <Label text="• OVERDUE (under Ingress) = past-due requests that were auto-rejected"
+                           style="-fx-font-size: 11px; -fx-text-fill: #1E40AF;" wrapText="true"/>
+                    <Label text="• LATE (under Egress) = pending egress past scheduled time — never auto-rejected"
+                           style="-fx-font-size: 11px; -fx-text-fill: #1E40AF;" wrapText="true"/>
+                </VBox>
+
+            </VBox>
+            <!-- end sidebar -->
+
+        </HBox>
+        <!-- end body HBox -->
+
+    </VBox>
+    <!-- end paneMainContent -->
+
+    <!-- ══════════════════════════════════════════════════════
+         CLOSED STATE  (outside operating hours)
+         ══════════════════════════════════════════════════════ -->
+    <VBox fx:id="paneClosed" alignment="CENTER" spacing="10"
+          visible="false" managed="false" StackPane.alignment="CENTER">
+        <StackPane minWidth="64" maxWidth="64" minHeight="64" maxHeight="64"
+                   style="-fx-background-color: #FDF6E3; -fx-background-radius: 32;">
+            <Label text="🔒" style="-fx-font-size: 28px;"/>
+        </StackPane>
+        <Label text="Gate Requests is closed"
+               style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #475569;"/>
+        <Label fx:id="lblClosedHours" text="This module is only available during operating hours."
+               style="-fx-font-size: 12px; -fx-text-fill: #94A3B8;" wrapText="true"
+               maxWidth="320" textAlignment="CENTER"/>
+    </VBox>
+
+    <!-- ── Modals (unchanged) ── -->
+    <StackPane fx:id="paneDetailModal"
+               style="-fx-background-color: transparent;"
+               mouseTransparent="false"
+               visible="false" managed="false"
+               StackPane.alignment="CENTER"/>
+
+    <StackPane fx:id="paneConfirmModal"
+               style="-fx-background-color: transparent;"
+               mouseTransparent="false"
+               visible="false" managed="false"
+               StackPane.alignment="CENTER"/>
+
+</StackPane>

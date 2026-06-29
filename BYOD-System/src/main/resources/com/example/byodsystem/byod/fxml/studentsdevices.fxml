@@ -68,8 +68,7 @@
                                     <columns>
                                         <TableColumn fx:id="colStudentCode" minWidth="120.0" prefWidth="150.0" style="-fx-alignment: CENTER;" text="Student ID" />
                                         <TableColumn fx:id="colStudentName" minWidth="180.0" prefWidth="220.0" style="-fx-alignment: CENTER;" text="Name" />
-                                        <TableColumn fx:id="colStudentCourse" minWidth="160.0" prefWidth="180.0" style="-fx-alignment: CENTER;" text="Course" />
-                                        <TableColumn fx:id="colStudentYear" minWidth="100.0" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Year" />
+                                        <TableColumn fx:id="colStudentSection" minWidth="140.0" prefWidth="160.0" style="-fx-alignment: CENTER;" text="Section" />
                                         <TableColumn fx:id="colStudentDevicesCount" minWidth="90.0" prefWidth="100.0" style="-fx-alignment: CENTER;" text="Devices" />
                                         <TableColumn fx:id="colStudentStatus" minWidth="110.0" prefWidth="120.0" style="-fx-alignment: CENTER;" text="Status" />
                                         <TableColumn fx:id="colStudentActions" minWidth="240.0" prefWidth="260.0" style="-fx-alignment: CENTER;" text="Actions" />
@@ -177,22 +176,16 @@
                                     <children>
                                         <VBox spacing="6.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label text="Course / Program" textFill="#475569"><font><Font name="System Bold" size="12.0" /></font></Label>
-                                                <TextField fx:id="txtCourse" prefHeight="40.0" promptText="e.g. BSIT" style="-fx-background-radius: 6;" />
-                                                <Label fx:id="lblErrorCourse" managed="false" style="-fx-text-fill: #EF4444; -fx-font-size: 11px; -fx-font-weight: bold;" visible="false" />
+                                                <Label text="Section" textFill="#475569"><font><Font name="System Bold" size="12.0" /></font></Label>
+                                                <TextField fx:id="txtSection" prefHeight="40.0" promptText="e.g. BSIT-3A" style="-fx-background-radius: 6;" />
+                                                <Label fx:id="lblErrorSection" managed="false" style="-fx-text-fill: #EF4444; -fx-font-size: 11px; -fx-font-weight: bold;" visible="false" />
                                             </children>
                                         </VBox>
-                                        <VBox spacing="6.0" prefWidth="140.0">
+                                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Label text="Year Level" textFill="#475569"><font><Font name="System Bold" size="12.0" /></font></Label>
-                                                <ComboBox fx:id="cmbYearLevel" maxWidth="1.7976931348623157E308" prefHeight="40.0" style="-fx-background-radius: 6;" />
-                                                <Label fx:id="lblErrorYearLevel" managed="false" style="-fx-text-fill: #EF4444; -fx-font-size: 11px; -fx-font-weight: bold;" visible="false" />
-                                            </children>
-                                        </VBox>
-                                        <VBox spacing="6.0" prefWidth="180.0">
-                                            <children>
-                                                <Label text="Contact Number" textFill="#475569"><font><Font name="System Bold" size="12.0" /></font></Label>
-                                                <TextField fx:id="txtContactNumber" prefHeight="40.0" promptText="09XXXXXXXXX" style="-fx-background-radius: 6;" />
+                                                <Label text="Email Address" textFill="#475569"><font><Font name="System Bold" size="12.0" /></font></Label>
+                                                <TextField fx:id="txtEmail" prefHeight="40.0" promptText="student@email.com" style="-fx-background-radius: 6;" />
+                                                <Label fx:id="lblErrorEmail" managed="false" style="-fx-text-fill: #EF4444; -fx-font-size: 11px; -fx-font-weight: bold;" visible="false" />
                                             </children>
                                         </VBox>
                                     </children>
@@ -338,22 +331,15 @@
                                         <VBox spacing="4.0" HBox.hgrow="ALWAYS" style="-fx-background-color: #F8FAFC; -fx-background-radius: 10; -fx-border-color: #EEF2F6; -fx-border-radius: 10;">
                                             <padding><Insets bottom="12.0" left="14.0" right="14.0" top="10.0" /></padding>
                                             <children>
-                                                <Label text="COURSE / PROGRAM" textFill="#94A3B8"><font><Font name="System Bold" size="11.0" /></font></Label>
-                                                <Label fx:id="lblProfileStudentCourse" text="-" textFill="#1E293B"><font><Font name="System Bold" size="14.0" /></font></Label>
+                                                <Label text="SECTION" textFill="#94A3B8"><font><Font name="System Bold" size="11.0" /></font></Label>
+                                                <Label fx:id="lblProfileStudentSection" text="-" textFill="#1E293B"><font><Font name="System Bold" size="14.0" /></font></Label>
                                             </children>
                                         </VBox>
-                                        <VBox spacing="4.0" prefWidth="160.0" style="-fx-background-color: #F8FAFC; -fx-background-radius: 10; -fx-border-color: #EEF2F6; -fx-border-radius: 10;">
+                                        <VBox spacing="4.0" HBox.hgrow="ALWAYS" style="-fx-background-color: #F8FAFC; -fx-background-radius: 10; -fx-border-color: #EEF2F6; -fx-border-radius: 10;">
                                             <padding><Insets bottom="12.0" left="14.0" right="14.0" top="10.0" /></padding>
                                             <children>
-                                                <Label text="YEAR LEVEL" textFill="#94A3B8"><font><Font name="System Bold" size="11.0" /></font></Label>
-                                                <Label fx:id="lblProfileStudentYear" text="-" textFill="#1E293B"><font><Font name="System Bold" size="14.0" /></font></Label>
-                                            </children>
-                                        </VBox>
-                                        <VBox spacing="4.0" prefWidth="200.0" style="-fx-background-color: #F8FAFC; -fx-background-radius: 10; -fx-border-color: #EEF2F6; -fx-border-radius: 10;">
-                                            <padding><Insets bottom="12.0" left="14.0" right="14.0" top="10.0" /></padding>
-                                            <children>
-                                                <Label text="CONTACT NUMBER" textFill="#94A3B8"><font><Font name="System Bold" size="11.0" /></font></Label>
-                                                <Label fx:id="lblProfileStudentContact" text="-" textFill="#1E293B"><font><Font name="System Bold" size="14.0" /></font></Label>
+                                                <Label text="EMAIL ADDRESS" textFill="#94A3B8"><font><Font name="System Bold" size="11.0" /></font></Label>
+                                                <Label fx:id="lblProfileStudentEmail" text="-" textFill="#1E293B"><font><Font name="System Bold" size="14.0" /></font></Label>
                                             </children>
                                         </VBox>
                                     </children>
@@ -550,7 +536,7 @@
                                     <children>
                                         <Label text="Instructions:" textFill="#1E293B"><font><Font name="System Bold" size="13.0" /></font></Label>
                                         <Label text="Upload a CSV file containing student records. The system will automatically register the students and create their user accounts. Duplicate ID codes will be skipped." wrapText="true" textFill="#64748B"><font><Font size="12.0" /></font></Label>
-                                        <Label text="CSV Format: StudentCode, FullName, Course, YearLevel, ContactNumber" textFill="#0F172A"><font><Font name="System Bold" size="11.0" /></font></Label>
+                                        <Label text="CSV Format: StudentCode, FullName, Section, Email" textFill="#0F172A"><font><Font name="System Bold" size="11.0" /></font></Label>
                                     </children>
                                 </VBox>
                                 <HBox alignment="CENTER_LEFT" spacing="12.0">

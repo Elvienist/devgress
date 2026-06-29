@@ -2,6 +2,8 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
@@ -12,6 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Font?>
+
 
 <StackPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.byodsystem.byod.controller.GateScreenController">
     <BorderPane style="-fx-background-color: #F8FAFC;">
@@ -72,26 +75,20 @@
                     <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
                 </padding>
                 <VBox spacing="16.0" HBox.hgrow="ALWAYS">
+                    <!-- Action bar: Quick Device Log button -->
                     <HBox spacing="12.0" alignment="CENTER_LEFT">
-                        <Button fx:id="btnModeIngress" alignment="CENTER" graphicTextGap="8.0" mnemonicParsing="false" onAction="#handleSwitchToIngress" prefHeight="40.0" prefWidth="124.0" style="-fx-background-color: #7A0000; -fx-background-radius: 20; -fx-border-radius: 20; -fx-text-fill: #FFFFFF; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 4, 0, 0, 2);">
+                        <Button fx:id="btnQuickLog" alignment="CENTER" graphicTextGap="8.0" mnemonicParsing="false" onAction="#handleOpenQuickLog" prefHeight="40.0" style="-fx-background-color: #7A0000; -fx-background-radius: 20; -fx-border-radius: 20; -fx-text-fill: #FFFFFF; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 4, 0, 0, 2); -fx-padding: 0 20;">
                             <font>
                                 <Font size="13.0" />
                             </font>
                             <graphic>
-                                <SVGPath content="M10 16l-4-4m0 0l4-4m-4 4h12" stroke="#FFFFFF" strokeWidth="2.0" strokeLineCap="ROUND" strokeLineJoin="ROUND" fill="TRANSPARENT" />
+                                <SVGPath content="M12 4v16m8-8H4" stroke="#FFFFFF" strokeWidth="2.0" strokeLineCap="ROUND" strokeLineJoin="ROUND" fill="TRANSPARENT" />
                             </graphic>
-                            <text>INGRESS</text>
+                            <text>Quick Device Log</text>
                         </Button>
-                        <Button fx:id="btnModeEgress" alignment="CENTER" graphicTextGap="8.0" mnemonicParsing="false" onAction="#handleSwitchToEgress" prefHeight="40.0" prefWidth="124.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 20; -fx-border-radius: 20; -fx-text-fill: #64748B; -fx-border-color: #E2E8F0; -fx-border-width: 1.5; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-cursor: hand;">
-                            <font>
-                                <Font size="13.0" />
-                            </font>
-                            <graphic>
-                                <SVGPath content="M14 8l4 4m0 0l-4 4m4-4H6" stroke="#64748B" strokeWidth="2.0" strokeLineCap="ROUND" strokeLineJoin="ROUND" fill="TRANSPARENT" />
-                            </graphic>
-                            <text>EGRESS</text>
-                        </Button>
+                        <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 12px; -fx-font-style: italic;" text="For unregistered students / devices" />
                     </HBox>
+
                     <VBox style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 12; -fx-border-width: 1; -fx-padding: 24;">
                         <StackPane alignment="CENTER_LEFT">
                             <TextField fx:id="txtSearchStudent" prefHeight="48.0" promptText="Search by Student ID or Name..." style="-fx-background-color: #FFFFFF; -fx-background-radius: 8; -fx-border-color: #CBD5E1; -fx-border-radius: 8; -fx-border-width: 1; -fx-padding: 0 16 0 16; -fx-text-fill: #1E293B;">
@@ -101,20 +98,20 @@
                             </TextField>
                         </StackPane>
                         <VBox style="-fx-padding: 12 0 0 0;">
-                            <Label style="-fx-font-family: 'Inter'; -fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="Selecting a student will open the device selection window." />
+                            <Label style="-fx-font-family: 'Inter'; -fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="Search for a registered student to schedule ingress &amp; egress gate request." />
                         </VBox>
                     </VBox>
                     <StackPane VBox.vgrow="ALWAYS">
                         <VBox fx:id="paneNoResultsDefault" alignment="CENTER" spacing="16.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 12; -fx-border-width: 1; -fx-padding: 40;">
                             <StackPane maxHeight="48.0" maxWidth="48.0" minHeight="48.0" minWidth="48.0" style="-fx-background-color: #FEE2E2; -fx-background-radius: 12;">
-                                <SVGPath fx:id="svgModeIconNode" content="M14 5l7 7m0 0l-7 7m7-7H3" stroke="#7A0000" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeWidth="2" fill="TRANSPARENT" />
+                                <SVGPath fx:id="svgModeIconNode" content="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke="#7A0000" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeWidth="2" fill="TRANSPARENT" />
                             </StackPane>
-                            <Label fx:id="lblModeStatus" style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;" text="Ingress Mode Active" textFill="#1E293B">
+                            <Label fx:id="lblModeStatus" style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;" text="Gate Request Mode" textFill="#1E293B">
                                 <font>
                                     <Font size="16.0" />
                                 </font>
                             </Label>
-                            <Label fx:id="lblModeHint" text="Search for a student above to open the device selection window and process check-in." textAlignment="CENTER" textFill="#64748B" wrapText="true">
+                            <Label fx:id="lblModeHint" text="Search for a registered student above to schedule both their ingress and egress at the same time." textAlignment="CENTER" textFill="#64748B" wrapText="true">
                                 <font>
                                     <Font size="13.0" />
                                 </font>
@@ -167,15 +164,16 @@
         </center>
     </BorderPane>
 
+    <!-- Device Selection Modal -->
     <StackPane fx:id="paneDeviceSelectModal" managed="false" style="-fx-background-color: rgba(0, 0, 0, 0.4);" visible="false">
         <VBox fx:id="modalSelectContainer" maxWidth="720.0" minWidth="720.0" prefWidth="720.0" maxHeight="460.0" style="-fx-background-color: #7A0000, #FFFFFF; -fx-background-insets: 0, 4 0 0 0; -fx-background-radius: 12; -fx-padding: 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 4);">
             <VBox fx:id="modalSelectHeader" style="-fx-padding: 24 24 20 24; -fx-border-color: #E2E8F0; -fx-border-width: 0 0 1 0; -fx-background-color: transparent;">
                 <HBox alignment="CENTER_LEFT">
-                    <Label fx:id="lblModalBadge" style="-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-background-radius: 12; -fx-padding: 4 14; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-font-size: 11px;" text="INGRESS" />
+                    <Label fx:id="lblModalBadge" style="-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-background-radius: 12; -fx-padding: 4 14; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-font-size: 11px;" text="GATE REQUEST" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Button mnemonicParsing="false" onAction="#handleCloseModal" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 22px; -fx-padding: 0; -fx-text-fill: #64748B; -fx-font-weight: bold;" text="✕" />
                 </HBox>
-                <Label fx:id="lblModalStudentName" style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;" text="Bob Johnson" textFill="#1E293B">
+                <Label fx:id="lblModalStudentName" style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;" text="Student Name" textFill="#1E293B">
                     <font>
                         <Font size="22.0" />
                     </font>
@@ -183,48 +181,26 @@
                         <Insets top="12.0" />
                     </VBox.margin>
                 </Label>
-                <Label fx:id="lblModalStudentMeta" style="-fx-font-family: 'Inter', 'Segoe UI';" text="STU-2024-003 · BSECE 4-A" textFill="#64748B">
+                <Label fx:id="lblModalStudentMeta" style="-fx-font-family: 'Inter', 'Segoe UI';" text="STU-CODE · COURSE" textFill="#64748B">
                     <font>
                         <Font size="13.0" />
                     </font>
                 </Label>
             </VBox>
             <VBox spacing="12.0" VBox.vgrow="ALWAYS" style="-fx-padding: 20 24;">
-                <Label fx:id="lblModalSectionTitle" style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-text-fill: #64748B;" text="SELECT DEVICES TO BRING IN — 1 ELIGIBLE">
+                <Label fx:id="lblModalSectionTitle" style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-text-fill: #64748B;" text="SELECT DEVICES FOR GATE REQUEST">
                     <font>
                         <Font size="11.0" />
                     </font>
                 </Label>
                 <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
                     <content>
-                        <VBox fx:id="paneDeviceCheckList" spacing="8.0" style="-fx-background-color: transparent;">
-                            <HBox alignment="CENTER_LEFT" style="-fx-background-color: #FFFFFF; -fx-background-radius: 10; -fx-border-color: #7A0000; -fx-border-width: 1.5; -fx-padding: 14; -fx-cursor: hand;">
-                                <StackPane maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" style="-fx-background-color: #7A0000; -fx-background-radius: 8;">
-                                    <SVGPath content="M4 6h16M4 10h16M4 14h16M4 18h16" stroke="#FFFFFF" strokeWidth="1.5" strokeLineCap="ROUND" fill="TRANSPARENT" />
-                                </StackPane>
-                                <VBox style="-fx-padding: 0 0 0 14;">
-                                    <Label style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: 600;" text="Lenovo ThinkPad E14" textFill="#1E293B">
-                                        <font><Font size="14.0" /></font>
-                                    </Label>
-                                    <Label style="-fx-font-family: 'Inter';" text="Laptop" textFill="#64748B">
-                                        <font><Font size="12.0" /></font>
-                                    </Label>
-                                    <Label style="-fx-font-family: 'JetBrains Mono'; -fx-font-size: 11px;" text="S/N: LN2024001" textFill="#94A3B8" />
-                                </VBox>
-                                <Region HBox.hgrow="ALWAYS" />
-                                <HBox alignment="CENTER" spacing="12.0">
-                                    <Label style="-fx-background-color: #DCFCE7; -fx-text-fill: #15803D; -fx-background-radius: 12; -fx-padding: 4 12; -fx-font-weight: bold; -fx-font-size: 11px;" text="Outside Campus" />
-                                    <StackPane maxHeight="22.0" maxWidth="22.0" minHeight="22.0" minWidth="22.0" style="-fx-background-color: #7A0000; -fx-background-radius: 50;">
-                                        <SVGPath content="M5 13l4 4L19 7" stroke="#FFFFFF" strokeWidth="2" fill="TRANSPARENT" />
-                                    </StackPane>
-                                </HBox>
-                            </HBox>
-                        </VBox>
+                        <VBox fx:id="paneDeviceCheckList" spacing="8.0" style="-fx-background-color: transparent;" />
                     </content>
                 </ScrollPane>
             </VBox>
             <HBox alignment="CENTER_LEFT" prefHeight="76.0" spacing="16.0" style="-fx-padding: 0 24; -fx-border-color: #E2E8F0; -fx-border-width: 1 0 0 0;">
-                <Label fx:id="lblSelectedCount" style="-fx-font-family: 'Inter';" text="1 device selected" textFill="#64748B">
+                <Label fx:id="lblSelectedCount" style="-fx-font-family: 'Inter';" text="0 devices selected" textFill="#64748B">
                     <font>
                         <Font size="13.0" />
                     </font>
@@ -236,15 +212,16 @@
         </VBox>
     </StackPane>
 
+    <!-- Confirm Modal -->
     <StackPane fx:id="paneConfirmModal" managed="false" style="-fx-background-color: rgba(0, 0, 0, 0.4);" visible="false">
         <VBox fx:id="modalConfirmContainer" maxWidth="720.0" minWidth="720.0" prefWidth="720.0" maxHeight="580.0" style="-fx-background-color: #7A0000, #FFFFFF; -fx-background-insets: 0, 4 0 0 0; -fx-background-radius: 12; -fx-padding: 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 4);">
             <VBox fx:id="modalConfirmHeader" style="-fx-padding: 24 24 20 24; -fx-border-color: #E2E8F0; -fx-border-width: 0 0 1 0; -fx-background-color: transparent;">
                 <HBox alignment="CENTER_LEFT">
-                    <Label fx:id="lblConfirmBadge" style="-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-background-radius: 12; -fx-padding: 4 14; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-font-size: 11px;" text="INGRESS" />
+                    <Label fx:id="lblConfirmBadge" style="-fx-background-color: #7A0000; -fx-text-fill: #FFFFFF; -fx-background-radius: 12; -fx-padding: 4 14; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-font-size: 11px;" text="GATE REQUEST" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Button mnemonicParsing="false" onAction="#handleCloseModal" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 22px; -fx-padding: 0; -fx-text-fill: #64748B; -fx-font-weight: bold;" text="✕" />
                 </HBox>
-                <Label fx:id="lblConfirmStudentName" style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;" text="Bob Johnson" textFill="#1E293B">
+                <Label fx:id="lblConfirmStudentName" style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;" text="Student Name" textFill="#1E293B">
                     <font>
                         <Font size="22.0" />
                     </font>
@@ -252,7 +229,7 @@
                         <Insets top="12.0" />
                     </VBox.margin>
                 </Label>
-                <Label fx:id="lblConfirmStudentMeta" style="-fx-font-family: 'Inter', 'Segoe UI';" text="STU-2024-003 · BSECE 4-A" textFill="#64748B">
+                <Label fx:id="lblConfirmStudentMeta" style="-fx-font-family: 'Inter', 'Segoe UI';" text="STU-CODE · COURSE" textFill="#64748B">
                     <font>
                         <Font size="13.0" />
                     </font>
@@ -264,47 +241,33 @@
                         <SVGPath content="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="#64748B" />
                     </StackPane>
                     <VBox>
-                        <Label fx:id="lblConfirmInnerName" style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;" text="Bob Johnson" textFill="#1E293B">
+                        <Label fx:id="lblConfirmInnerName" style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;" text="Student Name" textFill="#1E293B">
                             <font>
                                 <Font size="14.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblConfirmInnerCode" style="-fx-font-family: 'Inter';" text="# STU-2024-003" textFill="#64748B">
+                        <Label fx:id="lblConfirmInnerCode" style="-fx-font-family: 'Inter';" text="# STU-CODE" textFill="#64748B">
                             <font>
                                 <Font size="12.0" />
                             </font>
                         </Label>
                     </VBox>
                 </HBox>
-                <Label fx:id="lblConfirmFor" style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-text-fill: #64748B;" text="CONFIRM INGRESS FOR:">
+                <Label fx:id="lblConfirmFor" style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-text-fill: #64748B;" text="For: Campus Ingress &amp; Egress (Both scheduled)">
                     <font>
                         <Font size="11.0" />
                     </font>
                 </Label>
                 <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
                     <content>
-                        <VBox fx:id="paneConfirmDeviceList" spacing="6.0" style="-fx-background-color: transparent;">
-                            <HBox alignment="CENTER_LEFT" style="-fx-background-color: #FFFFFF; -fx-background-radius: 8; -fx-border-color: #E2E8F0; -fx-border-width: 1; -fx-padding: 12 16;">
-                                <StackPane maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" style="-fx-background-color: #7A0000; -fx-background-radius: 6;">
-                                    <SVGPath content="M4 6h16M4 10h16M4 14h16M4 18h16" stroke="#FFFFFF" strokeWidth="1.5" strokeLineCap="ROUND" fill="TRANSPARENT" />
-                                </StackPane>
-                                <VBox style="-fx-padding: 0 0 0 12;">
-                                    <Label style="-fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: 600;" text="Lenovo ThinkPad E14" textFill="#1E293B">
-                                        <font><Font size="13.0" /></font>
-                                    </Label>
-                                    <Label style="-fx-font-family: 'JetBrains Mono'; -fx-font-size: 11px;" text="S/N: LN2024001" textFill="#64748B" />
-                                </VBox>
-                                <Region HBox.hgrow="ALWAYS" />
-                                <Label fx:id="lblConfirmDeviceStatusBadge" style="-fx-background-color: #DCFCE7; -fx-text-fill: #15803D; -fx-background-radius: 6; -fx-padding: 4 10; -fx-font-weight: bold; -fx-font-size: 11px;" text="→ IN" />
-                            </HBox>
-                        </VBox>
+                        <VBox fx:id="paneConfirmDeviceList" spacing="6.0" style="-fx-background-color: transparent;" />
                     </content>
                 </ScrollPane>
                 <HBox fx:id="paneWarningContainer" spacing="12.0" style="-fx-background-color: #FFF1F2; -fx-background-radius: 8; -fx-border-color: #FFE4E6; -fx-border-width: 1; -fx-padding: 12 16;">
                     <StackPane alignment="TOP_LEFT">
                         <SVGPath content="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke="#EF4444" strokeWidth="2" strokeLineCap="ROUND" strokeLineJoin="ROUND" fill="TRANSPARENT" />
                     </StackPane>
-                    <Label fx:id="lblConfirmWarning" text="Confirm ingress of 1 device for Bob Johnson? This action will be logged." textFill="#9F1239" wrapText="true" HBox.hgrow="ALWAYS">
+                    <Label fx:id="lblConfirmWarning" text="Schedule ingress AND egress? Set both times in the next step." textFill="#9F1239" wrapText="true" HBox.hgrow="ALWAYS">
                         <font>
                             <Font size="13.0" />
                         </font>
@@ -315,14 +278,125 @@
                 <Button mnemonicParsing="false" onAction="#handleBackToSelection" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 0; -fx-text-fill: #64748B; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold; -fx-font-size: 13px;" text="← Back to Selection" />
                 <Region HBox.hgrow="ALWAYS" />
                 <Button mnemonicParsing="false" onAction="#handleCloseModal" prefHeight="40.0" style="-fx-background-color: #FFFFFF; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 24; -fx-text-fill: #1E293B; -fx-font-weight: bold;" text="Cancel" />
-                <Button fx:id="btnConfirmAction" alignment="CENTER" graphicTextGap="8.0" mnemonicParsing="false" onAction="#handleConfirmAction" prefHeight="40.0" style="-fx-background-color: #7A0000; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 24; -fx-text-fill: #FFFFFF; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;" text="✓ CONFIRM INGRESS">
-                    <graphic>
-                        <SVGPath content="M5 13l4 4L19 7" stroke="#FFFFFF" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeWidth="2" fill="TRANSPARENT" />
-                    </graphic>
-                </Button>
+                <Button fx:id="btnConfirmAction" alignment="CENTER" mnemonicParsing="false" onAction="#handleConfirmAction" prefHeight="40.0" style="-fx-background-color: #7A0000; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 0 24; -fx-text-fill: #FFFFFF; -fx-font-family: 'Inter', 'Segoe UI'; -fx-font-weight: bold;" text="Set Schedule →" />
             </HBox>
         </VBox>
     </StackPane>
 
     <StackPane fx:id="paneAckModal" managed="false" visible="false" />
+
+    <!-- Schedule Modal: Ingress + Egress — styled identical to "Input New Device Log" modal (picture 2) -->
+    <StackPane fx:id="paneScheduleModal" managed="false" visible="false">
+        <!-- Dimmed overlay fills the whole screen -->
+        <StackPane style="-fx-background-color: rgba(0,0,0,0.45);"
+                   maxWidth="Infinity" maxHeight="Infinity">
+            <!-- Card: centered, shrink-wraps to its content height -->
+            <VBox alignment="TOP_LEFT"
+                  maxWidth="480" prefWidth="480"
+                  maxHeight="-Infinity"
+                  style="-fx-background-color: #FFFFFF; -fx-background-radius: 12;
+                         -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.22), 28, 0, 0, 8);"
+                  StackPane.alignment="CENTER">
+                <padding><Insets top="0" right="0" bottom="0" left="0"/></padding>
+
+                <!-- ── Header: identical structure to buildQuickModal header ── -->
+                <StackPane style="-fx-background-color: #7A0000; -fx-background-radius: 12 12 0 0;">
+                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+                    <HBox alignment="CENTER_LEFT" spacing="12" StackPane.alignment="CENTER_LEFT">
+                        <!-- Person icon circle — same as Quick Log modal -->
+                        <StackPane maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0"
+                                   style="-fx-background-color: rgba(255,255,255,0.15); -fx-background-radius: 50;">
+                            <SVGPath content="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                     stroke="#FFFFFF" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeWidth="1.5" fill="TRANSPARENT"/>
+                        </StackPane>
+                        <Label fx:id="lblScheduleBadge" text="Input New Device Log"
+                               style="-fx-font-family:'Inter','Segoe UI';-fx-font-weight:800;-fx-text-fill:#FFFFFF;-fx-font-size:15px;"
+                               HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                    <Button text="✕" onAction="#handleCloseScheduleModal"
+                            style="-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.8); -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 4 8; -fx-font-weight: bold;"
+                            StackPane.alignment="TOP_RIGHT"/>
+                </StackPane>
+
+                <!-- ── Body ── -->
+                <VBox spacing="14" style="-fx-padding: 24;">
+
+                    <!-- Section label: SCHEDULE (gold caps, same style as sectionLabel() helper) -->
+                    <Label text="SCHEDULE"
+                           style="-fx-font-size:10px;-fx-font-weight:700;-fx-text-fill:#C9A84C;-fx-letter-spacing:1px;"/>
+
+                    <!-- Student summary card — mirrors the summary card in showQuickLogStep4_Schedule -->
+                    <VBox fx:id="paneScheduleStudentSummary" spacing="4"
+                          style="-fx-background-color:#F8FAFC;-fx-background-radius:8;-fx-border-color:#E2E8F0;-fx-border-radius:8;-fx-border-width:1;-fx-padding:12 14;">
+                        <Label fx:id="lblScheduleSummaryName"
+                               style="-fx-font-weight:700;-fx-font-size:13px;-fx-text-fill:#1E293B;"
+                               text="Student Name  (Code)"/>
+                        <Label fx:id="lblScheduleSummaryDevice"
+                               style="-fx-font-size:11px;-fx-text-fill:#64748B;"
+                               text="Device(s) selected"/>
+                    </VBox>
+
+                    <!-- Ingress -->
+                    <Label text="Ingress Date &amp; Time *"
+                           style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+                    <VBox spacing="6">
+                        <DatePicker fx:id="dpIngressDate" maxWidth="Infinity" prefHeight="38"
+                                    style="-fx-background-radius: 8; -fx-border-color: #D1D5DB; -fx-border-radius: 8; -fx-border-width: 1; -fx-font-size: 12px;"/>
+                        <HBox spacing="4" alignment="CENTER_LEFT">
+                            <ComboBox fx:id="cbIngressHour" promptText="HH" prefWidth="68" prefHeight="38"
+                                      style="-fx-background-radius: 8; -fx-border-color: #D1D5DB; -fx-border-radius: 8; -fx-font-size: 12px;"/>
+                            <Label text=":" style="-fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                            <ComboBox fx:id="cbIngressMinute" promptText="MM" prefWidth="68" prefHeight="38"
+                                      style="-fx-background-radius: 8; -fx-border-color: #D1D5DB; -fx-border-radius: 8; -fx-font-size: 12px;"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Egress -->
+                    <Label text="Egress Date &amp; Time *"
+                           style="-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #374151;"/>
+                    <VBox spacing="6">
+                        <DatePicker fx:id="dpEgressDate" maxWidth="Infinity" prefHeight="38"
+                                    style="-fx-background-radius: 8; -fx-border-color: #D1D5DB; -fx-border-radius: 8; -fx-border-width: 1; -fx-font-size: 12px;"/>
+                        <HBox spacing="4" alignment="CENTER_LEFT">
+                            <ComboBox fx:id="cbEgressHour" promptText="HH" prefWidth="68" prefHeight="38"
+                                      style="-fx-background-radius: 8; -fx-border-color: #D1D5DB; -fx-border-radius: 8; -fx-font-size: 12px;"/>
+                            <Label text=":" style="-fx-font-weight: bold; -fx-text-fill: #374151;"/>
+                            <ComboBox fx:id="cbEgressMinute" promptText="MM" prefWidth="68" prefHeight="38"
+                                      style="-fx-background-radius: 8; -fx-border-color: #D1D5DB; -fx-border-radius: 8; -fx-font-size: 12px;"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Closing-time warning (hidden by default, shown if times fall outside operating hours) -->
+                    <Label fx:id="lblClosingTimeWarning" text="" managed="false" visible="false"
+                           style="-fx-text-fill: #92400E; -fx-font-size: 11px; -fx-font-weight: 600;
+                                      -fx-background-color: #FEF3C7; -fx-background-radius: 6;
+                                      -fx-border-color: #F59E0B; -fx-border-radius: 6; -fx-border-width: 1;
+                                      -fx-padding: 8 12;" wrapText="true"/>
+
+                    <Label fx:id="lblScheduleError" text="" managed="false" visible="false"
+                           style="-fx-text-fill: #DC2626; -fx-font-size: 12px; -fx-font-weight: 600;"
+                           wrapText="true"/>
+
+                    <!-- Buttons: ← Back  |  Submit Request (full-width maroon) -->
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button text="← Back" onAction="#handleCloseScheduleModal"
+                                prefHeight="42" prefWidth="100"
+                                style="-fx-background-color: #FDF6E3; -fx-background-radius: 8;
+                                           -fx-text-fill: #7A0000; -fx-font-size: 13px; -fx-cursor: hand;
+                                           -fx-border-color: #C9A84C; -fx-border-radius: 8; -fx-border-width: 1;"/>
+                        <Button fx:id="btnSubmitSchedule" text="Submit Request"
+                                maxWidth="Infinity" prefHeight="42"
+                                onAction="#handleSubmitSchedule"
+                                style="-fx-background-color: #7A0000; -fx-background-radius: 8;
+                                           -fx-text-fill: #FFFFFF; -fx-font-family: 'Inter','Segoe UI';
+                                           -fx-font-weight: bold; -fx-font-size: 13px; -fx-cursor: hand;"
+                                HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </StackPane>
+    </StackPane>
+
+    <StackPane fx:id="paneRegistrationModal" managed="false" visible="false" />
+    <StackPane fx:id="paneQuickLogModal" managed="false" visible="false" />
 </StackPane>
