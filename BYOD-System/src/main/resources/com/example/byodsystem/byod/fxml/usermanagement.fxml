@@ -74,7 +74,6 @@
                                 <Button fx:id="btnFilterAll" mnemonicParsing="false" onAction="#filterAll" text="All Accounts" />
                                 <Button fx:id="btnFilterAdmin" mnemonicParsing="false" onAction="#filterAdmin" text="Administrators" />
                                 <Button fx:id="btnFilterSecurity" mnemonicParsing="false" onAction="#filterSecurity" text="Security Officers" />
-                                <Button fx:id="btnFilterStudent" mnemonicParsing="false" onAction="#filterStudent" text="Students" />
                             </children>
                         </HBox>
                         <StackPane HBox.hgrow="ALWAYS" />
@@ -161,17 +160,6 @@
                                             <children>
                                                 <Label text="Username" textFill="#374151" />
                                                 <TextField fx:id="txtAddUsername" prefHeight="34.0" style="-fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6;" />
-                                            </children>
-                                        </VBox>
-                                        <VBox fx:id="boxAddStudentRef" spacing="4.0">
-                                            <children>
-                                                <Label text="Student Reference ID" textFill="#374151" />
-                                                <TextField fx:id="txtAddStudentRef" prefHeight="34.0" style="-fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6;" />
-                                                <Label fx:id="lblAddRefError" text="This Student ID is required and must exist in our system." textFill="#7A0000" visible="false" wrapText="true">
-                                                    <font>
-                                                        <Font name="System Bold Italic" size="11.0" />
-                                                    </font>
-                                                </Label>
                                             </children>
                                         </VBox>
                                     </children>
@@ -279,17 +267,6 @@
                                 </HBox>
                                 <HBox spacing="16.0">
                                     <children>
-                                        <VBox fx:id="boxEditStudentRef" spacing="4.0" HBox.hgrow="ALWAYS">
-                                            <children>
-                                                <Label text="Student Reference ID" textFill="#374151" />
-                                                <TextField fx:id="txtEditStudentRef" prefHeight="34.0" style="-fx-background-radius: 6; -fx-border-color: #D1D5DB; -fx-border-radius: 6;" />
-                                                <Label fx:id="lblEditRefError" text="This Student ID is required and must exist in our system." textFill="#7A0000" visible="false" wrapText="true">
-                                                    <font>
-                                                        <Font name="System Bold Italic" size="11.0" />
-                                                    </font>
-                                                </Label>
-                                            </children>
-                                        </VBox>
                                         <VBox spacing="4.0" prefWidth="180.0">
                                             <children>
                                                 <Label text="System Role" textFill="#374151" />
