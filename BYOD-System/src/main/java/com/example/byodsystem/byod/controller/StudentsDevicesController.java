@@ -349,30 +349,6 @@ public class StudentsDevicesController {
         });
     }
 
-    private void createUserForStudent(Connection conn, String studentCode, String fullName) throws SQLException {
-        String checkSql = "SELECT COUNT(*) FROM users WHERE username = ?";
-        try (PreparedStatement chk = conn.prepareStatement(checkSql)) {
-            chk.setString(1, studentCode);
-            try (ResultSet rs = chk.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) return;
-            }
-        }
-
-        String rawPassword = "NEW" + studentCode;
-        String passwordHash = BCrypt.hashpw(rawPassword, BCrypt.gensalt());
-
-        String insertSql =
-                "INSERT INTO users (username, full_name, role, password_hash, student_ref_id, status, first_login) " +
-                        "VALUES (?, ?, 'STUDENT', ?, ?, 'ACTIVE', TRUE)";
-        try (PreparedStatement pst = conn.prepareStatement(insertSql)) {
-            pst.setString(1, studentCode);
-            pst.setString(2, fullName);
-            pst.setString(3, passwordHash);
-            pst.setString(4, studentCode);
-            pst.executeUpdate();
-        }
-    }
-
     private void setupOwnerLiveSearch() {
         txtSearchDeviceOwner.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredOwners.setPredicate(student -> {

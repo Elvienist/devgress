@@ -15,11 +15,16 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.effect.BoxBlur;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.Window ;
-
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 import java.io.*;
 import java.net.URL;
@@ -63,7 +68,7 @@ public class ReportsController implements Initializable {
         cmbReportType.setItems(FXCollections.observableArrayList(
                 "Daily Summary",
                 "Device Stats",
-                "Activity Report",
+                "Amendment Log Report",
                 "User Activity",
                 "Student Report"
         ));
@@ -156,14 +161,12 @@ public class ReportsController implements Initializable {
                                 "-fx-font-size: 16px; " +
                                 "-fx-cursor: hand;"
                 );
-
                 btnDownload.setOnMouseEntered(e -> btnDownload.setStyle(
                         "-fx-background-color: transparent; -fx-background-radius: 0; -fx-padding: 0; -fx-text-fill: #A30000; -fx-font-size: 16px; -fx-cursor: hand;"
                 ));
                 btnDownload.setOnMouseExited(e -> btnDownload.setStyle(
                         "-fx-background-color: transparent; -fx-background-radius: 0; -fx-padding: 0; -fx-text-fill: #7A0000; -fx-font-size: 16px; -fx-cursor: hand;"
                 ));
-
                 btnDownload.setOnAction(e -> {
                     ReportRow row = getTableView().getItems().get(getIndex());
                     exportReport(row);
@@ -203,7 +206,6 @@ public class ReportsController implements Initializable {
                 String dateRange = rs.getDate("date_start") + " to " + rs.getDate("date_end");
                 String createdAt = rs.getString("ts");
                 if (createdAt == null) createdAt = "";
-
                 list.add(new ReportRow(rs.getInt("report_id"), rs.getString("report_title"),
                         rs.getString("report_type"), dateRange, rs.getInt("total_records"), createdAt));
             }
@@ -287,8 +289,9 @@ public class ReportsController implements Initializable {
 
     private int countRecords(String type, LocalDate start, LocalDate end) {
         String sql = switch (type) {
-            case "Daily Summary", "Activity Report" -> "SELECT COUNT(*) FROM device_logs WHERE DATE(log_time AT TIME ZONE 'Asia/Manila') BETWEEN ? AND ?";
+            case "Daily Summary" -> "SELECT COUNT(*) FROM device_logs WHERE DATE(log_time AT TIME ZONE 'Asia/Manila') BETWEEN ? AND ?";
             case "Device Stats" -> "SELECT COUNT(*) FROM devices WHERE DATE(created_at AT TIME ZONE 'Asia/Manila') BETWEEN ? AND ?";
+            case "Amendment Log Report" -> "SELECT COUNT(*) FROM log_amendments WHERE DATE(amended_at AT TIME ZONE 'Asia/Manila') BETWEEN ? AND ?";
             case "User Activity" -> "SELECT COUNT(*) FROM audit_log WHERE DATE(performed_at AT TIME ZONE 'Asia/Manila') BETWEEN ? AND ?";
             case "Student Report" -> "SELECT COUNT(*) FROM students WHERE DATE(created_at AT TIME ZONE 'Asia/Manila') BETWEEN ? AND ?";
             default -> null;
@@ -309,7 +312,7 @@ public class ReportsController implements Initializable {
         FileChooser fc = new FileChooser();
         fc.setTitle("Export System Sheet Document");
         fc.setInitialFileName(row.getReportTitle().replaceAll("[^a-zA-Z0-9\\-_ ]", "_") + ".csv");
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Sheet Document Document (*.csv)", "*.csv"));
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Sheet Document (*.csv)", "*.csv"));
         File file = fc.showSaveDialog(tblReports.getScene().getWindow());
         if (file == null) return;
 
@@ -331,20 +334,21 @@ public class ReportsController implements Initializable {
             pw.println("Total Rows    : " + row.getTotalRecords());
             pw.println("------------------------------------------------------------------------------------------");
             pw.println();
-
             writeReportData(pw, row.getReportType(), dateParts[0].trim(), dateParts[1].trim());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            showGlobalError("Access Denied: The file is currently open in Excel or another program. Close it and try again.");
         } catch (IOException e) {
-            e.printStackTrace();
-            showGlobalError("System OS File Stream Error: Failed to write data records to local disk.");
+            // No stack trace to the console — surfaced entirely through the modal popup.
+            // FileNotFoundException (Windows file lock) and any other IO failure while the
+            // target file is open elsewhere are all routed to the same dialog.
+            showFileInUseDialog();
+        } catch (Exception e) {
+            // Safety net so nothing unexpected ever falls through to terminal output.
+            showFileInUseDialog();
         }
     }
 
     private void writeReportData(PrintWriter pw, String type, String startDate, String endDate) {
         String sql = switch (type) {
-            case "Daily Summary", "Activity Report" ->
+            case "Daily Summary" ->
                     "SELECT dl.log_id, d.serial_number, d.brand, d.model, s.student_code, s.full_name, dl.direction, " +
                             "TO_CHAR(dl.log_time AT TIME ZONE 'Asia/Manila', 'YYYY-MM-DD HH24:MI:SS') AS formatted_log_time, dl.status " +
                             "FROM device_logs dl JOIN devices d ON dl.device_id = d.device_id JOIN students s ON d.owner_id = s.student_id " +
@@ -353,12 +357,18 @@ public class ReportsController implements Initializable {
                     "SELECT d.device_id, d.serial_number, d.brand, d.model, d.device_type, s.student_code, s.full_name, d.status, " +
                             "TO_CHAR(d.created_at AT TIME ZONE 'Asia/Manila', 'YYYY-MM-DD HH24:MI:SS') AS formatted_log_time " +
                             "FROM devices d JOIN students s ON d.owner_id = s.student_id WHERE DATE(d.created_at AT TIME ZONE 'Asia/Manila') BETWEEN ? AND ? ORDER BY d.created_at DESC";
+            case "Amendment Log Report" ->
+                    "SELECT la.amendment_id, la.request_id, la.direction, la.amendment_type, u.username AS changed_by_username, " +
+                            "la.reason, la.previous_data, la.new_data, " +
+                            "TO_CHAR(la.amended_at AT TIME ZONE 'Asia/Manila', 'YYYY-MM-DD HH24:MI:SS') AS formatted_log_time " +
+                            "FROM log_amendments la JOIN users u ON la.changed_by = u.user_id " +
+                            "WHERE DATE(la.amended_at AT TIME ZONE 'Asia/Manila') BETWEEN ? AND ? ORDER BY la.amended_at DESC";
             case "User Activity" ->
                     "SELECT a.audit_id, u.username, u.role, a.action_type, a.target_type, a.target_id, " +
                             "TO_CHAR(a.performed_at AT TIME ZONE 'Asia/Manila', 'YYYY-MM-DD HH24:MI:SS') AS formatted_log_time " +
                             "FROM audit_log a JOIN users u ON a.operator_id = u.user_id WHERE DATE(a.performed_at AT TIME ZONE 'Asia/Manila') BETWEEN ? AND ? ORDER BY a.performed_at DESC";
             case "Student Report" ->
-                    "SELECT s.student_id, s.student_code, s.full_name, s.course, s.year_level, s.contact_number, s.status, " +
+                    "SELECT s.student_id, s.student_code, s.full_name, s.section, s.email, s.status, " +
                             "TO_CHAR(s.created_at AT TIME ZONE 'Asia/Manila', 'YYYY-MM-DD HH24:MI:SS') AS formatted_log_time " +
                             "FROM students s WHERE DATE(s.created_at AT TIME ZONE 'Asia/Manila') BETWEEN ? AND ? ORDER BY s.created_at DESC";
             default -> null;
@@ -371,35 +381,154 @@ public class ReportsController implements Initializable {
             ps.setDate(2, Date.valueOf(endDate));
             ResultSet rs = ps.executeQuery();
 
-            if (type.equals("Daily Summary") || type.equals("Activity Report")) {
+            if (type.equals("Daily Summary")) {
                 pw.println("Log ID,Serial Number,Brand,Model,Student Code,Student Name,Direction,Log Time,Status");
                 while (rs.next()) {
-                    pw.printf("%d,%s,%s,%s,%s,%s,%s,\t%s,%s%n", rs.getInt("log_id"), sanitizeCsv(rs.getString("serial_number")),
-                            sanitizeCsv(rs.getString("brand")), sanitizeCsv(rs.getString("model")), sanitizeCsv(rs.getString("student_code")),
-                            sanitizeCsv(rs.getString("full_name")), rs.getString("direction"), rs.getString("formatted_log_time"), rs.getString("status"));
+                    pw.printf("%d,%s,%s,%s,%s,%s,%s,\t%s,%s%n",
+                            rs.getInt("log_id"), sanitizeCsv(rs.getString("serial_number")),
+                            sanitizeCsv(rs.getString("brand")), sanitizeCsv(rs.getString("model")),
+                            sanitizeCsv(rs.getString("student_code")), sanitizeCsv(rs.getString("full_name")),
+                            rs.getString("direction"), rs.getString("formatted_log_time"), rs.getString("status"));
                 }
             } else if (type.equals("Device Stats")) {
                 pw.println("Device ID,Serial Number,Brand,Model,Type,Student Code,Owner,Status,Registered At");
                 while (rs.next()) {
-                    pw.printf("%d,%s,%s,%s,%s,%s,%s,%s,\t%s%n", rs.getInt("device_id"), sanitizeCsv(rs.getString("serial_number")),
-                            sanitizeCsv(rs.getString("brand")), sanitizeCsv(rs.getString("model")), rs.getString("device_type"),
-                            sanitizeCsv(rs.getString("student_code")), sanitizeCsv(rs.getString("full_name")), rs.getString("status"), rs.getString("formatted_log_time"));
+                    pw.printf("%d,%s,%s,%s,%s,%s,%s,%s,\t%s%n",
+                            rs.getInt("device_id"), sanitizeCsv(rs.getString("serial_number")),
+                            sanitizeCsv(rs.getString("brand")), sanitizeCsv(rs.getString("model")),
+                            rs.getString("device_type"), sanitizeCsv(rs.getString("student_code")),
+                            sanitizeCsv(rs.getString("full_name")), rs.getString("status"), rs.getString("formatted_log_time"));
+                }
+            } else if (type.equals("Amendment Log Report")) {
+                // Every column of log_amendments gets its own dedicated CSV column.
+                pw.println("Amendment ID,Request ID,Direction,Amendment Type,Changed By,Reason,Previous Data,New Data,Amended At");
+                while (rs.next()) {
+                    pw.printf("%d,%d,%s,%s,%s,%s,%s,%s,\t%s%n",
+                            rs.getInt("amendment_id"),
+                            rs.getInt("request_id"),
+                            rs.getString("direction"),
+                            rs.getString("amendment_type"),
+                            sanitizeCsv(rs.getString("changed_by_username")),
+                            sanitizeCsv(rs.getString("reason")),
+                            sanitizeCsv(rs.getString("previous_data")),
+                            sanitizeCsv(rs.getString("new_data")),
+                            rs.getString("formatted_log_time"));
                 }
             } else if (type.equals("User Activity")) {
                 pw.println("Audit ID,Username,Role,Action,Target Type,Target ID,Performed At");
                 while (rs.next()) {
-                    pw.printf("%d,%s,%s,%s,%s,%s,\t%s%n", rs.getInt("audit_id"), sanitizeCsv(rs.getString("username")),
-                            rs.getString("role"), rs.getString("action_type"), rs.getString("target_type"), rs.getString("target_id"), rs.getString("formatted_log_time"));
+                    pw.printf("%d,%s,%s,%s,%s,%s,\t%s%n",
+                            rs.getInt("audit_id"), sanitizeCsv(rs.getString("username")),
+                            rs.getString("role"), rs.getString("action_type"),
+                            rs.getString("target_type"), rs.getString("target_id"), rs.getString("formatted_log_time"));
                 }
             } else if (type.equals("Student Report")) {
-                pw.println("Student ID,Student Code,Full Name,Course,Year Level,Contact,Status,Registered At");
+                pw.println("Student ID,Student Code,Full Name,Section,Email,Status,Registered At");
                 while (rs.next()) {
-                    pw.printf("%d,%s,%s,%s,%s,%s,%s,\t%s%n", rs.getInt("student_id"), sanitizeCsv(rs.getString("student_code")),
-                            sanitizeCsv(rs.getString("full_name")), sanitizeCsv(rs.getString("course")), sanitizeCsv(rs.getString("year_level")),
-                            sanitizeCsv(rs.getString("contact_number")), rs.getString("status"), rs.getString("formatted_log_time"));
+                    pw.printf("%d,%s,%s,%s,%s,%s,\t%s%n",
+                            rs.getInt("student_id"), sanitizeCsv(rs.getString("student_code")),
+                            sanitizeCsv(rs.getString("full_name")), sanitizeCsv(rs.getString("section")),
+                            sanitizeCsv(rs.getString("email")), rs.getString("status"), rs.getString("formatted_log_time"));
                 }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) { /* suppressed */ }
+    }
+
+    // ✅ FIXED: Full-window dark + blurred overlay behind a naturally-sized centered card.
+    // The error is never printed to the terminal/console — it is only ever surfaced here.
+    private void showFileInUseDialog() {
+        Stage owner = (Stage) tblReports.getScene().getWindow();
+        Parent ownerRoot = owner.getScene().getRoot();
+
+        // Blur whatever is currently on screen behind the popup.
+        BoxBlur blur = new BoxBlur(10, 10, 3);
+        ownerRoot.setEffect(blur);
+
+        Stage dialog = new Stage();
+        dialog.initOwner(owner);
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.initStyle(StageStyle.TRANSPARENT);
+        dialog.setResizable(false);
+
+        // Full-window translucent dark backdrop that the card sits on top of.
+        StackPane overlay = new StackPane();
+        overlay.setStyle("-fx-background-color: rgba(0,0,0,0.55);");
+        overlay.setPrefWidth(owner.getWidth());
+        overlay.setPrefHeight(owner.getHeight());
+
+        // Card — natural size, no fixed height
+        VBox card = new VBox(16);
+        card.setAlignment(Pos.CENTER);
+        card.setPrefWidth(400);
+        card.setMaxWidth(400);
+        card.setMaxHeight(VBox.USE_PREF_SIZE);
+        card.setStyle(
+                "-fx-background-color: #ffffff;" +
+                        "-fx-background-radius: 12;" +
+                        "-fx-padding: 32 28 28 28;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0, 0, 8);"
+        );
+
+        Label icon = new Label("⚠");
+        icon.setStyle("-fx-font-size: 36px; -fx-text-fill: #c0392b;");
+
+        Label title = new Label("File Access Denied");
+        title.setStyle(
+                "-fx-font-size: 16px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-text-fill: #212529;"
+        );
+
+        Label message = new Label(
+                "This file is already open and in use — it looks like a duplicate is\n" +
+                        "currently open in Excel or another program.\n" +
+                        "Please close it and try exporting again."
+        );
+        message.setWrapText(true);
+        message.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        message.setStyle(
+                "-fx-font-size: 13px;" +
+                        "-fx-text-fill: #6c757d;" +
+                        "-fx-line-spacing: 3;"
+        );
+
+        Button btnOk = new Button("OK, Got it");
+        btnOk.setStyle(
+                "-fx-background-color: #7A0000;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-padding: 9 28;" +
+                        "-fx-background-radius: 6;" +
+                        "-fx-cursor: hand;"
+        );
+        btnOk.setOnMouseEntered(e -> btnOk.setStyle(
+                "-fx-background-color: #A30000;" +
+                        "-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;" +
+                        "-fx-padding: 9 28; -fx-background-radius: 6; -fx-cursor: hand;"
+        ));
+        btnOk.setOnMouseExited(e -> btnOk.setStyle(
+                "-fx-background-color: #7A0000;" +
+                        "-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;" +
+                        "-fx-padding: 9 28; -fx-background-radius: 6; -fx-cursor: hand;"
+        ));
+        btnOk.setOnAction(e -> dialog.close());
+
+        card.getChildren().addAll(icon, title, message, btnOk);
+        overlay.getChildren().add(card);
+
+        Scene dialogScene = new Scene(overlay, owner.getWidth(), owner.getHeight());
+        dialogScene.setFill(Color.TRANSPARENT);
+        dialog.setScene(dialogScene);
+
+        // Cover the owner window exactly, so the dark/blur backdrop lines up perfectly.
+        dialog.setX(owner.getX());
+        dialog.setY(owner.getY());
+
+        // Always remove the blur, however the dialog closes.
+        dialog.setOnHidden(e -> ownerRoot.setEffect(null));
+
+        dialog.showAndWait();
     }
 
     private String sanitizeCsv(String val) {
@@ -419,17 +548,17 @@ public class ReportsController implements Initializable {
         } catch (IOException e) { e.printStackTrace(); }
     }
 
-    @FXML private void navigateToDashboard() { navigate("/com/example/byodsystem/byod/dashboard.fxml"); }
-    @FXML private void navigateToStudents() { navigate("/com/example/byodsystem/byod/StudentsDevices.fxml"); }
-    @FXML private void navigateToGate() { navigate("/com/example/byodsystem/byod/GateScreen.fxml"); }
-    @FXML private void navigateToActivity() { navigate("/com/example/byodsystem/byod/ActivityLog.fxml"); }
-    @FXML private void navigateToUserManagement() { navigate("/com/example/byodsystem/byod/UserManagement.fxml"); }
+    @FXML private void navigateToDashboard()      { navigate("/com/example/byodsystem/byod/dashboard.fxml"); }
+    @FXML private void navigateToStudents()        { navigate("/com/example/byodsystem/byod/StudentsDevices.fxml"); }
+    @FXML private void navigateToGate()            { navigate("/com/example/byodsystem/byod/GateScreen.fxml"); }
+    @FXML private void navigateToActivity()        { navigate("/com/example/byodsystem/byod/ActivityLog.fxml"); }
+    @FXML private void navigateToUserManagement()  { navigate("/com/example/byodsystem/byod/UserManagement.fxml"); }
     @FXML private void navigateToProfileRequests() { navigate("/com/example/byodsystem/byod/ProfileRequests.fxml"); }
-    @FXML private void navigateToReports() { navigate("/com/example/byodsystem/byod/Reports.fxml"); }
-    @FXML private void navigateToAuditLog() { navigate("/com/example/byodsystem/byod/AuditLog.fxml"); }
-    @FXML private void navigateToSettings() { navigate("/com/example/byodsystem/byod/Settings.fxml"); }
-    @FXML private void changePassword() { navigate("/com/example/byodsystem/byod/changepassword.fxml"); }
-    @FXML private void logout() { navigate("/com/example/byodsystem/byod/Login.fxml"); }
+    @FXML private void navigateToReports()         { navigate("/com/example/byodsystem/byod/Reports.fxml"); }
+    @FXML private void navigateToAuditLog()        { navigate("/com/example/byodsystem/byod/AuditLog.fxml"); }
+    @FXML private void navigateToSettings()        { navigate("/com/example/byodsystem/byod/Settings.fxml"); }
+    @FXML private void changePassword()            { navigate("/com/example/byodsystem/byod/changepassword.fxml"); }
+    @FXML private void logout()                    { navigate("/com/example/byodsystem/byod/Login.fxml"); }
 
     public static class ReportRow {
         private final int reportId;
@@ -448,11 +577,11 @@ public class ReportsController implements Initializable {
             this.createdAt = createdAt;
         }
 
-        public int getReportId() { return reportId; }
+        public int getReportId()       { return reportId; }
         public String getReportTitle() { return reportTitle; }
-        public String getReportType() { return reportType; }
-        public String getDateRange() { return dateRange; }
-        public int getTotalRecords() { return totalRecords; }
-        public String getCreatedAt() { return createdAt; }
+        public String getReportType()  { return reportType; }
+        public String getDateRange()   { return dateRange; }
+        public int getTotalRecords()   { return totalRecords; }
+        public String getCreatedAt()   { return createdAt; }
     }
 }
