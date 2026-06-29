@@ -1158,12 +1158,42 @@ public class ActivityLogController {
     //   • Both requests are still PENDING.
     //   • Egress > ingress (using effective times).
     //   • Both new times are in the future.
+    // Every successful change is ALSO written to log_amendments, which
+    // keeps a full history of every edit made to a gate_requests row
+    // (separate from audit_log, which is the system-wide action trail).
     // ════════════════════════════════════════════════════════════════════
 
     private static final String FETCH_REQUEST_FOR_AMEND_SQL =
             "SELECT status, scheduled_time FROM gate_requests WHERE request_id = ?";
     private static final String UPDATE_SCHEDULE_SQL =
             "UPDATE gate_requests SET scheduled_time = ? WHERE request_id = ?";
+
+    private static final String INSERT_LOG_AMENDMENT_SQL = """
+            INSERT INTO log_amendments
+                (request_id, direction, amendment_type, changed_by, reason, previous_data, new_data)
+            VALUES (?, ?, ?, ?, ?, ?::jsonb, ?::jsonb)
+            """;
+
+    /**
+     * Writes one row to log_amendments — the full history table for every
+     * edit or void made to a gate_requests row before it's resolved at the
+     * gate. Called inside the same transaction as the gate_requests update,
+     * so a failure here rolls back the schedule change too.
+     */
+    private void insertLogAmendment(Connection conn, int requestId, String direction,
+                                    String amendmentType, int changedBy, String reason,
+                                    String previousDataJson, String newDataJson) throws SQLException {
+        try (PreparedStatement pst = conn.prepareStatement(INSERT_LOG_AMENDMENT_SQL)) {
+            pst.setInt(1, requestId);
+            pst.setString(2, direction);
+            pst.setString(3, amendmentType);
+            pst.setInt(4, changedBy);
+            pst.setString(5, reason);
+            pst.setString(6, previousDataJson);
+            pst.setString(7, newDataJson);
+            pst.executeUpdate();
+        }
+    }
 
     private void performAmend(GateRequestPair pair,
                               LocalDateTime newIn,
@@ -1226,6 +1256,10 @@ public class ActivityLogController {
                                 ",\"previous_scheduled_time\":\"" + pair.inScheduledTime + "\"" +
                                 ",\"new_scheduled_time\":\"" + newIn + "\"" +
                                 ",\"reason\":\"" + reason.replace("\"", "'") + "\"}");
+
+                insertLogAmendment(conn, pair.inRequestId, "IN", "EDIT", officerId, reason,
+                        "{\"scheduled_time\":\"" + pair.inScheduledTime + "\"}",
+                        "{\"scheduled_time\":\"" + newIn + "\"}");
             }
 
             // ── Amend OUT ──
@@ -1257,6 +1291,10 @@ public class ActivityLogController {
                                 ",\"previous_scheduled_time\":\"" + pair.outScheduledTime + "\"" +
                                 ",\"new_scheduled_time\":\"" + newOut + "\"" +
                                 ",\"reason\":\"" + reason.replace("\"", "'") + "\"}");
+
+                insertLogAmendment(conn, pair.outRequestId, "OUT", "EDIT", officerId, reason,
+                        "{\"scheduled_time\":\"" + pair.outScheduledTime + "\"}",
+                        "{\"scheduled_time\":\"" + newOut + "\"}");
             }
 
             conn.commit();
@@ -1315,6 +1353,8 @@ public class ActivityLogController {
     // VOID — only ever applies to the PENDING INGRESS of a pair.
     // Voiding it cascade-rejects the paired pending egress too.
     // Egress cannot be voided under any circumstances.
+    // Both the voided ingress and any cascaded egress are also recorded
+    // in log_amendments (amendment_type = 'VOID').
     // ════════════════════════════════════════════════════════════════════
 
     private static final String VOID_REQUEST_SQL = """
@@ -1382,6 +1422,10 @@ public class ActivityLogController {
                             ",\"student\":\"" + pair.studentName.replace("\"", "'") + "\"" +
                             ",\"reason\":\"" + reason.replace("\"", "'") + "\"}");
 
+            insertLogAmendment(conn, pair.inRequestId, "IN", "VOID", officerId, reason,
+                    "{\"scheduled_time\":\"" + pair.inScheduledTime + "\",\"status\":\"PENDING\"}",
+                    "{\"status\":\"REJECTED\"}");
+
             // Cascade-reject any paired pending egress
             try (PreparedStatement pst = conn.prepareStatement(CASCADE_VOID_EGRESS_SQL)) {
                 pst.setInt(1, officerId);
@@ -1396,6 +1440,11 @@ public class ActivityLogController {
                                         ",\"direction\":\"OUT\"" +
                                         ",\"student\":\"" + pair.studentName.replace("\"", "'") + "\"" +
                                         ",\"reason\":\"Paired ingress request #" + pair.inRequestId + " was voided.\"}");
+
+                        insertLogAmendment(conn, cascadedId, "OUT", "VOID", officerId,
+                                "Paired ingress request #" + pair.inRequestId + " was voided.",
+                                "{\"scheduled_time\":\"" + pair.outScheduledTime + "\",\"status\":\"PENDING\"}",
+                                "{\"status\":\"REJECTED\"}");
                     }
                 }
             }
