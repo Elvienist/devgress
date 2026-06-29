@@ -48,14 +48,10 @@ public class UserManagementController implements Initializable {
     @FXML private Button btnFilterAll;
     @FXML private Button btnFilterAdmin;
     @FXML private Button btnFilterSecurity;
-    @FXML private Button btnFilterStudent;
 
     @FXML private StackPane addUserOverlay;
     @FXML private TextField txtAddFullName;
     @FXML private TextField txtAddUsername;
-    @FXML private VBox boxAddStudentRef;
-    @FXML private TextField txtAddStudentRef;
-    @FXML private Label lblAddRefError;
     @FXML private ComboBox<String> cmbAddRole;
     @FXML private Button btnAddStatusActive;
     @FXML private Button btnAddStatusInactive;
@@ -66,8 +62,6 @@ public class UserManagementController implements Initializable {
     @FXML private StackPane editUserOverlay;
     @FXML private TextField txtEditFullName;
     @FXML private TextField txtEditUsername;
-    @FXML private VBox boxEditStudentRef;
-    @FXML private TextField txtEditStudentRef;
     @FXML private Label lblEditRefError;
     @FXML private ComboBox<String> cmbEditRole;
     @FXML private Button btnEditStatusActive;
@@ -84,7 +78,6 @@ public class UserManagementController implements Initializable {
     private String originalEditFullName = "";
     private String originalEditRole = "";
     private String originalEditStatus = "";
-    private String originalEditStudentRef = "";
 
     private StackPane rootStackPane = null;
 
@@ -97,24 +90,38 @@ public class UserManagementController implements Initializable {
         setupUserInfo();
         setupTable();
 
-        cmbAddRole.setItems(FXCollections.observableArrayList("ADMIN", "OFFICER", "STUDENT"));
-        cmbEditRole.setItems(FXCollections.observableArrayList("ADMIN", "OFFICER", "STUDENT"));
-
-        cmbAddRole.valueProperty().addListener((obs, oldVal, newVal) -> {
-            boolean isStudent = "STUDENT".equals(newVal);
-            boxAddStudentRef.setVisible(isStudent);
-            boxAddStudentRef.setManaged(isStudent);
-        });
-
-        cmbEditRole.valueProperty().addListener((obs, oldVal, newVal) -> {
-            boolean isStudent = "STUDENT".equals(newVal);
-            boxEditStudentRef.setVisible(isStudent);
-            boxEditStudentRef.setManaged(isStudent);
-        });
-
         updateTabStyles();
         updateStatusToggleVisuals(true, "ACTIVE");
         loadUsers();
+        refreshAddRoleOptions();
+    }
+
+    private boolean adminExists(int excludingUserId) {
+        String sql = "SELECT COUNT(*) FROM users WHERE role = 'ADMIN' AND user_id <> ?";
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, excludingUserId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Populates the Add User role dropdown. ADMIN is only offered
+     * when no admin account currently exists in the system.
+     */
+    private void refreshAddRoleOptions() {
+        if (adminExists(-1)) {
+            cmbAddRole.setItems(FXCollections.observableArrayList("OFFICER"));
+        } else {
+            cmbAddRole.setItems(FXCollections.observableArrayList("ADMIN", "OFFICER"));
+        }
     }
 
     private void setDateLabel() {
@@ -249,53 +256,29 @@ public class UserManagementController implements Initializable {
         lblUserCount.setText(filtered.size() + (filtered.size() == 1 ? " user" : " users"));
     }
 
-    private boolean checkStudentIdExists(String studentId) {
-        if (studentId == null || studentId.trim().isEmpty()) {
-            return false;
-        }
-        String sql = "SELECT COUNT(*) FROM students WHERE student_code = ?";
-        try (Connection conn = DBConnection.connect();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, studentId.trim());
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     @FXML private void handleSearch() { applyFilterAndSearch(); }
 
     @FXML private void filterAll()      { activeFilter = "ALL";     updateTabStyles(); applyFilterAndSearch(); }
     @FXML private void filterAdmin()    { activeFilter = "ADMIN";   updateTabStyles(); applyFilterAndSearch(); }
-    @FXML private void filterStudent()  { activeFilter = "STUDENT"; updateTabStyles(); applyFilterAndSearch(); }
     @FXML private void filterSecurity() { activeFilter = "OFFICER"; updateTabStyles(); applyFilterAndSearch(); }
 
     private void updateTabStyles() {
         if (btnFilterAll != null) btnFilterAll.setStyle("ALL".equals(activeFilter) ? STYLE_TAB_ACTIVE : STYLE_TAB_INACTIVE);
         if (btnFilterAdmin != null) btnFilterAdmin.setStyle("ADMIN".equals(activeFilter) ? STYLE_TAB_ACTIVE : STYLE_TAB_INACTIVE);
         if (btnFilterSecurity != null) btnFilterSecurity.setStyle("OFFICER".equals(activeFilter) ? STYLE_TAB_ACTIVE : STYLE_TAB_INACTIVE);
-        if (btnFilterStudent != null) btnFilterStudent.setStyle("STUDENT".equals(activeFilter) ? STYLE_TAB_ACTIVE : STYLE_TAB_INACTIVE);
     }
 
     @FXML
     private void handleCreateUser() {
         txtAddFullName.clear();
         txtAddUsername.clear();
-        txtAddStudentRef.clear();
         txtAddPassword.clear();
         txtAddConfirmPassword.clear();
-        lblAddRefError.setVisible(false);
         lblAddGeneralError.setVisible(false);
         lblAddGeneralError.setManaged(false);
 
-        cmbAddRole.getSelectionModel().select("STUDENT");
-        boxAddStudentRef.setVisible(true);
-        boxAddStudentRef.setManaged(true);
+        refreshAddRoleOptions();
+        cmbAddRole.getSelectionModel().select("OFFICER");
 
         selectedAddStatus = "ACTIVE";
         updateStatusToggleVisuals(true, "ACTIVE");
@@ -312,7 +295,6 @@ public class UserManagementController implements Initializable {
         String password = txtAddPassword.getText();
         String confirmPw = txtAddConfirmPassword.getText();
         String role = cmbAddRole.getValue();
-        String studentRef = txtAddStudentRef.getText().trim();
 
         if (username.isEmpty() || fullName.isEmpty() || role == null || password.isEmpty()) {
             showInlineAddError("Please fill in all required fields.");
@@ -323,29 +305,21 @@ public class UserManagementController implements Initializable {
             return;
         }
 
-        if ("STUDENT".equals(role)) {
-            if (studentRef.isEmpty() || !checkStudentIdExists(studentRef)) {
-                lblAddRefError.setVisible(true);
-                return;
-            } else {
-                lblAddRefError.setVisible(false);
-            }
+        if ("ADMIN".equals(role) && adminExists(-1)) {
+            showInlineAddError("An admin account already exists. Only one admin account is allowed.");
+            refreshAddRoleOptions();
+            return;
         }
 
         try (Connection conn = DBConnection.connect()) {
             String hash = org.mindrot.jbcrypt.BCrypt.hashpw(password, org.mindrot.jbcrypt.BCrypt.gensalt());
-            String sql = "INSERT INTO users (username, full_name, role, status, password_hash, student_ref_id) VALUES (?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO users (username, full_name, role, status, password_hash) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setString(1, username);
                 ps.setString(2, fullName);
                 ps.setString(3, role);
                 ps.setString(4, selectedAddStatus);
                 ps.setString(5, hash);
-                if ("STUDENT".equals(role)) {
-                    ps.setString(6, studentRef);
-                } else {
-                    ps.setNull(6, Types.VARCHAR);
-                }
                 ps.executeUpdate();
 
                 try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -367,32 +341,20 @@ public class UserManagementController implements Initializable {
         targetedRowForAction = row;
         txtEditFullName.setText(row.getFullName());
         txtEditUsername.setText(row.getUsername());
-        txtEditStudentRef.clear();
-        lblEditRefError.setVisible(false);
-        cmbEditRole.setValue(row.getRole());
 
-        boolean isStudent = "STUDENT".equals(row.getRole());
         originalEditFullName = row.getFullName();
         originalEditRole = row.getRole();
         originalEditStatus = row.getStatus();
-        originalEditStudentRef = txtEditStudentRef.getText().trim();
-        boxEditStudentRef.setVisible(isStudent);
-        boxEditStudentRef.setManaged(isStudent);
 
-        if (isStudent) {
-            String fetchRefSql = "SELECT student_ref_id FROM users WHERE user_id = ?";
-            try (Connection conn = DBConnection.connect();
-                 PreparedStatement ps = conn.prepareStatement(fetchRefSql)) {
-                ps.setInt(1, row.getUserId());
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next() && rs.getString("student_ref_id") != null) {
-                        txtEditStudentRef.setText(rs.getString("student_ref_id"));
-                    }
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+        // Only offer ADMIN in the edit dropdown if this row is already the
+        // admin, or no other admin account exists in the system.
+        boolean rowIsAdmin = "ADMIN".equals(row.getRole());
+        if (rowIsAdmin || !adminExists(row.getUserId())) {
+            cmbEditRole.setItems(FXCollections.observableArrayList("ADMIN", "OFFICER"));
+        } else {
+            cmbEditRole.setItems(FXCollections.observableArrayList("OFFICER"));
         }
+        cmbEditRole.setValue(row.getRole());
 
         selectedEditStatus = row.getStatus();
         updateStatusToggleVisuals(false, selectedEditStatus);
@@ -408,22 +370,17 @@ public class UserManagementController implements Initializable {
         if (targetedRowForAction == null) return;
         String fullName = txtEditFullName.getText().trim();
         String role = cmbEditRole.getValue();
-        String studentRef = txtEditStudentRef.getText().trim();
 
         if (fullName.isEmpty() || role == null) {
             showInlineEditError("Full Name and Role fields cannot be empty.");
             return;
         }
 
-        if ("STUDENT".equals(role)) {
-            if (studentRef.isEmpty() || !checkStudentIdExists(studentRef)) {
-                lblEditRefError.setText("This Student ID is required and must exist in our system.");
-                lblEditRefError.setVisible(true);
-                return;
-            } else {
-                lblEditRefError.setVisible(false);
-            }
+        if ("ADMIN".equals(role) && !"ADMIN".equals(originalEditRole) && adminExists(targetedRowForAction.getUserId())) {
+            showInlineEditError("An admin account already exists. Only one admin account is allowed.");
+            return;
         }
+
         if ("INACTIVE".equals(selectedEditStatus) && targetedRowForAction.getUserId() == currentUserId) {
             showOverlayPopup("Action Blocked", "You cannot deactivate your own account while logged in.");
             return;
@@ -431,8 +388,7 @@ public class UserManagementController implements Initializable {
 
         boolean changed = !fullName.equals(originalEditFullName)
                 || !role.equals(originalEditRole)
-                || !selectedEditStatus.equals(originalEditStatus)
-                || !studentRef.equals(originalEditStudentRef);
+                || !selectedEditStatus.equals(originalEditStatus);
 
         if (!changed) {
             hideOverlay(editUserOverlay);
@@ -443,17 +399,12 @@ public class UserManagementController implements Initializable {
         AlertHelper.showConfirm(owner, "Save Changes",
                 "You are about to update the account details for '" + targetedRowForAction.getUsername() + "'. Proceed?", () -> {
                     try (Connection conn = DBConnection.connect()) {
-                        String sql = "UPDATE users SET full_name=?, role=?, status=?, student_ref_id=? WHERE user_id=?";
+                        String sql = "UPDATE users SET full_name=?, role=?, status=? WHERE user_id=?";
                         try (PreparedStatement ps = conn.prepareStatement(sql)) {
                             ps.setString(1, fullName);
                             ps.setString(2, role);
                             ps.setString(3, selectedEditStatus);
-                            if ("STUDENT".equals(role)) {
-                                ps.setString(4, studentRef);
-                            } else {
-                                ps.setNull(4, Types.VARCHAR);
-                            }
-                            ps.setInt(5, targetedRowForAction.getUserId());
+                            ps.setInt(4, targetedRowForAction.getUserId());
                             ps.executeUpdate();
                         }
                         AuditLogger.log(conn, currentUserId, "RECORD_EDITED", "User", targetedRowForAction.getUserId(),
@@ -485,17 +436,6 @@ public class UserManagementController implements Initializable {
                         ps.setInt(2, row.getUserId());
                         ps.executeUpdate();
 
-                        if ("STUDENT".equals(row.getRole())) {
-                            String syncSql = "UPDATE students SET status = ? " +
-                                    "WHERE student_code = (" +
-                                    "SELECT student_ref_id FROM users WHERE user_id = ?)";
-                            try (PreparedStatement syncPst = conn.prepareStatement(syncSql)) {
-                                syncPst.setString(1, nextStatus);
-                                syncPst.setInt(2, row.getUserId());
-                                syncPst.executeUpdate();
-                            }
-                        }
-
                         AuditLogger.log(conn, currentUserId, "ACTIVE".equals(nextStatus) ? "RECORD_REACTIVATED" : "RECORD_DEACTIVATED",
                                 "User", row.getUserId(), "{\"username\":\"" + row.getUsername() + "\"}");
                         showOverlayPopup("Success", "Account status updated to " + nextStatus + ".");
@@ -507,9 +447,9 @@ public class UserManagementController implements Initializable {
     }
 
 
-    @FXML private void handleAddStatusActive() { selectedAddStatus = "ACTIVE"; updateStatusToggleVisuals(true, "ACTIVE"); }
-    @FXML private void handleAddStatusInactive() { selectedAddStatus = "INACTIVE"; updateStatusToggleVisuals(true, "INACTIVE"); }
-    @FXML private void handleEditStatusActive() { selectedEditStatus = "ACTIVE"; updateStatusToggleVisuals(false, "ACTIVE"); }
+    @FXML private void handleAddStatusActive()    { selectedAddStatus  = "ACTIVE";   updateStatusToggleVisuals(true,  "ACTIVE");   }
+    @FXML private void handleAddStatusInactive()  { selectedAddStatus  = "INACTIVE"; updateStatusToggleVisuals(true,  "INACTIVE"); }
+    @FXML private void handleEditStatusActive()   { selectedEditStatus = "ACTIVE";   updateStatusToggleVisuals(false, "ACTIVE");   }
     @FXML private void handleEditStatusInactive() { selectedEditStatus = "INACTIVE"; updateStatusToggleVisuals(false, "INACTIVE"); }
 
     private void updateStatusToggleVisuals(boolean isAddModal, String targetStatus) {
