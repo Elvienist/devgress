@@ -152,9 +152,11 @@ CREATE TABLE device_logs (
 
 CREATE TABLE log_amendments (
                                 amendment_id     SERIAL PRIMARY KEY,
-                                original_log_id  INT NOT NULL
-                                    REFERENCES device_logs(log_id)
+                                request_id       INT NOT NULL
+                                    REFERENCES gate_requests(request_id)
                                         ON DELETE RESTRICT,
+                                direction        VARCHAR(3) NOT NULL
+                                    CHECK (direction IN ('IN', 'OUT')),
                                 amendment_type   VARCHAR(10) NOT NULL
                                     CHECK (amendment_type IN ('EDIT', 'VOID')),
                                 changed_by       INT NOT NULL
@@ -162,6 +164,7 @@ CREATE TABLE log_amendments (
                                         ON DELETE RESTRICT,
                                 reason           TEXT NOT NULL,
                                 previous_data    JSONB,
+                                new_data         JSONB,
                                 amended_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
