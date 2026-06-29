@@ -248,6 +248,10 @@ public class StudentsDevicesController {
     }
 
     private void showConfirmationPopup(String title, String subtitle, Runnable onConfirm) {
+        showConfirmationPopup(title, subtitle, "Confirm", onConfirm);
+    }
+
+    private void showConfirmationPopup(String title, String subtitle, String confirmLabel, Runnable onConfirm) {
         StackPane root = getRootStack();
         if (root == null) return;
 
@@ -267,11 +271,11 @@ public class StudentsDevicesController {
                 "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 " +
                         "10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
         );
-        warnIcon.setFill(Color.web("#B91C1C"));
+        warnIcon.setFill(Color.web("#D97706"));
         warnIcon.setScaleX(2.2);
         warnIcon.setScaleY(2.2);
         StackPane iconCircle = new StackPane(warnIcon);
-        iconCircle.setStyle("-fx-background-color: #FEE2E2; -fx-background-radius: 50%;");
+        iconCircle.setStyle("-fx-background-color: #FEF3C7; -fx-background-radius: 50%;");
         iconCircle.setPrefSize(56, 56);
         iconCircle.setMinSize(56, 56);
         iconCircle.setMaxSize(56, 56);
@@ -299,9 +303,9 @@ public class StudentsDevicesController {
                         "-fx-border-radius: 8;"
         );
 
-        Button btnConfirm = new Button("Confirm Delete");
+        Button btnConfirm = new Button(confirmLabel);
         btnConfirm.setStyle(
-                "-fx-background-color: #B91C1C; " +
+                "-fx-background-color: #D97706; " +
                         "-fx-text-fill: white; " +
                         "-fx-font-weight: bold; " +
                         "-fx-font-size: 13px; " +
@@ -920,7 +924,6 @@ public class StudentsDevicesController {
                     pst.executeUpdate();
                 }
 
-                createUserForStudent(conn, code, name);
                 successCount++;
             }
 
@@ -981,8 +984,6 @@ public class StudentsDevicesController {
                     }
                 }
 
-                createUserForStudent(conn, code, name);
-
             } else {
                 targetStudentId = currentlySelectedStudent.getStudentId();
                 String sql = "UPDATE students SET student_code=?, full_name=?, section=?, email=? " +
@@ -1009,7 +1010,7 @@ public class StudentsDevicesController {
             }
 
             if (isAdding) {
-                showOverlayPopup("Success", "New student and user account\nhave been successfully added.");
+                showOverlayPopup("Success", "New student has been\nsuccessfully added.");
             } else {
                 showOverlayPopup("Success", "Student record has been\nsuccessfully updated.");
             }
@@ -1026,35 +1027,36 @@ public class StudentsDevicesController {
         String actionType = "INACTIVE".equals(targetStatus)
                 ? "RECORD_DEACTIVATED" : "RECORD_REACTIVATED";
 
-        String studentSql = "UPDATE students SET status = ? WHERE student_id = ?";
-        String userSql    = "UPDATE users SET status = ? WHERE student_ref_id = ?";
+        String confirmTitle = "INACTIVE".equals(targetStatus)
+                ? "Deactivate Student?" : "Reactivate Student?";
+        String confirmMsg = "INACTIVE".equals(targetStatus)
+                ? "Are you sure you want to deactivate\n" + currentlySelectedStudent.getFullName() + "?"
+                : "Are you sure you want to reactivate\n" + currentlySelectedStudent.getFullName() + "?";
 
-        try (Connection conn = DBConnection.connect()) {
-            try (PreparedStatement pst = conn.prepareStatement(studentSql)) {
-                pst.setString(1, targetStatus);
-                pst.setInt(2, currentlySelectedStudent.getStudentId());
-                pst.executeUpdate();
-            }
+        showConfirmationPopup(confirmTitle, confirmMsg, () -> {
+            String studentSql = "UPDATE students SET status = ? WHERE student_id = ?";
 
-            try (PreparedStatement pst = conn.prepareStatement(userSql)) {
-                pst.setString(1, targetStatus);
-                pst.setString(2, currentlySelectedStudent.getStudentCode());
-                pst.executeUpdate();
-            }
+            try (Connection conn = DBConnection.connect()) {
+                try (PreparedStatement pst = conn.prepareStatement(studentSql)) {
+                    pst.setString(1, targetStatus);
+                    pst.setInt(2, currentlySelectedStudent.getStudentId());
+                    pst.executeUpdate();
+                }
 
-            AuditLogger.log(conn,
-                    UserSession.getInstance().getUserId(),
-                    actionType,
-                    "Student",
-                    currentlySelectedStudent.getStudentId(),
-                    "{\"student_code\": \"" +
-                            currentlySelectedStudent.getStudentCode() + "\"}"
-            );
+                AuditLogger.log(conn,
+                        UserSession.getInstance().getUserId(),
+                        actionType,
+                        "Student",
+                        currentlySelectedStudent.getStudentId(),
+                        "{\"student_code\": \"" +
+                                currentlySelectedStudent.getStudentCode() + "\"}"
+                );
 
-            loadStudentsFromDatabase();
-            handleCloseModal();
-            showOverlayPopup("Success", "Student status updated to " + targetStatus + ".");
-        } catch (SQLException e) { e.printStackTrace(); }
+                loadStudentsFromDatabase();
+                handleCloseModal();
+                showOverlayPopup("Success", "Student status updated to " + targetStatus + ".");
+            } catch (SQLException e) { e.printStackTrace(); }
+        });
     }
 
     @FXML
@@ -1149,15 +1151,25 @@ public class StudentsDevicesController {
             return;
         }
         String targetStatus = "ACTIVE".equalsIgnoreCase(currentlySelectedDevice.getStatus()) ? "INACTIVE" : "ACTIVE";
-        String sql = "UPDATE devices SET status = ? WHERE device_id = ?";
-        try (Connection conn = DBConnection.connect();
-             PreparedStatement pst = conn.prepareStatement(sql)) {
-            pst.setString(1, targetStatus);
-            pst.setInt(2, currentlySelectedDevice.getDeviceId());
-            pst.executeUpdate();
-            loadDevicesFromDatabase();
-            handleCloseModal();
-        } catch (SQLException e) { e.printStackTrace(); }
+
+        String confirmTitle = "INACTIVE".equals(targetStatus)
+                ? "Deactivate Device?" : "Reactivate Device?";
+        String confirmMsg = "INACTIVE".equals(targetStatus)
+                ? "Are you sure you want to deactivate\n" + currentlySelectedDevice.getSerialNumber() + "?"
+                : "Are you sure you want to reactivate\n" + currentlySelectedDevice.getSerialNumber() + "?";
+
+        showConfirmationPopup(confirmTitle, confirmMsg, () -> {
+            String sql = "UPDATE devices SET status = ? WHERE device_id = ?";
+            try (Connection conn = DBConnection.connect();
+                 PreparedStatement pst = conn.prepareStatement(sql)) {
+                pst.setString(1, targetStatus);
+                pst.setInt(2, currentlySelectedDevice.getDeviceId());
+                pst.executeUpdate();
+                loadDevicesFromDatabase();
+                handleCloseModal();
+                showOverlayPopup("Success", "Device status updated to " + targetStatus + ".");
+            } catch (SQLException e) { e.printStackTrace(); }
+        });
     }
 
     private void showInlineError(Label errorLabel, String message) {
